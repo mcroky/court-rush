@@ -28,10 +28,8 @@ Get-ChildItem -LiteralPath (Join-Path $projectRoot 'build/web') -Force | Where-O
  Copy-Item -LiteralPath $_.FullName -Destination $destination -Force
 }
 Set-Content -LiteralPath (Join-Path $pagesRoot '.nojekyll') -Value '' -Encoding utf8
-$landing=@"
-<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>코트러시 · COURT RUSH</title><meta http-equiv="refresh" content="0;url=./v$Version/"><script>location.replace('./v$Version/'+location.search+location.hash)</script><a href="./v$Version/">코트러시 플레이하기 →</a></html>
-"@
-Set-Content -LiteralPath (Join-Path $pagesRoot 'index.html') -Value $landing -Encoding utf8
+& $releaseNode (Join-Path $projectRoot 'tools/prepare_stable_pages.mjs') (Join-Path $projectRoot 'build/web') $pagesRoot $Version
+if ($LASTEXITCODE -ne 0) { throw 'Stable page preparation failed.' }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'site/career.css') -Destination (Join-Path $pagesRoot 'career.css') -Force
 foreach ($languageFile in @('language.css','locales.js','i18n.js')) {
  Copy-Item -LiteralPath (Join-Path $projectRoot "site/$languageFile") -Destination (Join-Path $pagesRoot $languageFile) -Force
