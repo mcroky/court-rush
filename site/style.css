@@ -37,3 +37,47 @@ body.reduced-motion *,body.reduced-motion *::before,body.reduced-motion *::after
 
 /* Web bank transfer: keep Play distribution policy separate. */
 nav.roky-social a.roky-transfer-link,a.roky-transfer-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 12px;box-sizing:border-box;border:1px solid #a28a12;border-radius:9px;background:#ffe14c;color:#242000;font:600 13px/1.4 system-ui,sans-serif;text-decoration:none;white-space:nowrap}nav.roky-social a.roky-transfer-link:hover,a.roky-transfer-link:hover{background:#ffed91;color:#242000}nav.roky-social a.roky-transfer-link:focus-visible,a.roky-transfer-link:focus-visible{outline:3px solid #2676c4;outline-offset:3px}
+
+/* Roky Studio ebook destination */
+nav.roky-social a.roky-ebook-link,a.roky-ebook-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;min-height:44px;padding:8px 12px;border:1px solid #849ab8;border-radius:9px;background:#e7efff;color:#17365d;font:600 13px/1.4 system-ui,sans-serif;text-decoration:none;white-space:nowrap}nav.roky-social a.roky-ebook-link:hover,a.roky-ebook-link:hover{background:#cedfff;color:#17365d}nav.roky-social a.roky-ebook-link:focus-visible,a.roky-ebook-link:focus-visible{outline:3px solid #2469bd;outline-offset:3px}
+
+/* v0.7.1: separate touch zones; the meter never occupies the left stick. */
+.language-picker{display:inline-flex;align-items:center;gap:6px;font:600 11px/1.4 system-ui,sans-serif;white-space:nowrap}
+.language-picker select{font:inherit;min-height:44px;max-width:128px;padding:7px 8px;border:1px solid #a8b9aa;border-radius:4px;background:#f5f2e7;color:#203b39;cursor:pointer}
+.language-picker select:focus-visible{outline:3px solid #da783d;outline-offset:2px}
+dialog>.language-picker{margin-bottom:16px;margin-right:28px}
+.studio-bar nav{flex-wrap:wrap;gap:8px 15px}.studio-bar{padding-top:4px;padding-bottom:4px}.studio-bar nav a,.studio-bar button{min-height:44px}
+.compact-links{left:0;right:0;padding:0 max(10px,env(safe-area-inset-right));gap:12px;background:#173336e8;overflow-x:auto;white-space:nowrap;max-height:48px;justify-content:flex-end}
+.compact-links>*{flex-shrink:0}.compact-links .language-picker{color:#f2e6cb}.compact-links select{min-height:40px}
+.touch-controls{--touch-floor:calc(56px + env(safe-area-inset-bottom));bottom:var(--touch-floor);left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));gap:12px;z-index:4}
+.touch-actions{display:grid;grid-template-columns:repeat(3,44px) 66px;gap:6px;max-width:none;align-items:end}
+.touch-actions button,.touch-actions button.minor{width:44px;height:44px;min-width:0;padding:3px 2px;font-size:9px;line-height:1.15;overflow-wrap:anywhere}
+.touch-actions button.shoot{width:66px;height:66px;font-size:10px}.touch-actions small{margin-top:2px}
+.joystick{flex-shrink:0}.joystick>span{left:50%;top:50%;margin-left:-22px;margin-top:-22px}
+.shot-cue small{line-height:1.45;overflow-wrap:anywhere}.shot-cue{top:auto;max-width:calc(100% - 32px)}
+@media(max-width:850px),(pointer:coarse){
+ .shot-cue{left:50%;bottom:calc(184px + env(safe-area-inset-bottom));width:230px;transform:translate(-50%,5px)}
+ .shot-cue.active{transform:translateX(-50%)}
+ .feedback{left:16px;right:16px;top:112px;bottom:auto;align-items:center;max-width:none;text-align:center}
+ .studio-bar nav{justify-content:flex-start}.studio-bar .language-picker{margin-left:auto}
+}
+.arena:fullscreen .shot-cue{left:50%;bottom:calc(184px + env(safe-area-inset-bottom));transform:translate(-50%,5px);width:230px}
+.arena:fullscreen .shot-cue.active{transform:translateX(-50%)}
+@media(max-height:560px) and (orientation:landscape){
+ .shot-cue{left:50%;bottom:calc(184px + env(safe-area-inset-bottom));transform:translate(-50%,5px);width:226px}
+ .shot-cue.active{transform:translateX(-50%)}
+ .compact-links{justify-content:flex-start}.feedback{top:95px;bottom:auto}
+}
+@media(min-width:700px) and (max-height:560px) and (orientation:landscape){
+ .shot-cue,.arena:fullscreen .shot-cue{bottom:calc(78px + env(safe-area-inset-bottom))}
+ .feedback{top:auto;bottom:190px}
+}
+@media(max-width:699px) and (max-height:560px) and (orientation:landscape){
+ .feedback{left:auto;right:16px;top:92px;bottom:auto;max-width:145px}
+ .feedback strong{font-size:18px;line-height:1.1;overflow-wrap:anywhere}.feedback>span{display:none}
+}
+@media(max-width:370px){
+ .joystick{width:54px;height:54px}.joystick>span{width:36px;height:36px;margin-left:-18px;margin-top:-18px}.touch-actions{grid-template-columns:repeat(3,44px) 62px;gap:3px}
+ .touch-actions button.shoot{width:62px;height:62px}.touch-controls{gap:4px}.joystick>i{bottom:2px;font-size:6px}
+ .shot-cue{bottom:calc(179px + env(safe-area-inset-bottom))}
+}

@@ -20,7 +20,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){lab.paused
   const size=()=>{const rect=canvas.getBoundingClientRect();canvas.width=Math.round(rect.width*devicePixelRatio);canvas.height=Math.round(rect.height*devicePixelRatio);};size();window.addEventListener('resize',size);
   const engine=new Engine({...window.UF_ENGINE_CONFIG,args:['--','--motion-lab'],canvas,canvasResizePolicy:0,focusCanvas:false});
   await engine.startGame({onProgress:(current,total)=>{if(total)status.textContent=`모션 준비 중 ${Math.round(current/total*100)}%`;}});
-  document.title='코트러시 · 모션 방식 비교';
+  document.title=window.CourtI18n?.text('코트러시 · 모션 방식 비교') || '코트러시 · 모션 방식 비교';
   status.textContent='MOTION COMPARISON · 실험 장면';
   for(const button of document.querySelectorAll('button'))button.disabled=false;
  }catch(error){status.textContent='모션을 불러오지 못했습니다. '+error.message;console.error(error);}

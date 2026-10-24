@@ -1,5 +1,5 @@
 param(
- [string]$Version='0.7.0',
+ [string]$Version='0.7.1',
  [string]$Repository='mcroky/court-rush',
  [switch]$Push
 )
@@ -28,6 +28,9 @@ $landing=@"
 "@
 Set-Content -LiteralPath (Join-Path $pagesRoot 'index.html') -Value $landing -Encoding utf8
 Copy-Item -LiteralPath (Join-Path $projectRoot 'site/career.css') -Destination (Join-Path $pagesRoot 'career.css') -Force
+foreach ($languageFile in @('language.css','locales.js','i18n.js')) {
+ Copy-Item -LiteralPath (Join-Path $projectRoot "site/$languageFile") -Destination (Join-Path $pagesRoot $languageFile) -Force
+}
 Copy-Item -LiteralPath (Join-Path $projectRoot 'site/privacy.html') -Destination (Join-Path $pagesRoot 'privacy.html') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'site/updates.json') -Destination (Join-Path $pagesRoot 'updates.json') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'icon.svg') -Destination (Join-Path $pagesRoot 'icon.svg') -Force

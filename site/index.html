@@ -10,13 +10,14 @@
 <header class="studio-bar">
   <a href="https://mcroky.github.io/roky-studio/" target="_blank" rel="noopener noreferrer">← Roky Studio로 돌아가기 <span class="sr-only">새 탭</span></a>
   <span class="studio-note">INDEPENDENT GAMES. GOOD TIMES.</span>
-  <nav aria-label="프로젝트 메뉴">
+  <nav aria-label="프로젝트 메뉴"><a class="roky-social-link roky-ebook-link" data-web-only-commerce href="https://litt.ly/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="로키스튜디오 전자책 새 탭에서 열기">전자책 <span aria-hidden="true">↗</span></a>
     <button id="career-menu">내 선수 · 로그인</button>
     <a class="roky-social-link roky-transfer-link" data-web-only-support href="https://buymeacoffee.com/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="더 좋은 앱을 위한 후원 새 탭에서 열기">더 좋은 앱을 위한 후원 <span aria-hidden="true">↗</span></a>
-    <button id="updates-button">업데이트 <span class="version">v0.7.0</span></button>
+    <button id="updates-button">업데이트 <span class="version">v0.7.1</span></button>
     <a href="https://mcroky.github.io/roky-studio/#feedback" target="_blank" rel="noopener noreferrer">의견 보내기 ↗</a>
     <a href="https://x.com/loki60542" target="_blank" rel="me noopener noreferrer" aria-label="X 새 탭에서 열기">X ↗</a>
     <a href="https://www.threads.com/@loki60542" target="_blank" rel="me noopener noreferrer" aria-label="Threads 새 탭에서 열기">Threads ↗</a>
+    <label class="language-picker"><span aria-hidden="true">🌐</span><select data-language aria-label="언어" translate="no"></select></label>
   </nav>
 </header>
 <main>
@@ -38,7 +39,7 @@
       <div class="showroom-ui"><span class="eyebrow">CHARACTER STUDY / 07 &amp; 23</span><strong>MOVE AS ONE.</strong><p>사람형 스킨 메시 · 농구복 · 같은 전신 리그</p><button id="showroom-detail">상체 확대</button><button id="showroom-back">← 코트로 돌아가기</button></div>
       <button id="showroom-motion" class="showroom-motion">동작: 대기 → 달리기</button>
       <div class="arena-bottom"><span><b>07</b> THE PLAYMAKER</span><span>MOVE WITH PURPOSE. <i>PLAY WITH STYLE.</i></span></div>
-      <nav class="compact-links" aria-label="전체 화면 공통 메뉴"><a class="roky-social-link roky-transfer-link" data-web-only-support href="https://buymeacoffee.com/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="더 좋은 앱을 위한 후원 새 탭에서 열기">더 좋은 앱을 위한 후원 <span aria-hidden="true">↗</span></a><a href="https://mcroky.github.io/roky-studio/" target="_blank" rel="noopener noreferrer">← Roky Studio</a><a href="https://mcroky.github.io/roky-studio/#feedback" target="_blank" rel="noopener noreferrer">의견 ↗</a><a href="https://x.com/loki60542" target="_blank" rel="me noopener noreferrer" aria-label="X 새 탭">X ↗</a><a href="https://www.threads.com/@loki60542" target="_blank" rel="me noopener noreferrer" aria-label="Threads 새 탭">Threads ↗</a><button id="compact-updates">소식</button></nav>
+      <nav class="compact-links" aria-label="전체 화면 공통 메뉴"><a class="roky-social-link roky-ebook-link" data-web-only-commerce href="https://litt.ly/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="로키스튜디오 전자책 새 탭에서 열기">전자책 <span aria-hidden="true">↗</span></a><a class="roky-social-link roky-transfer-link" data-web-only-support href="https://buymeacoffee.com/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="더 좋은 앱을 위한 후원 새 탭에서 열기">더 좋은 앱을 위한 후원 <span aria-hidden="true">↗</span></a><a href="https://mcroky.github.io/roky-studio/" target="_blank" rel="noopener noreferrer">← Roky Studio</a><a href="https://mcroky.github.io/roky-studio/#feedback" target="_blank" rel="noopener noreferrer">의견 ↗</a><a href="https://x.com/loki60542" target="_blank" rel="me noopener noreferrer" aria-label="X 새 탭">X ↗</a><a href="https://www.threads.com/@loki60542" target="_blank" rel="me noopener noreferrer" aria-label="Threads 새 탭">Threads ↗</a><button id="compact-updates">소식</button><label class="language-picker"><span aria-hidden="true">🌐</span><select data-language aria-label="언어" translate="no"></select></label></nav>
       <div class="touch-controls" id="touch-controls">
         <div class="joystick" id="joystick" aria-label="이동 조이스틱"><span id="stick"></span><i>MOVE</i></div>
         <div class="touch-actions"><button data-control="guard" class="minor">견제 / 박스</button><button data-control="steal" class="minor">스틸</button><button data-control="spin" class="minor">턴<small>Z</small></button><button data-control="twostep" class="minor">투스텝<small>C</small></button><button data-control="behind" class="minor">비하인드<small>V</small></button><button data-control="hesi" class="minor">헤지<small>X</small></button><button data-control="cross">돌파 <small>A</small></button><button data-control="shoot" class="shoot">슛 / 점프 <small>D</small></button></div>
@@ -61,9 +62,9 @@
       <section class="session-panel"><div class="section-label"><span>THIS SESSION</span><span id="accuracy">—</span></div><div class="stat-row"><span>슛 성공 / 시도</span><strong id="shot-stat">0 / 0</strong></div><div class="settings-row"><button id="sound-button" aria-pressed="true">소리 켬 ♪</button><button id="motion-button" aria-pressed="false">효과 줄이기</button></div><p id="settings-notice" class="settings-notice" role="status" hidden></p></section>
     </aside>
   </div>
-  <footer class="footer"><span><i>●</i> MADE FOR THE LOVE OF THE GAME.</span><p>v0.7.0 · AI 1대1 육성 · 계정과 선수 기록은 서버에 저장됩니다. <a href="privacy.html">계정·저장 안내</a></p><button id="reset-button">공 다시 받기 ↺</button></footer>
+  <footer class="footer"><span><i>●</i> MADE FOR THE LOVE OF THE GAME.</span><p>v0.7.1 · AI 1대1 육성 · 계정과 선수 기록은 서버에 저장됩니다. <a href="privacy.html">계정·저장 안내</a></p><button id="reset-button">공 다시 받기 ↺</button></footer>
 </main>
-<dialog id="info-dialog"><button id="close-dialog" class="dialog-close" aria-label="닫기">×</button><div id="dialog-content"></div></dialog>
-<dialog id="career-dialog" aria-label="선수 육성과 계정"><button id="career-close" aria-label="선수 화면 닫기">×</button><div id="career-content"></div></dialog>
-<script src="engine-config.js"></script><script src="game.js"></script><script src="app.js"></script><script src="career-config.js"></script><script type="module" src="career.js"></script>
+<dialog id="info-dialog"><button id="close-dialog" class="dialog-close" aria-label="닫기">×</button><label class="language-picker"><span aria-hidden="true">🌐</span><select data-language aria-label="언어" translate="no"></select></label><div id="dialog-content"></div></dialog>
+<dialog id="career-dialog" aria-label="선수 육성과 계정"><button id="career-close" aria-label="선수 화면 닫기">×</button><label class="language-picker"><span aria-hidden="true">🌐</span><select data-language aria-label="언어" translate="no"></select></label><div id="career-content"></div></dialog>
+<script src="engine-config.js"></script><script src="game.js"></script><script src="locales.js"></script><script src="i18n.js"></script><script src="info-locales.js"></script><script src="app.js"></script><script src="career-config.js"></script><script type="module" src="career.js"></script>
 </body></html>

@@ -9,7 +9,7 @@ const match = exported.match(/const GODOT_CONFIG = (\{.*\});/);
 if (!match) throw new Error('Godot export config not found. Export Web before running this script.');
 const config = JSON.parse(match[1]);
 writeFileSync(resolve(output, 'engine-config.js'), `window.UF_ENGINE_CONFIG = ${JSON.stringify(config)};\n`);
-for (const name of ['index.html','style.css','app.js','motion-lab.html','motion-lab.js','character-lab.html','character-lab.js','career.css','career.js','career-config.js','privacy.html','updates.json']) copyFileSync(resolve(root,'site',name),resolve(output,name));
+for (const name of ['index.html','style.css','app.js','motion-lab.html','motion-lab.js','character-lab.html','character-lab.js','career.css','career.js','career-config.js','language.css','locales.js','i18n.js','info-locales.js','privacy.html','updates.json']) copyFileSync(resolve(root,'site',name),resolve(output,name));
 copyFileSync(resolve(root,'site/career-rules.mjs'),resolve(output,'career-rules.js'));
 copyFileSync(resolve(root, 'icon.svg'), resolve(output, 'icon.svg'));
 const total = ['game.wasm', 'game.pck', 'game.js'].reduce((sum, name) => sum + statSync(resolve(output, name)).size, 0);
