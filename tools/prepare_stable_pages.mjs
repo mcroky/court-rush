@@ -18,7 +18,11 @@ for (const name of ['index.html', 'motion-lab.html', 'character-lab.html']) {
     return before + '../' + href.replace(/^\.\//, '') + after;
   });
   writeFileSync(join(pages, name), html);
-  // Existing links to the active version should also show the stable address.
-  writeFileSync(join(pages, `v${version}`, name), `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>코트러시 · COURT RUSH</title><link rel="canonical" href="${destination}"><meta http-equiv="refresh" content="0;url=${destination}"></head><body><script>location.replace(${JSON.stringify(destination)}+location.search+location.hash)</script><a href="${destination}">코트러시 열기 →</a></body></html>\n`);
+  // Render old entry URLs directly: a cached root redirect must not cause a loop.
+  // Pin the asset base before updating the address without a network navigation.
+  const stableName = name === 'index.html' ? '' : name;
+  const normalizeAddress = `<script>(()=>{const assets=new URL('./',location.href);const entry=new URL(${JSON.stringify('../' + stableName)},location.href);entry.search=location.search;entry.hash=location.hash;const base=document.createElement('base');base.href=assets.href;document.head.append(base);history.replaceState(history.state,'',entry.href);})();</script>`;
+  const versionEntry = html.replace(`<base href="./v${version}/">`, normalizeAddress);
+  writeFileSync(join(pages, `v${version}`, name), versionEntry);
 }
 console.log(`Stable entries prepared; engine assets remain in v${version}/.`);
