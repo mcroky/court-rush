@@ -9,6 +9,7 @@
 - 첫 웹 검사에서 기본 Sample 노드가 미시작 소스를 stop해 InvalidStateError를 반복하며 곡 전환과 게임을 막았다. 음악/해설을 명시적 STREAM으로 바꾸고 미재생 stop·동일 pause 반복을 제거했다. [공식 Web Sample 제약](https://docs.godotengine.org/en/stable/tutorials/audio/audio_buses.html)을 확인했다. 이 초기본은 배포하지 않는다.
 - 초기 translateY(-clamp(...))가 무효여서 스틱이 올라가지 않았다. 유효 음수 clamp로 수정 후390×844에서 y=-59.08px,88×88px 실측. 높이에 따라28~64px 올리고 오른쪽 버튼/작은 rail을 보존한다. 터치 드래그, 실제 크로스오버·덩크2점과 What a crossover!/Oh! Throw it down! 캡션을 별도 QA 탭에서 확인했다. 사용자 메인 경기 탭은 초기화하지 않았다.
 - 런타임 외부 API/음성 합성/마이크 권한 없음. 자동 PCM·웹 연결 검사는 음성 연기나 헤드폰/스피커 주관 청취를 대신하지 않는다. 실제 휴대폰 스피커·터치 도달감, Android/Play는 미검증이다.
+- 최종 공개: 소스f9b4c2c, Pages eab31f1 빌드built. 루트가v0.7.3으로 연결됨을 실제 브라우저에서 확인했다. 공개390×844의 스틱 y=-59.08px/영어 크로스오버 캡션/다음 곡→펑크/정지 중 NEON 선택→직접 재개 후 적용을 확인했고 console warning/error없음. 로컬320×740과844×390에서도 스틱과 오른쪽 버튼이 겹치지 않았으며3곡 자동 순환 후에도 오류 없음. 새 설정 패널을4개 언어에서 실제 확인했다. screenshots/public-mobile-stick-v0.7.3.png를 보존하고 언어·곡 설정과 임시 뷰포트를 복원했다. 기존4개 미완료 공통 메뉴/기록 파일은 원본에 보존하고 커밋/새 배포에 섞지 않았다.
 
 확인일: 2026-10-23 / 대상: 로컬 웹 빌드, Godot 4.7.2 Standard / 서버: 127.0.0.1:8791
 
