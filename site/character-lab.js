@@ -15,6 +15,6 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){window.crC
  const resize=()=>{const rect=canvas.getBoundingClientRect();canvas.width=Math.round(rect.width*devicePixelRatio);canvas.height=Math.round(rect.height*devicePixelRatio);};resize();window.addEventListener('resize',resize);
  const engine=new Engine({...window.UF_ENGINE_CONFIG,args:['--','--character-lab'],canvas,canvasResizePolicy:0,focusCanvas:false});
  await engine.startGame({onProgress:(current,total)=>{if(total)status.textContent=`캐릭터 준비 중 ${Math.round(current/total*100)}%`;}});
- status.textContent='HUMAN CHARACTERS · v0.7.1';
+ status.textContent='HUMAN CHARACTERS · v0.7.2';
  for(const button of document.querySelectorAll('button'))button.disabled=false;
 }catch(error){status.textContent='캐릭터를 불러오지 못했습니다. '+error.message;console.error(error);}})();

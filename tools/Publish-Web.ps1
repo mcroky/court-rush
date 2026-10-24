@@ -1,5 +1,5 @@
 param(
- [string]$Version='0.7.1',
+ [string]$Version='0.7.2',
  [string]$Repository='mcroky/court-rush',
  [switch]$Push
 )
@@ -17,6 +17,11 @@ if (-not (Test-Path -LiteralPath (Join-Path $pagesRoot '.git'))) {
 }
 $publishBranch=(& git -C $pagesRoot branch --show-current).Trim()
 if ($publishBranch -ne 'gh-pages') { throw 'Refusing to publish from a different branch.' }
+if ((& git -C $pagesRoot status --porcelain)) { throw 'Pages checkout has pending changes. Review them before publishing.' }
+$releaseNode=(Get-Command node -ErrorAction SilentlyContinue).Source
+if (-not $releaseNode) { $releaseNode=Join-Path $env:USERPROFILE '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe' }
+& $releaseNode (Join-Path $projectRoot 'tools/verify_web_release.mjs') $Version
+if ($LASTEXITCODE -ne 0) { throw 'Web release verification failed.' }
 $destination=Join-Path $pagesRoot "v$Version"
 New-Item -ItemType Directory -Force -Path $destination | Out-Null
 Get-ChildItem -LiteralPath (Join-Path $projectRoot 'build/web') -Force | Where-Object { $_.Extension -ne '.gz' } | ForEach-Object {

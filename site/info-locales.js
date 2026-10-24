@@ -13,7 +13,7 @@
   '1v1: first to 11 or 90 seconds. If tied, the next score wins. After a defensive rebound or steal, clear the ball beyond the arc before attacking.',
   'Esc pauses or resumes. Switching tabs, opening information or changing language pauses the game. Close the menu and select Resume to continue.',
   'My Player has 8 AI courts with server-saved XP, stats and skills. Practice and regular 1v1 grant no growth rewards. This is solo PvE; online competition and 3v3 are planned.',
-  'On a phone, landscape is recommended. Use the left stick and right action buttons. The shot meter stays centered, clear of the left stick.'
+  'On a phone, landscape is recommended. Use the left stick and right action buttons. A small timing rail appears beside Shoot only while preparing a shot.'
  ]],
  ja:['まずは、自分のリズムを。',[
   '矢印キー／左スティック：画面基準で移動。D／シュート長押し：ボールを集めて跳び、リリース。0.18秒未満の短押しでシュートフェイク。',
@@ -27,7 +27,7 @@
   '1対1は11点先取または90秒。同点なら次の得点で決着。守備リバウンド・スティールの後は外側のラインを出てから攻撃します。',
   'Escで停止・再開。タブ移動、案内表示、言語変更でも一時停止します。メニューを閉じて「再開」を押してください。',
   'マイ選手はAIコート8段階で経験値・能力・スキルを育成しサーバー保存。練習と通常の1対1に育成報酬はありません。ソロPvEで、オンライン対戦と3対3は今後の予定です。',
-  'スマートフォンは横向き推奨。左スティックと右のアクションボタンで操作。シュートゲージは左スティックと重ならない中央に表示します。'
+  'スマートフォンは横向き推奨。左スティックと右のアクションボタンで操作。シュート準備中だけ、ボタン脇の小さなゲージを表示します。'
  ]],
  'zh-CN':['找到你的节奏。',[
   '方向键／左侧摇杆：按屏幕方向移动。按住 D／投篮：收球、起跳并出手；轻点不足 0.18 秒可做投篮假动作。',
@@ -41,24 +41,24 @@
   '1 对 1 先得 11 分或限时 90 秒；平分时下一次得分决胜。防守篮板或抢断后，须先将球带出外线再进攻。',
   'Esc 暂停或继续。切换标签页、查看说明及更改语言时也会暂停。关闭菜单后选择继续游戏。',
   '“我的球员”包含 8 个 AI 球场，经验、属性与技能保存在服务器。练习及普通 1 对 1 不发成长奖励。目前为单人 PvE，在线对战及 3 对 3 留待后续。',
-  '手机建议横屏。使用左侧摇杆和右侧动作按钮，投篮条居中显示，不遮挡左侧摇杆。'
+  '手机建议横屏。使用左侧摇杆和右侧动作按钮，仅在准备投篮时于投篮按钮旁显示细小计时条。'
  ]]
  };
  const news={
- en:['More room for your hands. More languages.','v0.7.1 · Touch HUD & languages',[
-  'The shot meter moves to the center, clear of the left joystick and right action buttons. Safe-area spacing adapts to screen size and orientation.',
+ en:['More room for your hands. More languages.','v0.7.2 · Mobile camera & compact HUD',[
+  'Mobile now follows the player at a closer distance. The large shot panel is replaced by a small timing rail beside Shoot, shown only during shot preparation. A smaller scoreboard keeps the court clear.',
   'Choose Korean, English, Japanese or Simplified Chinese. Menus, career, account flows, match hints and help follow your selection, which is saved on this device.',
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. Online competition, 3v3 and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['手元に余裕を。言語も選べる。','v0.7.1・タッチHUDと言語対応',[
-  'シュートゲージを中央へ移動し、左ジョイスティックと右ボタンから分離。画面サイズ・向き・セーフエリアに合わせて配置します。',
+ ja:['手元に余裕を。言語も選べる。','v0.7.2・モバイルカメラと小さなHUD',[
+  'モバイルは選手に近い追従カメラへ。大きなシュートパネルを廃止し、準備中だけボタン脇の小さなゲージを表示。スコア表示も小さくしました。',
   '韓国語・英語・日本語・簡体字中国語を選択可能。メニュー・育成・アカウント・試合案内・操作説明に適用し、この端末に保存します。',
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。オンライン対戦・3対3・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['操作更宽裕，语言更丰富。','v0.7.1 · 触控界面与多语言',[
-  '投篮条移至中央，与左摇杆及右侧按钮分开。布局随屏幕尺寸、方向及安全区域调整。',
+ 'zh-CN':['操作更宽裕，语言更丰富。','v0.7.2 · 手机镜头与紧凑界面',[
+  '手机镜头更近地跟随球员。移除大型投篮提示框，仅在收球准备时于投篮按钮旁显示细条，并缩小比分牌以留出视野。',
   '可选择韩语、英语、日语、简体中文。菜单、球员成长、账号流程、比赛提示及操作说明随之切换，选择保存在本设备。',
   'v0.7.0：无需邮箱的账号密码注册、恢复码及账号删除；178cm 后卫、190cm 前锋、204cm 中锋；8 个 AI 球场、经验及属性技能训练，进度保存在服务器。',
   '目前成长模式为单人 AI 1 对 1 PvE。在线对战、3 对 3 及移动商店发布为后续计划。服务器校验奖励及点数消费，但不验证每次游戏输入。'

@@ -64,4 +64,14 @@ function fixture(raw=null,failWrite=false){
   const f=fixture();f.run("ready=true;state={started:false,phase:'live'};start('practice')");f.events.get('blur')();
   assert.equal(f.window.ufInput.suspended,true,'blur before first game acknowledgement was lost');
 }
-console.log('WEB_LIFECYCLE: focus/visibility, persistent pause, repeat keys, touch cancel, manual resume, corrupt/unwritable settings passed');
+{
+ const f=fixture();
+ const next={started:true,paused:false,phase:'live',mode:'practice',score:[0,0],seconds:90,owner:0,action:'idle',charge:0,finish:'shot',makes:0,attempts:0};
+ const active=()=>f.node('shot-cue').classList.contains('active');
+ f.window.ufUpdate(next);assert.equal(active(),false,'idle dribbling must not show a shot panel');
+ f.window.ufUpdate({...next,action:'gather',charge:.65});assert.equal(active(),true,'preparing a shot must show the timing rail');assert.equal(f.node('release-fill').style.width,'65%');
+ f.window.ufUpdate({...next,action:'shot',phase:'takeoff'});assert.equal(active(),false,'rail must clear after takeoff');
+ f.window.ufUpdate({...next,action:'gather',owner:1});assert.equal(active(),false,'opponent must not trigger own shot rail');
+ f.window.ufUpdate({...next,action:'gather',paused:true});assert.equal(active(),false,'pause must hide the rail');
+}
+console.log('WEB_LIFECYCLE: focus/visibility, persistent pause, repeat keys, touch cancel, manual resume, settings and shot-meter state transitions passed');

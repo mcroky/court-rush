@@ -81,3 +81,26 @@ dialog>.language-picker{margin-bottom:16px;margin-right:28px}
  .touch-actions button.shoot{width:62px;height:62px}.touch-controls{gap:4px}.joystick>i{bottom:2px;font-size:6px}
  .shot-cue{bottom:calc(179px + env(safe-area-inset-bottom))}
 }
+
+/* v0.7.2: a timing rail beside Shoot, never a panel over the player. */
+body.touch-layout .shot-cue,body.touch-layout .arena:fullscreen .shot-cue{
+ left:auto;right:max(2px,env(safe-area-inset-right));top:auto;bottom:calc(56px + env(safe-area-inset-bottom));
+ width:8px;height:66px;max-width:none;padding:0;border-radius:6px;transform:none;background:#183c3be8;overflow:hidden
+}
+body.touch-layout .shot-cue>span,body.touch-layout .shot-cue>small{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+body.touch-layout .shot-cue .release-track{position:absolute;left:0;top:100%;bottom:auto;margin:0;width:64px;height:6px;transform:rotate(-90deg);transform-origin:left top;border-radius:0}
+body.touch-layout .shot-cue.sweet{box-shadow:0 0 0 2px #b7f2a0}
+body.touch-layout .arena:has(.shot-cue.sweet.active) button.shoot{box-shadow:0 0 0 3px #b7f2a0}
+body.touch-layout .scoreboard{min-width:170px;gap:10px;padding:6px 8px}
+body.touch-layout .team{min-width:30px}body.touch-layout .team strong{font-size:24px}body.touch-layout .team span{font-size:7px;margin-bottom:2px}
+body.touch-layout .clock{min-width:58px;gap:2px}body.touch-layout .clock strong{font-size:15px}body.touch-layout .clock>span{font-size:7px;letter-spacing:0}
+body.touch-layout .arena-tools{flex-direction:row}body.touch-layout .arena-tools button{width:31px;height:31px}
+body.touch-layout .possession{top:72px;left:12px;padding:5px 7px;font-size:7px}
+body.touch-layout .feedback{top:92px;bottom:auto;left:22%;right:12px;max-width:none;align-items:flex-end;text-align:right}
+body.touch-layout .feedback strong{font-size:20px;line-height:1.1}body.touch-layout .feedback>span{display:none}
+@media(orientation:portrait){
+ body.touch-layout.in-play .title-row{display:none}
+ body.touch-layout .touch-controls{--touch-floor:calc(24px + env(safe-area-inset-bottom))}
+ body.touch-layout .shot-cue,body.touch-layout .arena:fullscreen .shot-cue{bottom:calc(24px + env(safe-area-inset-bottom))}
+ body.touch-layout.in-play .arena-bottom,body.touch-layout #rotate-note{display:none}
+}

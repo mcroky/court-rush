@@ -79,6 +79,8 @@ var bounce_index = -1
 var camera_home = Vector3(0, 10.8, 12.8)
 var camera_focus = Vector3(0, 0, -2.8)
 var camera_follow = Vector3.ZERO
+var camera_mobile_zoom = 1.0
+var camera_mobile_follow = Vector3.ZERO
 
 func frame_court(delta: float) -> void:
 	var viewport_size = get_viewport().get_visible_rect().size
@@ -92,6 +94,10 @@ func frame_court(delta: float) -> void:
 	camera_follow = camera_follow.lerp(follow, 1 - exp(-delta * 4)) if delta > 0 else follow
 	camera.position = camera_home + camera_follow
 	camera.look_at(camera_focus + camera_follow)
+	var compact_camera = aspect < 1.05
+	if web_input != null: compact_camera = compact_camera or bool(web_input.compactCamera)
+	else: compact_camera = compact_camera or (viewport_size.x < 950 and viewport_size.y < 560)
+	if compact_camera and started: frame_mobile_court(delta, aspect, viewport_size)
 	if mode == "practice" and practice_slow and practice_drill == "layup" and started:
 		var study_focus = players[0].position.lerp(Vector3(HOOP.x,0,HOOP.z), .38) + Vector3.UP * 1.20
 		camera.fov = clampf(42 * maxf(1, 1.3/maxf(aspect,.55)), 42, 78)
@@ -113,6 +119,38 @@ func frame_court(delta: float) -> void:
 			study_focus = players[0].position.lerp(Vector3(HOOP.x,0,HOOP.z),.35)+Vector3.UP*1.6
 			camera.position = study_focus+Vector3(4.8,2.8,5.4)
 		camera.look_at(study_focus)
+
+func frame_mobile_court(delta: float, aspect: float, viewport_size: Vector2) -> void:
+	# Portrait is a player-follow view, not a wide court squeezed into a phone.
+	var player = players[0]
+	var focus = Vector3(player.position.x * .5, .85, lerpf(player.position.z, HOOP.z, .08))
+	focus += Vector3(player.motion.x, 0, player.motion.y).limit_length(5) * .08
+	var desired = focus - camera_focus
+	camera_mobile_follow = camera_mobile_follow.lerp(desired, 1 - exp(-delta * 9)) if delta > 0 else desired
+	focus = camera_focus + camera_mobile_follow
+	var offset = Vector3(0, 3.8, 11.5) if aspect < 1.05 else Vector3(0, 4.2, 10.8)
+	camera.fov = 44
+	var targets = [player.position + Vector3.UP * .1, player.position + Vector3.UP * 2.15, HOOP]
+	if mode == "duel" and players[1].position.distance_to(player.position) < 6:
+		targets.append(players[1].position + Vector3.UP * .1)
+		targets.append(players[1].position + Vector3.UP * 2.15)
+	if ball != null and phase in ["takeoff", "flight", "loose"]:
+		targets.append(ball.position)
+	var zoom = 1.0
+	for attempt in range(14):
+		camera.position = focus + offset * zoom
+		camera.look_at(focus)
+		var fits = true
+		for target in targets:
+			var screen = camera.unproject_position(target) / viewport_size
+			if camera.is_position_behind(target) or screen.x < .06 or screen.x > .94 or screen.y < .14 or screen.y > .67:
+				fits = false
+		if fits: break
+		zoom *= 1.07
+	# Pull back as soon as the ball needs room; return to the close view gradually.
+	camera_mobile_zoom = maxf(zoom, lerpf(camera_mobile_zoom, zoom, 1 - exp(-delta * 3))) if delta > 0 else zoom
+	camera.position = focus + offset * camera_mobile_zoom
+	camera.look_at(focus)
 var native_hud: Label
 var event_id = 0
 var last_scored_event = -1
