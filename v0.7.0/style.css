@@ -37,6 +37,3 @@ body.reduced-motion *,body.reduced-motion *::before,body.reduced-motion *::after
 
 /* Web bank transfer: keep Play distribution policy separate. */
 nav.roky-social a.roky-transfer-link,a.roky-transfer-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 12px;box-sizing:border-box;border:1px solid #a28a12;border-radius:9px;background:#ffe14c;color:#242000;font:600 13px/1.4 system-ui,sans-serif;text-decoration:none;white-space:nowrap}nav.roky-social a.roky-transfer-link:hover,a.roky-transfer-link:hover{background:#ffed91;color:#242000}nav.roky-social a.roky-transfer-link:focus-visible,a.roky-transfer-link:focus-visible{outline:3px solid #2676c4;outline-offset:3px}
-
-/* Roky Studio ebook destination */
-nav.roky-social a.roky-ebook-link,a.roky-ebook-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;min-height:44px;padding:8px 12px;border:1px solid #849ab8;border-radius:9px;background:#e7efff;color:#17365d;font:600 13px/1.4 system-ui,sans-serif;text-decoration:none;white-space:nowrap}nav.roky-social a.roky-ebook-link:hover,a.roky-ebook-link:hover{background:#cedfff;color:#17365d}nav.roky-social a.roky-ebook-link:focus-visible,a.roky-ebook-link:focus-visible{outline:3px solid #2469bd;outline-offset:3px}
