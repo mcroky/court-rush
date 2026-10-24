@@ -1,0 +1,33 @@
+{
+  "author": "Roky Studio / COURT RUSH procedural score",
+  "sampleRate": 24000,
+  "tracks": [
+    {
+      "file": "asphalt-groove.ogg",
+      "bpm": 94,
+      "bars": 16,
+      "duration": 40.851083333333335,
+      "seed": 7301,
+      "sha256": "d089c8dd74c6866a7e2c831e57805054961c1dbe690a070675abb59a3b316fce",
+      "peak": 0.7800000309944153
+    },
+    {
+      "file": "fast-break.ogg",
+      "bpm": 110,
+      "bars": 16,
+      "duration": 34.909083333333335,
+      "seed": 7302,
+      "sha256": "a0efef12c092db6ec57f3b2f4d383ec24a4bae6d6b77ced491c1f41d11688820",
+      "peak": 0.7799999713897705
+    },
+    {
+      "file": "neon-court.ogg",
+      "bpm": 122,
+      "bars": 16,
+      "duration": 31.475416666666668,
+      "seed": 7303,
+      "sha256": "35eee8868724c0cecc80d9620d6b35601e474d8b76a1f9978c22fc697ab1b234",
+      "peak": 0.7800000309944153
+    }
+  ]
+}

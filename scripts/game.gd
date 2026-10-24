@@ -3,6 +3,7 @@ extends Node3D
 const Actor = preload("res://scripts/actor.gd")
 const Art = preload("res://scripts/art.gd")
 const Rules = preload("res://scripts/rules.gd")
+const CourtAudio = preload("res://scripts/court_audio.gd")
 const HOOP = Vector3(0, 3.05, -5.65)
 const DRIBBLE_DURATIONS = {"cross": .38, "spin": .64, "twostep": .64, "behind": .48, "hesi": .58}
 var players: Array = []
@@ -14,6 +15,9 @@ var trail_positions: Array = []
 var sounds: Dictionary = {}
 var audio_pool: Array = []
 var audio_index = 0
+var court_audio: Node
+var audio_settings: Dictionary = {}
+var audio_settings_json = ""
 var web_input: JavaScriptObject
 var rng = RandomNumberGenerator.new()
 var time = 0.0
@@ -269,14 +273,22 @@ func setup_environment() -> void:
 	camera.current = true
 
 func load_audio() -> void:
+	court_audio = CourtAudio.new()
+	add_child(court_audio)
 	for name in ["bounce", "squeak", "release", "swish", "rim", "block", "whistle", "slam", "landing"]:
 		var path = "res://assets/audio/" + name + ".wav"
 		if ResourceLoader.exists(path):
 			sounds[name] = load(path)
 	for i in range(8):
 		var stream = AudioStreamPlayer.new()
+		stream.bus = "CourtSFX"
 		add_child(stream)
 		audio_pool.append(stream)
+
+func _notification(what: int) -> void:
+	if not OS.has_feature("web") and what in [NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT] and started:
+		set_paused(true,"앱을 벗어나 경기를 멈췄습니다.")
+		if court_audio != null: court_audio.configure(sound_enabled,false,audio_settings)
 
 func play_sound(name: String, volume: float = -9) -> void:
 	if not sound_enabled or not sounds.has(name):
@@ -608,6 +620,12 @@ func gate_resumed_input(input: Dictionary) -> void:
 
 func _physics_process(delta: float) -> void:
 	var input = read_controls()
+	if web_input != null and str(web_input.audio) != audio_settings_json:
+		audio_settings_json = str(web_input.audio)
+		var settings = JSON.parse_string(audio_settings_json)
+		if settings is Dictionary: audio_settings = settings
+	if court_audio != null:
+		court_audio.configure(sound_enabled,started and not paused and not inspecting and (web_input == null or not bool(web_input.audioSuspended)),audio_settings)
 	if practice_slow and mode == "practice" and not inspecting: delta *= .35
 	if inspecting:
 		if input.pause and not last_pause:
@@ -1033,6 +1051,7 @@ func crossover(input_dir: Vector2) -> void:
 	cross_direction = right * side
 	defender_feint(-cross_direction)
 	announce("CROSSOVER", "방향 전환으로 공간을 만드세요.", 1.0)
+	court_audio.cue("cross")
 	play_sound("squeak", -12)
 
 func start_dribble_skill(kind: String, desired: Vector3) -> void:
@@ -1053,6 +1072,7 @@ func start_dribble_skill(kind: String, desired: Vector3) -> void:
 	var titles = {"spin": "SPIN MOVE", "twostep": "TWO STEP", "behind": "BEHIND THE BACK", "hesi": "HESITATION"}
 	var hints = {"spin": "바깥손으로 공을 보호하며 회전 돌파", "twostep": "드리블을 유지하며 바깥쪽 → 안쪽으로 두 번 돌파", "behind": "등 뒤로 공을 넘기며 반대쪽 돌파", "hesi": "속도를 늦췄다가 첫발로 치고 나가기"}
 	announce(titles[kind], hints[kind], 1.3)
+	court_audio.cue(kind)
 	play_sound("squeak", -13)
 
 func defender_feint(feint: Vector3) -> void:
@@ -1179,6 +1199,7 @@ func try_block() -> bool:
 	trail_positions.clear()
 	loose_timer = 0
 	last_event = "block"
+	court_audio.cue("block")
 	announce("GET THAT OUT!", "손바닥으로 쳐냈습니다! 튕겨 나간 공을 따라가세요.")
 	play_sound("block", -7)
 	return true
@@ -1225,6 +1246,7 @@ func register_score() -> void:
 	phase = "dead"
 	reset_timer = 1.5
 	last_event = "score"
+	court_audio.cue(finish_kind if finish_kind in ["dunk","layup"] else ("three" if flight_points == 3 else "score"))
 	announce("SWISH! +%d" % flight_points if shooter == 0 else "RIVAL +%d" % flight_points, "좋은 슛! 다음 플레이로 이어가세요." if shooter == 0 else "다음 공격은 내 차례입니다.", 2)
 	play_sound("swish", -6)
 	if finish_kind == "dunk":
@@ -1279,6 +1301,7 @@ func claim_ball(index: int) -> void:
 	last_event = "rebound"
 	ball.position = players[index].ball_anchor(time)
 	var air_catch = players[index].action == "rebound" and players[index].defense_caught
+	if air_catch: court_audio.cue("rebound")
 	announce("AIR CATCH!" if index == 0 and air_catch else ("YOUR REBOUND" if index == 0 else "RIVAL REBOUND"), "양손 확보 → 가슴으로 당기기 → 착지" if air_catch else ("외곽선 밖으로 공을 빼세요." if needs_clear and index == 0 else "다음 공격을 이어가세요."))
 	play_sound("block", -18) # Short hand/ball impact, not a floor bounce at an air catch.
 
@@ -1312,6 +1335,7 @@ func resolve_steal() -> void:
 		needs_clear = mode == "duel" and not Rules.is_clear(player.position)
 		shot_clock = 15
 		last_event = "steal"
+		court_audio.cue("steal")
 		announce("STEAL!", "외곽선 밖으로 공을 빼고 공격하세요." if needs_clear else "공을 가져왔어요. 드리블로 이어가세요.")
 		play_sound("block", -12)
 	else:
@@ -1397,6 +1421,7 @@ func finish_match() -> void:
 	for player in players: player.has_ball = false
 	announce("YOU WIN" if scores[0] > scores[1] else "RUN IT BACK", "한 판 더? 다음 경기는 또 다른 흐름입니다.", 99)
 	last_event = "finished"
+	if scores[0] > scores[1]: court_audio.cue("win")
 	play_sound("whistle", -9)
 	send_state()
 
@@ -1448,6 +1473,11 @@ func send_state() -> void:
 	state["canChangeRole"] = not started or phase == "ended" or (mode == "practice" and phase == "live" and players[0].action == "idle")
 	if not career_match_id.is_empty():state["canChangeRole"]=false
 	state["reboundWindow"] = phase in ["flight","loose"] and ball_owner == -1
+	if court_audio != null:
+		state["musicTrack"] = court_audio.track_index
+		state["audioCalls"] = court_audio.calls_played
+		state["commentary"] = court_audio.last_call_key
+		state["commentaryLine"] = court_audio.last_line
 	if OS.has_feature("web"):
 		JavaScriptBridge.eval("if(window.ufUpdate)window.ufUpdate(%s);" % JSON.stringify(state))
 	elif native_hud != null:

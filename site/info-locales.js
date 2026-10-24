@@ -45,19 +45,22 @@
  ]]
  };
  const news={
- en:['More room for your hands. More languages.','v0.7.2 · Mobile camera & compact HUD',[
+ en:['Calls and beats on the court.','v0.7.3 · Commentary, music & thumb reach',[
+  '27 original English voice calls react to baskets, dribble skills, blocks and airborne rebounds. Choose one of 3 original instrumental tracks or rotate them. Separate music, commentary and effects volumes; music dips during commentary. The mobile left stick sits higher for easier reach.',
   'Mobile now follows the player at a closer distance. The large shot panel is replaced by a small timing rail beside Shoot, shown only during shot preparation. A smaller scoreboard keeps the court clear.',
   'Choose Korean, English, Japanese or Simplified Chinese. Menus, career, account flows, match hints and help follow your selection, which is saved on this device.',
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. Online competition, 3v3 and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['手元に余裕を。言語も選べる。','v0.7.2・モバイルカメラと小さなHUD',[
+ ja:['コートに実況とリズムを。','v0.7.3・実況、音楽、操作位置',[
+  '得点・ドリブル技・ブロック・空中リバウンドに英語実況27本を追加。オリジナルBGM3曲を選択または順番再生でき、音楽・実況・効果音の音量を個別に調節できます。実況中は音楽を下げます。モバイルの左スティックを上に移動しました。',
   'モバイルは選手に近い追従カメラへ。大きなシュートパネルを廃止し、準備中だけボタン脇の小さなゲージを表示。スコア表示も小さくしました。',
   '韓国語・英語・日本語・簡体字中国語を選択可能。メニュー・育成・アカウント・試合案内・操作説明に適用し、この端末に保存します。',
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。オンライン対戦・3対3・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['操作更宽裕，语言更丰富。','v0.7.2 · 手机镜头与紧凑界面',[
+ 'zh-CN':['球场上的解说与节拍。','v0.7.3 · 解说、音乐与摇杆位置',[
+  '新增27段原创英语解说，响应得分、运球技能、盖帽及空中篮板。3首原创背景音乐可单曲或轮换播放，音乐、解说及音效音量可分别调节，解说时音乐会降低。手机左摇杆已上移。',
   '手机镜头更近地跟随球员。移除大型投篮提示框，仅在收球准备时于投篮按钮旁显示细条，并缩小比分牌以留出视野。',
   '可选择韩语、英语、日语、简体中文。菜单、球员成长、账号流程、比赛提示及操作说明随之切换，选择保存在本设备。',
   'v0.7.0：无需邮箱的账号密码注册、恢复码及账号删除；178cm 后卫、190cm 前锋、204cm 中锋；8 个 AI 球场、经验及属性技能训练，进度保存在服务器。',

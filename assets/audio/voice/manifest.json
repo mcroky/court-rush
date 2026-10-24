@@ -1,0 +1,201 @@
+{
+  "generator": "kokoro-onnx 0.4.9",
+  "model": "Kokoro-82M v1.0",
+  "modelLicense": "Apache-2.0",
+  "voice": "am_michael",
+  "speed": 1.1,
+  "source": "https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0",
+  "modelSha256": "7d5df8ecf7d4b1878015a32686053fd0eebe2bc377234608764cc0ef3636a6c5",
+  "voicesSha256": "bca610b8308e8d99f32e6fe4197e7ec01679264efed0cac9140fe9c29f1fbf7d",
+  "lines": [
+    {
+      "event": "score",
+      "text": "Nothing but net!",
+      "file": "score-1.wav",
+      "duration": 1.1094166666666667,
+      "sha256": "181c69a145077eae19f81f8a8c4cf4efe5cc3a9ed9db0b03538c6491c819450a"
+    },
+    {
+      "event": "score",
+      "text": "Oh, what a bucket!",
+      "file": "score-2.wav",
+      "duration": 1.1045833333333333,
+      "sha256": "56b60ece1b1fbe3b268c961173b2c99c8907582edbc28174de4fdc1377ed496d"
+    },
+    {
+      "event": "score",
+      "text": "That is money!",
+      "file": "score-3.wav",
+      "duration": 0.9104583333333334,
+      "sha256": "5658771eab1ac3785f903faebe95592ef7ab272bb58df45970151cf8ff128fb9"
+    },
+    {
+      "event": "three",
+      "text": "From downtown!",
+      "file": "three-1.wav",
+      "duration": 1.0490833333333334,
+      "sha256": "9b1e5f67067ffaa0796a3bd0438cd41676deff78817c8ec3fd9be855249e1a36"
+    },
+    {
+      "event": "three",
+      "text": "Three points! Let it fly!",
+      "file": "three-2.wav",
+      "duration": 1.4855833333333333,
+      "sha256": "478db920df77c5f5b8dea501a386ee23f10860261359d3ea39968a71b432438b"
+    },
+    {
+      "event": "layup",
+      "text": "What a finish!",
+      "file": "layup-1.wav",
+      "duration": 0.936875,
+      "sha256": "4e41f4500eb7da2791570a25fd05970decb19f71dceecbbaa6133dee56e687a3"
+    },
+    {
+      "event": "layup",
+      "text": "Soft touch, right at the rim!",
+      "file": "layup-2.wav",
+      "duration": 1.6738333333333333,
+      "sha256": "d378b9c723c8ec0bfb6ca69eee8e724bb623a9153c1daf988c2391a16b960ab9"
+    },
+    {
+      "event": "dunk",
+      "text": "Oh! Throw it down!",
+      "file": "dunk-1.wav",
+      "duration": 1.0995833333333334,
+      "sha256": "3666e02a76dfadc5622af0c96ad5aa95056f05551a7004120fb10d6f308e2ee1"
+    },
+    {
+      "event": "dunk",
+      "text": "Up high! Bring it home!",
+      "file": "dunk-2.wav",
+      "duration": 1.3859166666666667,
+      "sha256": "02dccd65676c75c9bcbb7d8d8e0f03cc6061da0564b0e346c0785140a80d3e98"
+    },
+    {
+      "event": "cross",
+      "text": "What a crossover!",
+      "file": "cross-1.wav",
+      "duration": 1.1209166666666666,
+      "sha256": "e6d3131afd25bdca298792c1f780394c5bec1169ec2f4519f903c44d1cacba17"
+    },
+    {
+      "event": "cross",
+      "text": "Quick hands, quick feet!",
+      "file": "cross-2.wav",
+      "duration": 1.432,
+      "sha256": "a07942d5efa5fe02a7dbd544d4f76a61bb21d4c83d82f2706bf3eb458c16c2a5"
+    },
+    {
+      "event": "spin",
+      "text": "Spin move!",
+      "file": "spin-1.wav",
+      "duration": 0.9407083333333334,
+      "sha256": "7559674487fb5ff978e8e6517864d7adca1f8ebddc0a55d298a6250d0ad10e4f"
+    },
+    {
+      "event": "spin",
+      "text": "Around and away!",
+      "file": "spin-2.wav",
+      "duration": 1.0852916666666668,
+      "sha256": "585b753584005db74f8c520304a0397a0ea1565491c9b9b6d19158650e6672e7"
+    },
+    {
+      "event": "twostep",
+      "text": "One, two! There you go!",
+      "file": "twostep-1.wav",
+      "duration": 1.36625,
+      "sha256": "4dbd225c583998649a4d53b7b5a0ffb6d6befc102c71acc51f5e4cb1236f4101"
+    },
+    {
+      "event": "twostep",
+      "text": "Change of pace!",
+      "file": "twostep-2.wav",
+      "duration": 1.0916666666666666,
+      "sha256": "7f652223e56745327b9a6c86c06183ad39227f6c5878245efb61276a3810d389"
+    },
+    {
+      "event": "behind",
+      "text": "Behind the back!",
+      "file": "behind-1.wav",
+      "duration": 1.029375,
+      "sha256": "20b954de6bca9a8a9db5ab799f7881c350ec536ebc840a42f4086162cb271d01"
+    },
+    {
+      "event": "behind",
+      "text": "Smooth handles!",
+      "file": "behind-2.wav",
+      "duration": 1.0645416666666667,
+      "sha256": "9186ae52264354de9aab83ad60de1a5630d0190b2e6a5e4ceafe2d6fba9470d9"
+    },
+    {
+      "event": "hesi",
+      "text": "Hesitate, and go!",
+      "file": "hesi-1.wav",
+      "duration": 1.316375,
+      "sha256": "026c70e58e131f7391db09a61d1647bd0c3f424db02f52df687d7392eb289eb3"
+    },
+    {
+      "event": "hesi",
+      "text": "Look at that handle!",
+      "file": "hesi-2.wav",
+      "duration": 1.058,
+      "sha256": "290161ca77727f71ea693ae54b3847e7ce4258b9e1077d907ec2796e40448437"
+    },
+    {
+      "event": "block",
+      "text": "Get that out of here!",
+      "file": "block-1.wav",
+      "duration": 1.1437916666666668,
+      "sha256": "ce46fe26309b1f7ab737ea7bcf85ad925310387f56069851ab82ce22ac2321c2"
+    },
+    {
+      "event": "block",
+      "text": "Denied at the rim!",
+      "file": "block-2.wav",
+      "duration": 1.1264166666666666,
+      "sha256": "5089410b6fb40bef225f8c78b4a37ad7674b206519d8a183a41986a80cb312da"
+    },
+    {
+      "event": "rebound",
+      "text": "Up high! Got the rebound!",
+      "file": "rebound-1.wav",
+      "duration": 1.5355416666666666,
+      "sha256": "ab734c3222bdef31ade84aad0df184b91fa7f77c194d8c0e46b8884068a40aab"
+    },
+    {
+      "event": "rebound",
+      "text": "Big rebound!",
+      "file": "rebound-2.wav",
+      "duration": 0.9739583333333334,
+      "sha256": "42572aa5000e028a238522e8d09cd4eaef281e1faf538fbe7c4d11b5ec489b39"
+    },
+    {
+      "event": "steal",
+      "text": "Quick hands! What a steal!",
+      "file": "steal-1.wav",
+      "duration": 1.4476666666666667,
+      "sha256": "41f0d35cffb00e5dbffedaade26381ce6e095a6cbde07ddea3dc1d75c7a53551"
+    },
+    {
+      "event": "steal",
+      "text": "Picked it clean!",
+      "file": "steal-2.wav",
+      "duration": 0.9821666666666666,
+      "sha256": "e433a762adbf1ed270a69b881a178ea3142e0d87e8a60e92d992dcf8ae7c45ff"
+    },
+    {
+      "event": "win",
+      "text": "That is game! What a performance!",
+      "file": "win-1.wav",
+      "duration": 1.7883333333333333,
+      "sha256": "882a841ec27a5dca8c9d7c9f4d9822ff31e00e94ddb7fe948e343cef9231231f"
+    },
+    {
+      "event": "win",
+      "text": "Big win on the court!",
+      "file": "win-2.wav",
+      "duration": 1.3190833333333334,
+      "sha256": "a8bc3d505d18a42f112ee828f74bde480ac7c6d1f0517c67697265266a4bc29d"
+    }
+  ]
+}

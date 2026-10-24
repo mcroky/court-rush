@@ -1,5 +1,15 @@
 # v0.1 시제품 검증 기록
 
+## v0.7.3 영어 해설·음악·모바일 스틱 (2026-10-25)
+
+- Godot4.7.2 Standard/Compatibility 유지. 영어27개는 Kokoro-82M v1.0 기본 am_michael로 로컬에서 미리 합성한 원본 문구다. 방송/특정 해설자 음성은 사용하지 않았다. 음악은 자체16마디 합성 악보3곡. 추가 음원2,398,575바이트. 모델325MB와 런타임은 ignored artifacts에만 있고 배포하지 않는다. Android에서도 같은 Godot 노드/버스를 사용할 수 있으나 Android 빌드는 미검증이다.
+- Court 부모 아래 Music/Voice/SFX, 전체-3dB 여유, 해설 중 음악-9dB,1.2초2덱 전환. 실제 게임 함수에서 성공한 기술/중복 방지된 득점/블록 접촉/공중 캐치/스틸/승리에 호출한다. UI 폴링이나 헤드라인 변경을 발동 근거로 쓰지 않는다. 게임 난수열과 분리된 순번으로 음성을 교대한다. 기술4.2초 간격, 득점 대기1개와1.8초 만료, 정지 시 대기 제거.
+- 개별 dB·토글·곡 선택을 기존 설정 키에 추가하고 sound/reduced를 보존한다. 잘못된 새 필드는 기본값을 적용한다. 정지/탭 이탈/안내/선수 연구 중 음성을 중단하고 음악 위치를 보존하며 직접 재개한다. 정지 중 고른 곡은 재개 시 반영. 네이티브 앱 포커스 이탈도 정지한다.
+- audio_test49항목 실패0:27개 WAV/3개 Vorbis 길이, 연타/우선 대기/ducking/정지/재개/음소거/정지 중 곡 선택/Next 단일 이동/3개 플레이어 상한. 실제 AudioEffectRecord PCM에0이 아닌 신호와 full-scale 미만 피크 확인(artifacts/audio-mixer-check.wav). game_test38항목, web_lifecycle(설정 이관 포함),408문구×3언어 통과. user://로그/루트 인증서 경고는 호스트 경고이며 SCRIPT ERROR 없음.
+- 첫 웹 검사에서 기본 Sample 노드가 미시작 소스를 stop해 InvalidStateError를 반복하며 곡 전환과 게임을 막았다. 음악/해설을 명시적 STREAM으로 바꾸고 미재생 stop·동일 pause 반복을 제거했다. [공식 Web Sample 제약](https://docs.godotengine.org/en/stable/tutorials/audio/audio_buses.html)을 확인했다. 이 초기본은 배포하지 않는다.
+- 초기 translateY(-clamp(...))가 무효여서 스틱이 올라가지 않았다. 유효 음수 clamp로 수정 후390×844에서 y=-59.08px,88×88px 실측. 높이에 따라28~64px 올리고 오른쪽 버튼/작은 rail을 보존한다. 터치 드래그, 실제 크로스오버·덩크2점과 What a crossover!/Oh! Throw it down! 캡션을 별도 QA 탭에서 확인했다. 사용자 메인 경기 탭은 초기화하지 않았다.
+- 런타임 외부 API/음성 합성/마이크 권한 없음. 자동 PCM·웹 연결 검사는 음성 연기나 헤드폰/스피커 주관 청취를 대신하지 않는다. 실제 휴대폰 스피커·터치 도달감, Android/Play는 미검증이다.
+
 확인일: 2026-10-23 / 대상: 로컬 웹 빌드, Godot 4.7.2 Standard / 서버: 127.0.0.1:8791
 
 ## 구현된 범위

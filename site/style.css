@@ -98,6 +98,15 @@ body.touch-layout .arena-tools{flex-direction:row}body.touch-layout .arena-tools
 body.touch-layout .possession{top:72px;left:12px;padding:5px 7px;font-size:7px}
 body.touch-layout .feedback{top:92px;bottom:auto;left:22%;right:12px;max-width:none;align-items:flex-end;text-align:right}
 body.touch-layout .feedback strong{font-size:20px;line-height:1.1}body.touch-layout .feedback>span{display:none}
+/* Lift the left thumb rest independently; the right buttons/rail stay aligned. */
+body.touch-layout .joystick{transform:translateY(clamp(-64px,-7svh,-28px))}
+.audio-panel{padding:18px 20px;border:1px solid #cbd5c6;border-radius:5px;background:#e5e8dd;min-width:0}
+.audio-panel h2{font-size:18px;margin:12px 0}.audio-panel p{font-size:11px;line-height:1.6;color:#52665f}
+.audio-panel .settings-row button{min-height:44px;flex:1;padding:7px}.audio-track{display:grid;gap:7px;font-size:12px;margin-top:14px}
+.audio-track select{width:100%;min-width:0;min-height:44px;padding:7px;border:1px solid #a8b9aa;border-radius:4px;background:#f5f2e7;color:#203b39;font:inherit}
+.music-now{display:flex;align-items:center;gap:6px;justify-content:space-between;font-size:9px;line-height:1.5;margin:5px 0 10px}.music-now button{flex-shrink:0;min-height:44px;background:none;border:0;font-size:11px}
+.audio-level{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:11px;align-items:center}.audio-level input{grid-row:2;grid-column:1/-1;width:100%;margin:0;min-height:44px;accent-color:#287a70}.audio-level output{grid-column:2;grid-row:1;color:#52665f;font-variant-numeric:tabular-nums}
+.audio-panel .commentary-caption{color:#244f46;font-weight:700;font-style:italic}.commentary-caption:empty{display:none}
 @media(orientation:portrait){
  body.touch-layout.in-play .title-row{display:none}
  body.touch-layout .touch-controls{--touch-floor:calc(24px + env(safe-area-inset-bottom))}

@@ -1,5 +1,11 @@
 # 구현 구조와 전달 계획
 
+## v0.7.3 공통 오디오 경계
+
+`scripts/court_audio.gd`가 Music2덱·Voice1플레이어와 Court/Music/Voice/SFX버스를 관리한다. game.gd는 실제 게임 이벤트를 cue로 전달하며 난수·득점·성장 규칙과 분리한다. 음성은 제작 시 로컬 합성한 WAV, 음악은 자체 합성 Vorbis로 패키지에 포함한다. 웹·향후 Android에서 같은 자산과 컨트롤러를 사용하고 런타임 외부 음성 API는 없다. 웹은 음악/해설 플레이어의 playback_type을 STREAM으로 지정해 기본 Sample의 종료/정지 수명 차이를 피한다.
+
+셸은 기존 설정에 music/voice/track/musicDb/voiceDb/sfxDb를 검증해 추가하고 JSON 경계로 전달한다. 이전 sound/reduced는 보존한다. 음악 선택·다음 곡·음량은 게임 규칙을 변경하지 않으며 탭 이탈/메뉴에서는 음성과 오래된 대기를 지우고 음악 위치를 보존한다. 네이티브 앱 포커스 이탈도 정지한다. Android 실제 출력 지연·오디오 포커스·이어폰 해제 검증은 출시 전 별도 수행해야 한다.
+
 작성일: 2026-10-23 / 상태: 목표 구조와 전달 계획. v0.1은 일부 시스템을 작은 모듈로 구현했으며, 실제 구현·측정 범위는 README와 04-prototype-validation.md를 따른다.
 
 ## 1. 구조

@@ -3,6 +3,8 @@
 - 코트·공·아이콘과 이전 절차적 캐릭터: 이 프로젝트에서 작성한 메시와 SVG. v0.6.23부터 실제 경기 캐릭터의 임시 스킨 리그는 아래 GDQuest 자산을 사용한다.
 - 캐릭터 표면: 내장 `image_gen.imagegen`으로 2026-10-24 생성한 [텍스처 아틀라스](assets/textures/street-atlas-v04.png). [전체 프롬프트와 생성 방식](assets/textures/street-atlas-v04.prompt.txt). 얼굴·저지·면 티셔츠·데님을 자체 메시의 UV에 매핑했다. 원작 게임의 텍스처를 추출하거나 사용하지 않았다.
 - 효과음: `tools/generate_audio.py`에서 직접 합성. 외부 녹음이나 원작 음원을 사용하지 않음.
+- 배경음악3곡: `tools/generate_court_music.py`에서 작성한 오리지널 악보·신시사이저·드럼 합성. 외부 샘플·상용 음반을 사용하지 않음. [곡별 BPM·길이·SHA256](assets/audio/music/manifest.json).
+- 영어 해설27개: 이 프로젝트의 짧은 영어 문구를 **Kokoro-82M v1.0 / 기본 am_michael 음색**으로 로컬 합성한 WAV. 실제 NBA 해설자·선수 음성의 복제, 이름을 지정한 모사, 방송 음원을 사용하지 않았다. [제작 소스](tools/generate_commentary.py), [문구·모델/음색 파일 해시·산출물 기록](assets/audio/voice/manifest.json). 모델은 **Apache-2.0** ([공식 모델 카드](https://huggingface.co/hexgrad/Kokoro-82M), [라이선스 사본](assets/audio/voice/Kokoro-LICENSE.txt)); 제작 도구 [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx)는 MIT. 모델·음성합성 런타임·eSpeak는 게임에 포함하거나 플레이 중 호출하지 않는다. 음성 생성은 기기 안에서만 수행했다.
 - 화면 글꼴: 기기에 설치된 시스템 글꼴을 사용하며 글꼴 파일을 재배포하지 않음.
 - 엔진: **Godot Engine**, MIT License. Copyright (c) 2014-present Godot Engine contributors; Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 

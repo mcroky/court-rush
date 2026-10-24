@@ -74,4 +74,17 @@ function fixture(raw=null,failWrite=false){
  f.window.ufUpdate({...next,action:'gather',owner:1});assert.equal(active(),false,'opponent must not trigger own shot rail');
  f.window.ufUpdate({...next,action:'gather',paused:true});assert.equal(active(),false,'pause must hide the rail');
 }
-console.log('WEB_LIFECYCLE: focus/visibility, persistent pause, repeat keys, touch cancel, manual resume, settings and shot-meter state transitions passed');
+{
+ const f=fixture(JSON.stringify({sound:false,reduced:true}));
+ let audio=JSON.parse(f.window.ufInput.audio);
+ assert.equal(f.window.ufInput.sound,false);assert.equal(audio.music,true);assert.equal(audio.voice,true);assert.equal(audio.musicDb,-12,'old settings gain safe audio defaults');
+ f.node('voice-button').click();assert.equal(JSON.parse(f.window.ufInput.audio).voice,false);
+ f.node('music-track').value='1';f.node('music-track').fire('change');assert.equal(JSON.parse(f.window.ufInput.audio).track,1);
+ f.node('music-next').click();audio=JSON.parse(f.window.ufInput.audio);assert.equal(audio.track,-1);assert.equal(audio.next,1);
+ f.node('musicDb').value='-25';f.node('musicDb').fire('input');assert.equal(JSON.parse(f.window.ufInput.audio).musicDb,-25);
+ f.playing();f.events.get('blur')();assert.equal(f.window.ufInput.audioSuspended,true);
+ f.run('state.paused=true');f.node('resume-button').click();assert.equal(f.window.ufInput.audioSuspended,false);
+ const malformed=fixture(JSON.stringify({sound:true,reduced:false,track:20,musicDb:'loud',voice:null}));
+ audio=JSON.parse(malformed.window.ufInput.audio);assert.equal(audio.track,-1);assert.equal(audio.musicDb,-12);assert.equal(audio.voice,true);
+}
+console.log('WEB_LIFECYCLE: focus/visibility, persistent pause, repeat keys, touch cancel, manual resume, shot-meter transitions and migrated audio settings passed');
