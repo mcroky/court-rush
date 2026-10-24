@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>코트러시 · 모션 방식 비교</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#10272b;color:#e9eadc;font-family:system-ui,sans-serif}main{max-width:1220px;margin:auto;padding:28px 24px}header{display:flex;justify-content:space-between;gap:16px;align-items:center}h1{font-size:clamp(22px,3vw,36px);margin:8px 0}p{line-height:1.6;color:#b9cdc6;margin:8px 0 20px}a{color:#e7c98b}small{font-size:12px;letter-spacing:1px;color:#b9cdc6}.arena{position:relative;margin-top:20px;border:1px solid #48625e;border-radius:10px;overflow:hidden;background:#183a3e}canvas{display:block;width:100%;height:clamp(320px,54vw,610px)}.captions{display:grid;grid-template-columns:1fr 1fr;text-align:center;background:#1c383a;padding:15px 8px;gap:10px}.captions strong{display:block;margin-bottom:4px}.captions span{font-size:12px;color:#b9cdc6}.controls{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0}button{font:inherit;border:1px solid #68827a;border-radius:6px;padding:11px 16px;background:#183a3e;color:#e9eadc;cursor:pointer}button[aria-pressed=true]{background:#dfbd7b;color:#10272b;border-color:#dfbd7b}button:focus-visible,a:focus-visible{outline:3px solid #dcb96f;outline-offset:4px}#status{position:absolute;top:15px;left:18px;color:#e8eadf}footer{font-size:12px;color:#91aea3;line-height:1.7;margin-top:24px}.note{max-width:850px}button:disabled{opacity:.5;cursor:wait}
+
+/* Web bank transfer: keep Play distribution policy separate. */
+nav.roky-social a.roky-transfer-link,a.roky-transfer-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 12px;box-sizing:border-box;border:1px solid #a28a12;border-radius:9px;background:#ffe14c;color:#242000;font:600 13px/1.4 system-ui,sans-serif;text-decoration:none;white-space:nowrap}nav.roky-social a.roky-transfer-link:hover,a.roky-transfer-link:hover{background:#ffed91;color:#242000}nav.roky-social a.roky-transfer-link:focus-visible,a.roky-transfer-link:focus-visible{outline:3px solid #2676c4;outline-offset:3px}
+
+/* Roky Studio ebook destination */
+nav.roky-social a.roky-ebook-link,a.roky-ebook-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;min-height:44px;padding:8px 12px;border:1px solid #849ab8;border-radius:9px;background:#e7efff;color:#17365d;font:600 13px/1.4 system-ui,sans-serif;text-decoration:none;white-space:nowrap}nav.roky-social a.roky-ebook-link:hover,a.roky-ebook-link:hover{background:#cedfff;color:#17365d}nav.roky-social a.roky-ebook-link:focus-visible,a.roky-ebook-link:focus-visible{outline:3px solid #2469bd;outline-offset:3px}
+</style><link rel="stylesheet" href="language.css"></head><body><main>
+<header><div><small>COURT RUSH / MOTION RESEARCH 01</small><h1>모션을 만드는 방식부터 비교합니다.</h1></div><a href="./" target="_blank" rel="noopener">코트 열기 ↗</a><a class="roky-social-link roky-transfer-link" data-web-only-support href="https://buymeacoffee.com/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="더 좋은 앱을 위한 후원 새 탭에서 열기">더 좋은 앱을 위한 후원 <span aria-hidden="true">↗</span></a><a class="roky-social-link roky-ebook-link" data-web-only-commerce href="https://litt.ly/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="로키스튜디오 전자책 새 탭에서 열기">전자책 <span aria-hidden="true">↗</span></a><label class="language-picker"><span aria-hidden="true">🌐</span><select data-language aria-label="언어" translate="no"></select></label></header>
+<p class="note">왼쪽은 현재 게임 캐릭터, 오른쪽은 스킨 메시와 제작된 전신 애니메이션 클립입니다. 오른쪽 외형은 비교용 마네킹이며 최종 농구 캐릭터가 아닙니다.</p>
+<div class="arena"><canvas id="canvas" aria-label="기존 캐릭터와 리깅 캐릭터의 모션 비교"></canvas><span id="status" role="status">모션 준비 중…</span><div class="captions"><div><strong>현재 · 절차적 관절</strong><span id="left-detail">게임에서 쓰는 달리기</span></div><div><strong>실험 · 전신 애니메이션</strong><span>하나의 스킨 메시 · 원본 키프레임</span></div></div></div>
+<div class="controls" aria-label="비교 동작"><button data-mode="run" aria-pressed="true" disabled>달리기</button><button data-mode="flow" aria-pressed="false" disabled>대기 ↔ 달리기 연결</button><button data-mode="land" aria-pressed="false" disabled>원본 착지 클립</button><button data-mode="idle" aria-pressed="false" disabled>대기</button><button id="side" aria-pressed="false" disabled>옆에서 보기</button><button id="slow" aria-pressed="false" disabled>느리게</button><button id="pause" aria-pressed="false" disabled>정지</button></div>
+<p class="note">비교 범위: 전신의 움직임과 클립 전환. 실제 경기의 방향 전환·드리블·공 접촉은 아직 오른쪽 리그에 연결하지 않았습니다. 농구 전용 동작을 검증한 뒤 경기 캐릭터에 적용할 기준을 정합니다.</p>
+<footer>실험 모델·애니메이션: <a href="https://github.com/gdquest-demos/godot-3d-mannequin" target="_blank" rel="noopener">GDQuest and contributors</a> · Character by Luciano Muñoz · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. 원본 GLB를 Godot 4.7.2로 가져와 별도 비교 장면에서 재생했습니다. 기존 경기 탭은 유지됩니다.</footer>
+</main><script src="engine-config.js"></script><script src="game.js"></script><script src="motion-lab.js"></script><script src="locales.js"></script><script src="i18n.js"></script>
+
+<script data-roky-bank-copy>
+/* Roky Studio shared web-only bank account copy. No payment or data collection. */
+(() => {
+  'use strict';
+  if (window.rokyBankCopyInstalled) return;
+  window.rokyBankCopyInstalled = true;
+  const account = '3333071025774';
+  const translations = {
+    ko:['카카오뱅크 계좌 복사','계좌번호를 복사했어요. 은행 앱에서 이체해 주세요.','복사할 수 없어요. 아래 계좌번호를 길게 누르거나 선택해 복사해 주세요.','닫기'],
+    en:['Copy KakaoBank account','Account number copied. You can transfer from your bank app.','Copy unavailable. Select and copy the account number below.','Close'],
+    ja:['カカオバンク口座をコピー','口座番号をコピーしました。銀行アプリで振り込めます。','コピーできません。下の口座番号を選択してコピーしてください。','閉じる'],
+    zh:['复制KakaoBank账号','账号已复制，可在银行应用中转账。','无法复制，请选择并复制下方账号。','关闭'],
+  };
+  function words() {
+    const lang = (window.RokyI18n?.language || document.documentElement.lang || 'ko').slice(0,2);
+    return translations[lang] || translations.ko;
+  }
+  const style = document.createElement('style');
+  style.textContent = '.roky-bank-copy-wrap{display:inline-flex;max-width:100%;vertical-align:middle}.roky-bank-copy{display:inline-flex!important;align-items:center;justify-content:center;min-height:44px;max-width:100%;padding:9px 12px!important;border:1px solid #a28a12!important;border-radius:9px;background:#fffbed!important;color:#342d08!important;font:600 12px/1.5 system-ui,sans-serif!important;white-space:normal;cursor:pointer;box-sizing:border-box;text-align:center}.roky-bank-copy:hover{background:#fff0a3!important}.roky-bank-copy:focus-visible{outline:3px solid #2676c4;outline-offset:3px}.roky-bank-status{position:fixed;z-index:2147483646;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);box-sizing:border-box;border-radius:10px;padding:13px 18px;background:#24372e;color:#fff;font:13px/1.6 system-ui,sans-serif;text-align:center;box-shadow:0 4px 24px #0003}.roky-bank-status[hidden]{display:none}.roky-bank-manual{position:fixed;z-index:2147483647;inset:0;background:#0008;display:grid;place-items:center;padding:20px}.roky-bank-manual>div{width:min(100%,360px);box-sizing:border-box;padding:24px;background:white;border-radius:14px;color:#222;font:14px/1.7 system-ui,sans-serif}.roky-bank-manual input{box-sizing:border-box;display:block;width:100%;padding:12px;font:600 19px/1.5 ui-monospace,monospace;margin:16px 0;color:#222;background:#fff;border:1px solid #bbb;border-radius:6px}.roky-bank-manual button{min-height:44px;padding:8px 16px;font:inherit;cursor:pointer}';
+  document.head.append(style);
+  let notice, noticeTimer;
+  function manual(button) {
+    const [,,message,close] = words();
+    const overlay = document.createElement('div'); overlay.className = 'roky-bank-manual';
+    const panel = document.createElement('div'); panel.setAttribute('role','dialog'); panel.setAttribute('aria-modal','true'); panel.setAttribute('aria-label',words()[0]);
+    const p = document.createElement('p'); p.textContent = message;
+    const label = document.createElement('label'); label.textContent = 'KakaoBank';
+    const input = document.createElement('input'); input.readOnly = true; input.value = account; input.setAttribute('aria-label','KakaoBank');
+    const done = document.createElement('button'); done.textContent = close;
+    const dismiss = () => { overlay.remove(); button.focus(); };
+    done.onclick = dismiss;
+    overlay.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){e.preventDefault();dismiss();}
+      if(e.key==='Tab'){e.preventDefault();(document.activeElement===input?done:input).focus();}
+      e.stopPropagation();
+    });
+    label.append(input); panel.append(p,label,done); overlay.append(panel); document.body.append(overlay); input.focus(); input.select();
+  }
+  async function copy(button) {
+    let copied = false;
+    try { await navigator.clipboard.writeText(account); copied = true; } catch {
+      const input = document.createElement('textarea'); input.value = account; input.readOnly = true;
+      input.style.cssText='position:fixed;left:-9999px;top:0;font-size:16px'; document.body.append(input); input.select();
+      try { copied = document.execCommand('copy'); } catch {}
+      input.remove(); button.focus({preventScroll:true});
+    }
+    if(!copied){manual(button);return;}
+    if(!notice){notice=document.createElement('div');notice.className='roky-bank-status';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');document.body.append(notice);}
+    notice.textContent=words()[1];notice.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.hidden=true,4500);
+  }
+  function install() {
+    for(const anchor of document.querySelectorAll('a[href="https://buymeacoffee.com/roky.studio"]')){
+      if(anchor.closest('#bank-transfer') && document.getElementById('bank-account-copy')) continue;
+      let wrap=anchor.nextElementSibling;
+      if(!wrap?.classList.contains('roky-bank-copy-wrap')){
+        wrap=document.createElement('span');wrap.className='roky-bank-copy-wrap';wrap.setAttribute('data-web-only-support','');
+        const button=document.createElement('button');button.type='button';button.className='roky-bank-copy';button.onclick=()=>copy(button);wrap.append(button);anchor.after(wrap);
+      }
+      const button=wrap.querySelector('button');if(button.textContent!==words()[0])button.textContent=words()[0];
+    }
+  }
+  function start(){
+    install();
+    // Some projects render their shared menus after loading, or replace them on navigation.
+    new MutationObserver(install).observe(document.body,{childList:true,subtree:true});
+    new MutationObserver(install).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+    window.addEventListener('roky:language',install);
+  }
+  function ready(){
+    // A Next.js layout must finish claiming its server-rendered body before we add a sibling.
+    // Its client component calls this after mount on future source builds as well.
+    if(window.__next_f && !Object.keys(document.body).some(key=>key.startsWith('__reactProps$'))){requestAnimationFrame(ready);return;}
+    start();
+  }
+  if(document.readyState==='complete')ready();else window.addEventListener('load',ready,{once:true});
+})();
+
+</script>
+</body></html>
