@@ -1,5 +1,18 @@
 /* Source text stays Korean; identifiers, player names and saved data never change. */
 window.CourtMessages = [
+['코트의 리듬','Court rhythm','コートのリズム','球场节奏'],
+['음악 켬','Music on','音楽オン','音乐开'],
+['음악 끔','Music off','音楽オフ','音乐关'],
+['영어 해설 켬','English calls on','英語実況オン','英语解说开'],
+['영어 해설 끔','English calls off','英語実況オフ','英语解说关'],
+['배경음악','Background music','BGM','背景音乐'],
+['3곡 순환 재생','Rotate all 3 tracks','3曲を順番に再生','3首循环播放'],
+['경기 시작 후 재생','Plays when you start','試合開始後に再生','开始比赛后播放'],
+['다음 곡 →','Next track →','次の曲 →','下一首 →'],
+['음악 음량','Music volume','音楽の音量','音乐音量'],
+['해설 음량','Commentary volume','実況の音量','解说音量'],
+['효과음 음량','Effects volume','効果音の音量','音效音量'],
+['득점·기술에 반응하는 영어 해설. 해설 중에는 음악이 잠시 작아집니다.','English calls react to baskets and skills. Music dips while the commentator speaks.','得点や技に反応する英語実況。実況中は音楽が一時的に小さくなります。','英语解说响应得分与技能，解说时音乐会暂时降低。'],
 ['코트러시','COURT RUSH','コートラッシュ','球场冲刺'],
 ['← 코트러시','← COURT RUSH','← コートラッシュ','← 球场冲刺'],
 ['언어','Language','言語','语言'],
