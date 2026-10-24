@@ -1,0 +1,13 @@
+* text=auto
+*.gd text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.ts text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+*.sql text eol=lf
+*.glb binary
+*.res binary
+*.png binary
+*.wav binary

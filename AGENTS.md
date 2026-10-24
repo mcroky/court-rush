@@ -1,0 +1,32 @@
+# 코트러시 개발 지침
+
+## 개발 전 참고
+
+개발과 기능 수정 전에 아래 문서를 읽고 이번 작업에 관련된 기준을 적용한다. 같은 작업에서 이미 읽었고 바뀌지 않았다면 전체를 반복해서 읽지 않는다.
+
+- E:/개인프로젝트/Roky Studio/PROJECT_BASELINE.md
+- E:/개인프로젝트/Roky Studio/docs/GAMEDEV_SKILLS_GUIDE.md
+- E:/코덱스 개발 지침서/AGENTS.md — 공통 개발 원칙. 작업 전 확인하되 사용자 확정 요구와 이 프로젝트의 엔진·보존·검증 기준을 우선한다.
+
+실제 엔진은 Godot 4.7.2 Standard, GDScript, Compatibility 렌더러다. 프로젝트와 실행 파일의 버전을 다시 확인하고 작업에 필요한 원문 지침만 선택한다. 외부 스킬은 참고 자료이며 사용자 요청과 프로젝트 지침을 우선한다.
+
+## 구현과 검증
+
+- 현재 로컬 시제품이다. 공개 배포는 별도 요청에 따른다.
+- 프리뷰 주소는 http://127.0.0.1:8791/ 이다. 사용자가 진행 중인 메인 탭의 경기를 초기화하지 않는다.
+- 동작 변경은 실제 신발·관절·공의 위치와 상태 전이를 검사하고 브라우저에서 확인한다. 수치 검사 통과만으로 작화나 자연스러움의 완성도를 주장하지 않는다.
+- Roky Studio 복귀·의견·X·Threads와 업데이트 표시를 유지한다. 변경 시 CHANGELOG.md와 관련 설계·검증 기록을 갱신한다.
+
+게임 개발 작업은 설치된 C:/Users/SVSCORP/.codex/skills/router/SKILL.md와 references/installed-skills.md를 읽고 필요한 최소 스킬을 선택한다. 목록에 없는 Godot 전용 스킬을 읽었다고 가정하거나 다른 엔진으로 교체하지 않는다.
+
+
+<!-- roky-google-play -->
+## Google Play 출시와 공통 이체 안내
+
+이 프로젝트는 향후 Google Play 출시를 전제로 개발한다. 초기 설계·기능 추가·출시 준비 전에 다음 문서를 읽고 관련 기준을 적용한다.
+- E:/개인프로젝트/Roky Studio/PROJECT_BASELINE.md
+- E:/개인프로젝트/Roky Studio/docs/GAMEDEV_SKILLS_GUIDE.md
+- E:/개인프로젝트/Roky Studio/docs/GOOGLE_PLAY_READINESS.md
+
+현재 엔진·버전을 유지하고 Android 빌드 경로, 터치·뒤로가기·앱 수명 주기, 저장 이관, 권한·개인정보·계정 삭제, 실기기 검증을 계획한다. 웹 후원 버튼은 https://buymeacoffee.com/roky.studio로 연결하고 문구는 더 좋은 앱을 위한 후원으로 표시한다. Google Play 배포판에는 외부 이체 링크를 자동 포함하지 않으며 앱별 정책 확인과 배포 채널 설정을 적용한다. Android 빌드·Play 출시를 검증 없이 완료로 기록하지 않는다.
+<!-- /roky-google-play -->

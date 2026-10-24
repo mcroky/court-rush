@@ -1,0 +1,853 @@
+class_name RiggedStreetVisual
+extends Node3D
+## Imported full-body locomotion, layered contact IK, no gameplay ownership.
+const Source = preload("res://assets/experiments/mannequiny/mannequiny.glb")
+const HumanPlayer = preload("res://assets/characters/rush_player.res")
+const HumanRival = preload("res://assets/characters/rush_rival.res")
+const SCALE = 1.08
+var render_scale=SCALE
+const RUN_SPEED = 7.0
+var model: Node3D
+var skeleton: Skeleton3D
+var player: AnimationPlayer
+var phase = .28
+var clip = ""
+var locomotion = 0.0
+var initialized = false
+var feet: Array = []
+var arms: Array = []
+var palm_frames: Array = []
+var palm_offsets: Array = []
+var foot_rest_basis: Array = []
+var arm_weight: Array = [0.0,0.0]
+var palm_world: Array = [Vector3.ZERO,Vector3.ZERO]
+var toe_world: Array = [Vector3.ZERO,Vector3.ZERO]
+var locked: Array = [false,false]
+var anchors: Array = [Vector3.ZERO,Vector3.ZERO]
+var last_root = Vector3.ZERO
+var source_poses: Array = []
+var base_local: Array = []
+var arm_errors: Array = [0.0,0.0]
+var contact_mode = false
+var cut_weight = 0.0
+var root_height = 0.0
+var ground_drop = 0.0
+var previous_palms_local: Array = [Vector3.ZERO,Vector3.ZERO]
+var previous_contact_mode = false
+var final_poses: Array = []
+var return_poses: Array = []
+var return_blend = 0.0
+var human_mesh: MeshInstance3D
+var visual_swing: Array = [false,false]
+var visual_swing_from: Array = [Vector3.ZERO,Vector3.ZERO]
+var visual_swing_to: Array = [Vector3.ZERO,Vector3.ZERO]
+var visual_swing_time: Array = [0.0,0.0]
+var visual_swing_duration: Array = [.16,.16]
+var physics_swing: Array = [false,false]
+var contact_spent: Array = [false,false]
+var leg_return_poses: Array = [[],[]]
+var leg_return_time: Array = [0.0,0.0]
+var leg_return_pending: Array = [false,false]
+var basketball_weight=0.0
+var torso_layer=Vector3.ZERO
+var pelvis_world_height=0.0
+var stop_height=0.0
+var was_stopping=false
+var last_hand_basis: Array=[Basis.IDENTITY,Basis.IDENTITY]
+var last_action=""
+var action_entry_time=0.0
+var finish_entry_height=0.0
+var finish_entry_toes: Array=[Vector3.ZERO,Vector3.ZERO]
+var finish_entry_world: Array=[Vector3.ZERO,Vector3.ZERO]
+var gather_entry_height=0.0
+
+var entry_palms: Array=[Vector3.ZERO,Vector3.ZERO]
+var entry_frames: Array=[Basis.IDENTITY,Basis.IDENTITY]
+var cross_entry_frames: Array=[Basis.IDENTITY,Basis.IDENTITY]
+var cross_return_frames: Array=[Basis.IDENTITY,Basis.IDENTITY]
+var was_crossing=false
+var head_forward_local=Vector3.BACK
+var gaze_target=Vector2.ZERO
+
+# The visible rig owns these contacts. The hidden prototype's shoe is larger
+# and cannot supply a reliable toe-off or landing anchor for the human mesh.
+func finish_times(actor) -> Vector2:
+	return Vector2(actor.SHOT_PLANT_TIME,actor.SHOT_LAND_TIME) if actor.action=="shot" else Vector2(actor.LAYUP_PLANT_TIME,actor.LAYUP_DURATION)
+
+func finish_root(actor) -> float:
+	var times=finish_times(actor)
+	var base=-.055 if actor.action=="shot" else -.025
+	var peak=actor.SHOT_JUMP_HEIGHT if actor.action=="shot" else actor.LAYUP_JUMP_HEIGHT
+	var push_speed=4*peak/(times.y-times.x)
+	var t: float=actor.action_time
+	if t<=times.x:
+		var u=clampf(t/times.x,0,1)
+		return (2*u*u*u-3*u*u+1)*finish_entry_height+(-2*u*u*u+3*u*u)*base+(u*u*u-u*u)*times.x*push_speed
+	if t<times.y:return actor.jump+base
+	# Contact first, compression second. The downward speed continues into a
+	# damped knee load instead of stopping dead or crouching before touchdown.
+	var elapsed=t-times.y
+	return base-push_speed*elapsed*exp(-elapsed/.055)
+
+func finish_toe(actor, index: int) -> Vector3:
+	var times=finish_times(actor)
+	var t: float=actor.action_time
+	var side=-1.0 if index==0 else 1.0
+	var start: Vector3=finish_entry_toes[index]
+	var plant=actor.action=="shot" or index==actor.layup_plant_index
+	if plant and t<=times.x:
+		var contact: Vector3=finish_entry_world[index]
+		contact.y=.026
+		return contact
+	var raised=actor.action=="layup" and not plant
+	var tuck=sin(clampf((t-times.x)/(times.y-times.x),0,1)*PI)
+	if raised:tuck=sin(clampf(t/times.y,0,1)*PI)
+	var air=Vector3(side*.17,.026+actor.jump+(.20 if raised else .025)*tuck,.22 if raised else -.12)
+	if actor.action=="shot":air=Vector3(start.x,.026+actor.jump+.025*tuck,start.z)
+	var origin: Vector3=finish_entry_world[index] if plant else actor.to_global(start)
+	var goal=origin.lerp(actor.to_global(air),smoothstep(0 if raised else times.x,.22 if raised else times.x+.10,t))
+	var landing=actor.to_global(Vector3(start.x,.026,start.z)) if actor.action=="shot" else actor.air_end+actor.global_basis*Vector3(side*.17,.026,.12 if raised else -.06)
+	goal=goal.lerp(landing,smoothstep(times.y-.22,times.y,t))
+	return goal
+
+func setup(opponent: bool) -> void:
+	model = Source.instantiate()
+	add_child(model)
+	model.scale = Vector3.ONE*render_scale
+	skeleton = model.find_children("*","Skeleton3D")[0]
+	player = model.find_child("AnimationPlayer",true,false)
+	var library = player.get_animation_library("").duplicate(true)
+	player.remove_animation_library("")
+	player.add_animation_library("",library)
+	for name in ["idle","run"]: player.get_animation(name).loop_mode = Animation.LOOP_LINEAR
+	player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+	player.play("idle")
+	player.advance(0)
+	for index in range(skeleton.get_bone_count()): base_local.append(skeleton.get_bone_pose(index))
+	head_forward_local=skeleton.get_bone_global_rest(skeleton.find_bone("head")).basis.inverse()*Vector3.BACK
+	for suffix in [".r",".l"]:
+		feet.append([skeleton.find_bone("thigh"+suffix),skeleton.find_bone("calf"+suffix),skeleton.find_bone("foot"+suffix),skeleton.find_bone("ball"+suffix)])
+		foot_rest_basis.append(skeleton.get_bone_global_pose(feet[-1][2]).basis.orthonormalized())
+		arms.append([skeleton.find_bone("upperarm"+suffix),skeleton.find_bone("lowerarm"+suffix),skeleton.find_bone("hand"+suffix)])
+		var hand = skeleton.get_bone_global_pose(arms[-1][2])
+		var middle = skeleton.get_bone_global_pose(skeleton.find_bone("middle_01"+suffix)).origin
+		var index = skeleton.get_bone_global_pose(skeleton.find_bone("index_01"+suffix)).origin
+		var ring = skeleton.get_bone_global_pose(skeleton.find_bone("ring_01"+suffix)).origin
+		var along = (middle-hand.origin).normalized()
+		var normal = (index-ring).cross(along).normalized()*(-1 if suffix==".r" else 1)
+		var frame = Basis(along.cross(normal).normalized(),along,normal).orthonormalized()
+		palm_frames.append(hand.basis.orthonormalized().inverse()*frame)
+		palm_offsets.append(hand.affine_inverse()*(hand.origin+(middle-hand.origin)*.62))
+	# Keep the imported 45-bone rig, clips, bind matrices and contact frames intact.
+	# Replace geometry only; garments, skin and details all use the same named skin.
+	var source_mesh: MeshInstance3D = model.find_children("*","MeshInstance3D")[0]
+	source_mesh.visible = false
+	human_mesh = MeshInstance3D.new()
+	human_mesh.name = "CourtRushHuman"
+	human_mesh.mesh = HumanRival if opponent else HumanPlayer
+	human_mesh.skin = source_mesh.skin
+	skeleton.add_child(human_mesh)
+	human_mesh.skeleton = NodePath("..")
+	human_mesh.extra_cull_margin = .6
+	last_root = global_position
+
+func bone_world(index: int) -> Transform3D:
+	return skeleton.global_transform*skeleton.get_bone_global_pose(index)
+
+func set_bone_rotation(index: int, rotation: Basis) -> void:
+	var parent = skeleton.get_bone_parent(index)
+	var local = skeleton.get_bone_global_pose(parent).basis.inverse()*rotation if parent>=0 else rotation
+	skeleton.set_bone_pose_rotation(index,local.orthonormalized().get_rotation_quaternion())
+
+func aim(index: int, child: int, target: Vector3) -> void:
+	var pose = skeleton.get_bone_global_pose(index)
+	var before = skeleton.get_bone_global_pose(child).origin-pose.origin
+	var after = target-pose.origin
+	if before.length_squared()<.00001 or after.length_squared()<.00001: return
+	set_bone_rotation(index,Basis(Quaternion(before.normalized(),after.normalized()))*pose.basis)
+
+func solve(chain: Array, world_target: Vector3, pole: Vector3) -> void:
+	var root = skeleton.get_bone_global_pose(chain[0]).origin
+	var joint = skeleton.get_bone_global_pose(chain[1]).origin
+	var end = skeleton.get_bone_global_pose(chain[2]).origin
+	var target = skeleton.to_local(world_target)
+	var a = root.distance_to(joint)
+	var b = joint.distance_to(end)
+	var direction = (target-root).normalized()
+	var distance = clampf(target.distance_to(root),absf(a-b)+.002,a+b-.002)
+	var along = (a*a-b*b+distance*distance)/(2*distance)
+	var bend = skeleton.to_local(pole)-root
+	bend = (bend-direction*bend.dot(direction)).normalized()
+	if bend.length_squared()<.01: bend = direction.cross(Vector3.RIGHT).normalized()
+	var knee = root+direction*along+bend*sqrt(maxf(0,a*a-along*along))
+	aim(chain[0],chain[1],knee)
+	aim(chain[1],chain[2],root+direction*distance)
+
+func knee_guide(chain: Array, side: int) -> Vector3:
+	# A source knee is nearly collinear at toe-off. Using its position as a pole
+	# lets a changed ankle target flip the bend plane behind the leg.
+	# Use an anatomical forward/outward plane, independent of leg extension.
+	var hip=bone_world(chain[0]).origin
+	var outward=global_basis.x*(-1.0 if side==0 else 1.0)
+	return hip+(global_basis.z+outward*.16).normalized()*.7
+
+func chest_motion_frame() -> Basis:
+	# A bone's rest axes are not anatomical chest axes (the imported spine
+	# points diagonally forward). Build motion directions from visible joints.
+	# Shoulders carry the lean; arm swing uses their heading and gravity.
+	# Tilting "down" with a bone's bind axes can lift a recovering elbow.
+	var up=Vector3.UP
+	var right=bone_world(arms[1][0]).origin-bone_world(arms[0][0]).origin
+	right=(right-up*right.dot(up)).normalized()
+	var forward=right.cross(up).normalized()
+	return Basis(right,forward.cross(right).normalized(),forward).orthonormalized()
+
+func relaxed_hand_basis(index: int, target: Vector3, pole: Vector3) -> Basis:
+	# Solve to the palm as an extended forearm. Iterating wrist IK with a
+	# new wrist offset can alternate elbow branches near a folded arm.
+	var chain: Array=arms[index]
+	var shoulder=bone_world(chain[0]).origin
+	var elbow=bone_world(chain[1]).origin
+	var wrist=bone_world(chain[2]).origin
+	var a=shoulder.distance_to(elbow)
+	var b=elbow.distance_to(wrist)+(palm_frames[index].inverse()*palm_offsets[index]).y*render_scale
+	var direction=(target-shoulder).normalized()
+	var distance=clampf(target.distance_to(shoulder),absf(a-b)+.004,a+b-.004)
+	var along=(a*a-b*b+distance*distance)/(2*distance)
+	var bend=pole-shoulder
+	bend=(bend-direction*bend.dot(direction)).normalized()
+	if bend.length_squared()<.01:bend=global_basis.z
+	var joint=shoulder+direction*along+bend*sqrt(maxf(0,a*a-along*along))
+	var fingers=(target-joint).normalized()
+	var normal=global_basis.x*(1.0 if index==0 else -1.0)
+	normal=(normal-fingers*normal.dot(fingers)).normalized()
+	var frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+	return frame*palm_frames[index].inverse()
+
+func update_gaze(actor,delta: float) -> void:
+	var head_index=skeleton.find_bone("head")
+	var neck_index=skeleton.find_bone("neck_01")
+	var yaw=clampf(angle_difference(actor.rotation.y,actor.facing)*.55,-.35,.35)
+	var up=0.0
+	if actor.defense_weight>.1 and actor.watch_direction.length_squared()>.01:
+		yaw=clampf(angle_difference(actor.rotation.y,atan2(actor.watch_direction.x,actor.watch_direction.z)),-.45,.45)
+	if actor.defensive_jump():
+		var focus=actor.ball_anchor(0) if actor.defense_caught else actor.defense_target
+		var offset=focus-bone_world(head_index).origin
+		up=clampf(atan2(offset.y,Vector2(offset.x,offset.z).length()),-.14,.26)
+	elif actor.action in ["gather","shot","layup","dunk"]:
+		up=.10*(1-smoothstep(.48,.82,actor.action_time))
+	elif actor.stealing():up=-.12*actor.steal_reach()
+	gaze_target.x=move_toward(gaze_target.x,yaw,delta*2.8)
+	gaze_target.y=move_toward(gaze_target.y,up,delta*1.8)
+	var forward=(bone_world(head_index).basis*head_forward_local).normalized()
+	var correction=clampf(angle_difference(atan2(forward.x,forward.z),actor.rotation.y+gaze_target.x),-.65,.65)
+	var pitch=clampf(atan2(forward.y,Vector2(forward.x,forward.z).length())-gaze_target.y,-.55,.55)
+	var right=Basis(Vector3.UP,actor.rotation.y+gaze_target.x).x
+	for pair in [[neck_index,.30],[head_index,.70]]:
+		var rotation=Basis(Vector3.UP,correction*pair[1])*Basis(right,pitch*pair[1])*bone_world(pair[0]).basis.orthonormalized()
+		set_bone_rotation(pair[0],skeleton.global_basis.orthonormalized().inverse()*rotation)
+
+func sample_visual_swing(side: int, delta: float) -> Vector3:
+	visual_swing_time[side]+=delta
+	var progress=clampf(visual_swing_time[side]/visual_swing_duration[side],0,1)
+	var goal=visual_swing_from[side].lerp(visual_swing_to[side],smoothstep(0,1,progress))
+	goal.y+=sin(progress*PI)*(.10 if not contact_mode else .055)
+	if progress>=1:
+		visual_swing[side]=false
+		leg_return_pending[side]=true
+	return goal
+
+func reset_contacts() -> void:
+	locked = [false,false]
+	initialized = false
+	arm_weight = [0.0,0.0]
+	previous_contact_mode = false
+	return_blend = 0
+	cut_weight = 0
+	root_height = 0
+	ground_drop = 0
+	locomotion = 0
+	basketball_weight=0
+	torso_layer=Vector3.ZERO
+	was_stopping=false
+	clip = ""
+	last_action=""
+	was_crossing=false
+	gaze_target=Vector2.ZERO
+	player.stop()
+	visual_swing = [false,false]
+	physics_swing = [false,false]
+	contact_spent = [false,false]
+	leg_return_time=[0.0,0.0]
+	leg_return_pending=[false,false]
+
+func shift_world_contacts(offset: Vector3) -> void:
+	last_root+=offset
+	for i in range(2):
+		anchors[i] += offset
+		toe_world[i] += offset
+		palm_world[i] += offset
+		visual_swing_from[i] += offset
+		visual_swing_to[i] += offset
+		finish_entry_world[i] += offset
+
+func sync_cut_contacts(_actor) -> void:
+	if not initialized: return
+	for i in range(2):
+		# Preserve the real source contact without teleporting the physics stance.
+		# The two rigs have different limb lengths and must not share raw offsets.
+		if toe_world[i].y<.08:
+			locked[i] = true
+			anchors[i] = toe_world[i]
+			anchors[i].y = .026
+
+func sample_base(delta: float, speed: float, airborne: bool) -> void:
+	for index in range(base_local.size()): skeleton.set_bone_pose(index,base_local[index])
+	var desired = clampf((speed-.12)/2.5,0,1) if not airborne else 0.0
+	locomotion = move_toward(locomotion,desired,delta*7)
+	var wanted = "run" if locomotion>.08 else "idle"
+	if wanted != clip:
+		if initialized and final_poses.size()==skeleton.get_bone_count():
+			return_poses=final_poses.duplicate()
+			return_blend=.12
+		clip = wanted
+		player.play(clip,.18 if initialized else 0.0)
+	player.speed_scale = clampf(speed/RUN_SPEED,.16,1.15) if clip=="run" else 1.0
+	player.advance(delta)
+	# The source bakes stretch into some chains. Gameplay contacts keep rigid lengths.
+	for index in range(skeleton.get_bone_count()): skeleton.set_bone_pose_scale(index,Vector3.ONE)
+	phase = fposmod(player.current_animation_position/maxf(player.current_animation_length,.01),1) if clip=="run" else .28
+	source_poses.clear()
+	for index in range(skeleton.get_bone_count()): source_poses.append(skeleton.get_bone_global_pose(index))
+
+func open_fingers(side: int, world_frame: Basis, cup: float = 0.0) -> void:
+	var suffix = ".r" if side==0 else ".l"
+	var sign_side = -1 if side==0 else 1
+	for name in ["index","middle","ring","thumb"]:
+		var spread = (0.12 if name=="index" else (-.08 if name=="ring" else (-.65 if name=="thumb" else 0.0)))*sign_side
+		var forward = (world_frame.y+world_frame.x*spread).normalized()
+		for segment in [1,2]:
+			var curl=cup*(.6 if name=="thumb" else float(segment))
+			var curved=(forward*cos(curl)+world_frame.z*sin(curl)).normalized()
+			var index = skeleton.find_bone(name+"_0"+str(segment)+suffix)
+			var next = skeleton.find_bone(name+"_0"+str(segment+1)+suffix)
+			var target = skeleton.get_bone_global_pose(index).origin+skeleton.global_basis.inverse()*curved
+			aim(index,next,target)
+
+func athlete_target(actor, local: Vector3) -> Vector3:
+	local.x*=actor.height_ratio
+	local.z*=actor.height_ratio
+	local.y=actor.jump+(local.y-actor.jump)*actor.height_ratio
+	return actor.to_global(local)
+
+func shot_pose(actor, side: float, shoulder: Vector3) -> Dictionary:
+	var shooting=side==actor.dribble_hand
+	var rise=smoothstep(0,.22,actor.action_time) if actor.action=="shot" else 0.0
+	var lift=smoothstep(0,.30,actor.action_time) if actor.action in ["gather","fake"] else 1.0
+	var center=Vector3(actor.dribble_hand*.10,lerpf(1.12,1.68,lift)+actor.jump,.27)
+	if actor.action=="shot":center.y=lerpf(1.68,2.04,rise)+actor.jump
+	var normal=Vector3.UP if shooting else global_basis.x*-side
+	var fingers=global_basis.z if shooting else (Vector3.UP*.65+global_basis.z*.76).normalized()
+	var target=athlete_target(actor,center)+(-Vector3.UP*.125 if shooting else global_basis.x*side*.125)
+	var guide=shoulder+global_basis*Vector3(side*.025,-.25,.25)
+	if actor.action=="shot":
+		var index=0 if side<0 else 1
+		var extension=smoothstep(.015,.22,actor.action_time)
+		var carried=actor.to_global(entry_palms[index]+Vector3.UP*(root_height-finish_entry_height))
+		target=carried.lerp(target,extension)
+		var ready=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+		var support=entry_frames[index].slerp(ready,extension)
+		normal=support.z;fingers=support.y
+		var follow=smoothstep(.22,.36,actor.action_time)
+		if shooting:
+			var angle=follow*1.25
+			normal=Vector3.UP*cos(angle)+global_basis.z*sin(angle)
+			fingers=global_basis.z*cos(angle)-Vector3.UP*sin(angle)
+			target+=global_basis.z*.08*follow+Vector3.UP*.025*follow
+			guide=shoulder+global_basis*Vector3(side*.015,lerpf(-.19,.12,rise),.25)
+		else:
+			var peel=smoothstep(.12,.28,actor.action_time)
+			target=target.lerp(athlete_target(actor,Vector3(side*.29,1.67+actor.jump,.25)),peel)
+		var recover=smoothstep(.52,.86,actor.action_time)
+		target=target.lerp(athlete_target(actor,Vector3(side*.24,1.24+root_height+.055,.18)),recover)
+		guide=guide.lerp(shoulder+global_basis*Vector3(side*.12,-.28,.05),recover)
+	var frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+	return {"target":target,"frame":frame,"guide":guide}
+
+func layup_pose(actor, side: float, shoulder: Vector3) -> Dictionary:
+	var shooting=side==actor.dribble_hand
+	var gathering=actor.action=="gather"
+	var lift=smoothstep(.045,.34,actor.action_time) if not gathering else 0.0
+	var pocket=smoothstep(0,.18,actor.action_time) if gathering else 1.0
+	var center=Vector3(actor.dribble_hand*.14,lerpf(1.12,1.30,pocket)+actor.jump,.29)
+	if not gathering:center=Vector3(actor.dribble_hand*.14,lerpf(1.30,2.13,lift)+actor.jump,lerpf(.29,.38,lift))
+	var target=athlete_target(actor,center)+(-Vector3.UP*.125 if shooting else global_basis.x*side*.125)
+	var normal=Vector3.UP if shooting else global_basis.x*-side
+	var fingers=global_basis.z if shooting else (Vector3.UP*.65+global_basis.z*.76).normalized()
+	var guide=shoulder+global_basis*Vector3(side*.025,lerpf(-.28,.08,lift),.24)
+	if not gathering:
+		var index=0 if side<0 else 1
+		var carried=actor.to_global(entry_palms[index]+Vector3.UP*(root_height-finish_entry_height))
+		target=carried.lerp(target,lift)
+		var ready=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+		var support=entry_frames[index].slerp(ready,lift)
+		normal=support.z;fingers=support.y
+		if shooting:
+			var roll=smoothstep(.34,.46,actor.action_time)*1.05
+			normal=Vector3.UP*cos(roll)+global_basis.z*sin(roll)
+			fingers=global_basis.z*cos(roll)-Vector3.UP*sin(roll)
+		else:
+			target=target.lerp(athlete_target(actor,Vector3(side*.31,1.29+actor.jump,.17)),smoothstep(.07,.25,actor.action_time))
+			guide=shoulder+global_basis*Vector3(side*.08,-.30,.02)
+		var recover=smoothstep(.48,.82,actor.action_time)
+		target=target.lerp(athlete_target(actor,Vector3(side*.27,1.18+root_height+.025,.17)),recover)
+		guide=guide.lerp(shoulder+global_basis*Vector3(side*.06,-.34,.02),recover)
+	var frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+	return {"target":target,"frame":frame,"guide":guide}
+
+func rebound_pose(actor, index: int, shoulder: Vector3) -> Dictionary:
+	var side=-1.0 if index==0 else 1.0
+	var rest=athlete_target(actor,Vector3(side*.30,1.12,.22))
+	var target=actor.defense_target+global_basis.x*side*.135-global_basis.z*.02
+	var local=actor.to_local(target)
+	local.z=maxf(.16,local.z)
+	target=actor.to_global(local)
+	if actor.defense_caught:
+		var elapsed=actor.action_time-actor.defense_catch_time
+		var received: Vector3=actor.defense_catch_hands[index]+actor.defense_catch_velocity*.035*(1-exp(-elapsed/.035))
+		var secure=athlete_target(actor,Vector3(side*.125,1.94+actor.jump,.27))
+		var chest=athlete_target(actor,Vector3(side*.125,1.38+actor.jump-.06*actor.defense_landing_load(),.26))
+		target=received.lerp(secure,smoothstep(.035,.13,elapsed)).lerp(chest,actor.rebound_tuck_phase())
+	else:
+		target=actor.defense_start_hands[index].lerp(target,smoothstep(.025,.25,actor.action_time))
+		target=target.lerp(rest,smoothstep(actor.defense_land_time()-.10,actor.defense_duration(),actor.action_time))
+	var fingers=(Vector3.UP*.80+global_basis.z*.60).normalized()
+	var normal=global_basis.x*-side
+	var frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+	var guide=shoulder+global_basis*Vector3(side*.055,-.25,.18)
+	return {"target":target,"frame":frame,"guide":guide}
+
+func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
+	if teleported: reset_contacts()
+	if actor.action!=last_action:
+		action_entry_time=0
+		if actor.action=="gather":gather_entry_height=root_height
+		if actor.action in ["shot","layup"]:
+			finish_entry_height=root_height
+			for i in 2:
+				finish_entry_toes[i]=actor.to_local(toe_world[i])
+				finish_entry_world[i]=toe_world[i]
+		for i in 2:
+			entry_palms[i]=actor.to_local(palm_world[i])
+			entry_frames[i]=last_hand_basis[i]*palm_frames[i]
+			if actor.crossing():cross_entry_frames[i]=entry_frames[i]
+			if was_crossing:cross_return_frames[i]=entry_frames[i]
+		last_action=actor.action
+	action_entry_time+=delta
+	was_crossing=actor.crossing()
+	var action_pose = actor.action not in ["idle","cross","spin","twostep","behind","hesi","showcase"] or actor.jump>.05
+	var transition = actor.brake_state!="" or actor.restart_left>0 or actor.chase_recovery
+	contact_mode = action_pose or actor.defense_weight>.35 or actor.boxout_weight>.2 or transition
+	sample_base(delta,speed,(action_pose and not actor.moving_gather()) or actor.brake_state in ["load","settle"])
+	if previous_contact_mode and not contact_mode and clip=="run":
+		# Resume near toe-off on the supporting side, never at an unrelated leg phase.
+		phase = .40 if locked[1] else .90
+		player.seek(player.current_animation_length*phase,true)
+		for index in range(skeleton.get_bone_count()): skeleton.set_bone_pose_scale(index,Vector3.ONE)
+		return_poses = final_poses.duplicate()
+		return_blend = .12
+	if return_blend>0 and return_poses.size()==skeleton.get_bone_count():
+		return_blend = maxf(0,return_blend-delta)
+		var weight = smoothstep(0,.12,.12-return_blend)
+		for index in range(return_poses.size()):
+			skeleton.set_bone_pose(index,return_poses[index].interpolate_with(skeleton.get_bone_pose(index),weight))
+	previous_contact_mode = contact_mode
+	for i in range(2):
+		if leg_return_time[i]<=0 or leg_return_poses[i].size()!=feet[i].size():continue
+		leg_return_time[i]=maxf(0,leg_return_time[i]-delta)
+		var weight=smoothstep(0,.10,.10-leg_return_time[i])
+		for j in range(feet[i].size()):
+			var bone=feet[i][j]
+			skeleton.set_bone_pose(bone,leg_return_poses[i][j].interpolate_with(skeleton.get_bone_pose(bone),weight))
+	# Center the imported root on the player's hips, keeping the authored sway.
+	var athletic=not action_pose and actor.defense_weight<.1 and actor.boxout_weight<.1 and not actor.dribble_ended
+	basketball_weight=move_toward(basketball_weight,clampf(speed/3.0,0,1) if athletic else 0.0,delta*7)
+	var stance_drop=.045*basketball_weight
+	var cross_pose=actor.cross_body_pose()
+	var cross_weight: float=cross_pose.weight
+	var height_target = (-.055 if actor.has_ball else -.025)-stance_drop
+	height_target-=cross_pose.drop*.55*cross_weight
+	if action_pose: height_target = actor.body.position.y+.08
+	elif contact_mode: height_target = minf(0,actor.body.position.y+.16)
+	var shooting_pose=actor.action in ["gather","fake","shot"] and actor.finish_kind=="shot"
+	if shooting_pose:
+		height_target=actor.jump-.055
+		if actor.action in ["gather","fake"]:height_target-=.08*sin(clampf(actor.action_time/.60,0,1)*PI)
+		else:height_target-=.04*(1-smoothstep(0,.12,actor.action_time))+.045*sin(smoothstep(.62,.86,actor.action_time)*PI)
+	if actor.action=="gather" and actor.finish_kind in ["shot","layup"]:
+		height_target=lerpf(gather_entry_height,-.15 if actor.finish_kind=="shot" else -.16,smoothstep(0,.18,actor.action_time))
+	if actor.action in ["shot","layup"]:height_target=finish_root(actor)
+	root_height = move_toward(root_height,height_target,delta*1.8) if initialized and not action_pose else height_target
+	model.position = Vector3(0,root_height,-.255*render_scale)
+	model.position.x=cross_pose.shift*actor.cross_from*cross_weight
+	var pelvis=skeleton.find_bone("pelvis")
+	var stopping=actor.brake_state!="" and not actor.chase_recovery and not action_pose
+	if stopping and not was_stopping:stop_height=pelvis_world_height if initialized else bone_world(pelvis).origin.y
+	was_stopping=stopping
+	# A small torso layer carries basketball intent; free running arms retain the clip.
+	var spine = skeleton.find_bone("spine_01")
+	var chest = skeleton.find_bone("spine_02")
+	var turn = clampf(actor.cut_twist,-.55,.55)
+	var foot_separation=(bone_world(feet[1][2]).origin-bone_world(feet[0][2]).origin).dot(global_basis.z)
+	var gait_sway=clampf(foot_separation/.65,-1,1)
+	var layer = Vector3((.055 if actor.has_ball else 0.0)+(.10 if actor.has_ball else .12)*basketball_weight,turn*.65+gait_sway*.055*basketball_weight,actor.body.rotation.z*.45)
+	if actor.redirect_left>0:layer.x+=.055*sin(actor.redirect_left/.22*PI)
+	if contact_mode: layer = Vector3(actor.upper.rotation.x*.45,actor.upper.rotation.y*.6,actor.upper.rotation.z*.5)
+	if cross_weight>0:
+		# The sprint clip has its own torso yaw. Replace that yaw during the
+		# transfer instead of adding an unrelated second shoulder rhythm.
+		var line=actor.global_basis.inverse()*(bone_world(arms[1][0]).origin-bone_world(arms[0][0]).origin)
+		var source_yaw=atan2(-line.z,line.x)
+		var receiving_yaw=cross_pose.twist*actor.cross_from+turn*.35
+		layer.y=lerpf(layer.y,angle_difference(source_yaw,receiving_yaw),cross_weight)
+		layer.x+=cross_pose.pitch*cross_weight
+		layer.z+=cross_pose.roll*actor.cross_from*cross_weight
+	if actor.action=="gather" and actor.finish_kind in ["shot","layup"]:
+		layer.x=lerpf(layer.x,.11,smoothstep(0,.18,actor.action_time))
+	if actor.action in ["shot","layup"]:
+		var times=finish_times(actor)
+		var extend=smoothstep(times.x*.5,.22 if actor.action=="shot" else .34,actor.action_time)
+		var absorb=clampf((actor.jump+(-.055 if actor.action=="shot" else -.025))-height_target,0,.14)/.14
+		layer.x=lerpf(.11,-.035,extend)+.14*absorb
+		if actor.action=="layup":
+			layer.y=actor.dribble_hand*.08*sin(clampf(actor.action_time/.82,0,1)*PI)
+			layer.z=-actor.dribble_hand*.035*sin(clampf(actor.action_time/.82,0,1)*PI)
+	if actor.stealing():layer.x+=.55*actor.steal_reach()+actor.body.rotation.x
+	torso_layer=torso_layer.lerp(layer,1-exp(-delta*18)) if initialized else layer
+	# Cancellation of an authored yaw must use this frame's source pose;
+	# filtering that cancellation would leave yesterday's sprint twist behind.
+	if cross_weight>0:torso_layer.y=layer.y
+	for bone in [spine,chest]:
+		var rotation=skeleton.get_bone_global_pose(bone).basis
+		set_bone_rotation(bone,Basis.from_euler(torso_layer*.5)*rotation)
+	if not action_pose:
+		var neck=skeleton.find_bone("neck_01")
+		set_bone_rotation(neck,Basis(Vector3.RIGHT,-torso_layer.x*.45)*skeleton.get_bone_global_pose(neck).basis)
+	cut_weight = move_toward(cut_weight,1.0 if contact_mode else 0.0,delta*12)
+	var goals: Array = []
+	var foot_bases: Array = []
+	var ankle_goals: Array = []
+	var free_foot_ik: Array = []
+	var support_drop = 0.0
+	for i in range(2):
+		var chain: Array = feet[i]
+		var foot = bone_world(chain[2])
+		var toe = bone_world(chain[3]).origin
+		var desired_basis = foot.basis.orthonormalized()
+		var source_contact = (phase>.21 and phase<.46) if i==1 else (phase>.71 and phase<.96)
+		var was_locked: bool = locked[i]
+		# Imported .l is the right side in this model's +Z facing convention.
+		if clip=="idle": source_contact = true
+		if contact_mode: source_contact = not actor.swinging[i] and not visual_swing[i] and actor.jump<.05 and (was_locked or not initialized or toe_world[i].y<.045)
+		if visual_swing[i]:source_contact=false
+		if not source_contact:contact_spent[i]=false
+		if not contact_mode and source_contact and not locked[i] and initialized:
+			# A reach-expired plant cannot re-capture on the next frame of the
+			# same stance window. Wait for the next swing/contact cycle.
+			source_contact=(clip=="idle" or not contact_spent[i]) and toe_world[i].y<.075
+		if source_contact and not locked[i]:
+			anchors[i] = toe_world[i] if initialized else toe
+			anchors[i].y = .026
+			contact_spent[i]=true
+		locked[i] = source_contact
+		if athletic and locked[i] and not contact_mode and clip=="run":
+			var stance_phase=fposmod(phase-(.71 if i==0 else .21),1)/.25
+			var heel_roll=.28*smoothstep(.25,1,clampf(stance_phase,0,1))*basketball_weight
+			desired_basis=global_basis*Basis(Vector3.RIGHT,heel_roll)*foot_rest_basis[i]
+		# Preserve the authored foot trajectory while lowering the pelvis. Both
+		# knees flex; lowering the whole source alone would sink free feet.
+		var authored_toe=skeleton.global_transform*source_poses[chain[3]].origin
+		var free_goal=authored_toe+Vector3.UP*maxf(0,-root_height) if athletic else toe
+		if athletic:
+			var step_local=actor.to_local(free_goal)
+			step_local.z*=lerpf(1,.72,basketball_weight)
+			step_local.y=lerpf(step_local.y,.026+maxf(0,step_local.y-.026)*.48,basketball_weight)
+			step_local.y=maxf(.026,step_local.y)
+			free_goal=actor.to_global(step_local)
+		var goal = anchors[i] if locked[i] else free_goal
+		var settling=not contact_mode and clip=="idle" and not locked[i] and initialized
+		if settling:
+			var rest_goal=Vector3(toe.x,.026,toe.z)
+			goal=toe_world[i].move_toward(rest_goal,delta*2)
+		free_foot_ik.append(settling or (athletic and basketball_weight>.001))
+		if not contact_mode and visual_swing[i]:
+			goal=sample_visual_swing(i,delta)
+			free_foot_ik[i]=true
+		if contact_mode:
+			goal = actor.shoes[i].to_global(actor.LAYUP_TOE)
+			goal.y -= .105
+			goal.y = maxf(.026,goal.y)
+			if actor.jump>.05: goal.y += .06
+			# A newly planted foot is already captured from the visible rig above.
+			# Do not replace that first contact with the old rig's different-size shoe.
+			if locked[i]: goal = anchors[i]
+			if initialized and not locked[i]:
+				if actor.swinging[i] and not physics_swing[i] and not visual_swing[i]:
+						visual_swing_from[i]=toe_world[i]
+						visual_swing_to[i]=goal+actor.swing_to[i]-actor.shoes[i].global_position
+						visual_swing_to[i].y=.026
+						visual_swing_time[i]=0.0
+						visual_swing_duration[i]=maxf(.15,visual_swing_from[i].distance_to(visual_swing_to[i])/5.0)
+						visual_swing[i]=true
+				if visual_swing[i]:
+					goal=sample_visual_swing(i,delta)
+				else:
+					# Entering a contact layer must not teleport an airborne source foot.
+					goal=toe_world[i].move_toward(goal,delta*6.0)
+			var contact_basis = Basis(Vector3.UP,actor.feet_yaw[i])*Basis(Vector3.RIGHT,actor.landing_push_pitch[i])*foot_rest_basis[i]
+			desired_basis = desired_basis.slerp(contact_basis,cut_weight)
+			if locked[i]:
+				anchors[i] = goal
+		physics_swing[i]=actor.swinging[i]
+		if actor.action in ["shot","layup"]:
+			var times=finish_times(actor)
+			var planted=(actor.action=="shot" or i==actor.layup_plant_index) and actor.action_time<=times.x
+			goal=finish_toe(actor,i)
+			locked[i]=planted or actor.action_time>=times.y
+			visual_swing[i]=false
+			if locked[i]:anchors[i]=goal
+			var heel=.34*smoothstep(.02,times.x,actor.action_time)*(1-smoothstep(times.x,times.x+.14,actor.action_time))
+			desired_basis=global_basis*Basis(Vector3.RIGHT,heel if planted or actor.action_time<times.x+.14 else 0.0)*foot_rest_basis[i]
+		if athletic and initialized and not locked[i] and not contact_mode:
+			# Completing a recovery step must not jump straight to a distant
+			# authored stride sample. Carry the actual foot through that handoff.
+			goal=toe_world[i].move_toward(goal,delta*8.0)
+		goals.append(goal)
+		foot_bases.append(desired_basis)
+		var toe_offset = foot.affine_inverse()*bone_world(chain[3]).origin
+		var ankle_goal = goal-desired_basis*toe_offset*render_scale
+		ankle_goals.append(ankle_goal)
+		if locked[i]:
+			var hip = bone_world(chain[0]).origin
+			var knee = bone_world(chain[1]).origin
+			var reach = hip.distance_to(knee)+knee.distance_to(foot.origin)-.004
+			var horizontal = Vector2(hip.x-ankle_goal.x,hip.z-ankle_goal.z).length_squared()
+			var vertical = sqrt(maxf(.01,reach*reach-horizontal))
+			support_drop = maxf(support_drop,hip.y-ankle_goal.y-vertical)
+	# Let the supporting knee absorb the source pelvis bob; never pull the shoe.
+	ground_drop=move_toward(ground_drop,clampf(support_drop,0,.18),delta*2.0) if initialized else clampf(support_drop,0,.18)
+	model.position.y -= ground_drop
+	if not action_pose: model.position.y = maxf(-.32,model.position.y)
+	# Filter the final supported height, after support-drop correction. Doing
+	# it before that correction applies a second vertical impulse on contact.
+	var target_pelvis=bone_world(pelvis).origin.y
+	if stopping:target_pelvis=minf(target_pelvis,stop_height-actor.brake_weight*.08)
+	if initialized and not action_pose:target_pelvis=move_toward(pelvis_world_height,target_pelvis,delta*1.6)
+	var pelvis_shift=(target_pelvis-bone_world(pelvis).origin.y)/render_scale
+	var pelvis_parent=skeleton.get_bone_parent(pelvis)
+	var parent_basis=skeleton.get_bone_global_pose(pelvis_parent).basis if pelvis_parent>=0 else Basis.IDENTITY
+	skeleton.set_bone_pose_position(pelvis,skeleton.get_bone_pose_position(pelvis)+parent_basis.inverse()*Vector3.UP*pelvis_shift)
+	for i in range(2):
+		var chain: Array = feet[i]
+		if locked[i] and initialized:
+			var hip=bone_world(chain[0]).origin
+			var knee=bone_world(chain[1]).origin
+			var ankle=bone_world(chain[2]).origin
+			var reach=hip.distance_to(knee)+knee.distance_to(ankle)-.004
+			if hip.distance_to(ankle_goals[i])>reach:
+				# The input controller already scheduled this transfer. The shorter
+				# render rig must toe off, not drag the sole or stop the player again.
+				locked[i]=false
+				contact_spent[i]=true
+				visual_swing_from[i]=toe_world[i]
+				var side=-1.0 if i==0 else 1.0
+				visual_swing_to[i]=actor.global_position+actor.global_basis.x*side*.16+Vector3(actor.motion.x,0,actor.motion.y)*.16+actor.global_basis.z*.12
+				visual_swing_to[i].y=.026
+				visual_swing_duration[i]=.16
+				visual_swing_time[i]=0
+				visual_swing[i]=true
+				free_foot_ik[i]=true
+				var toe_offset=bone_world(chain[2]).affine_inverse()*bone_world(chain[3]).origin
+				var lift=toe_world[i]+(global_position-last_root)+Vector3.UP*minf(.035,delta*2)
+				ankle_goals[i]=lift-foot_bases[i]*toe_offset*render_scale
+		if locked[i] or contact_mode or free_foot_ik[i]:
+			var pole = knee_guide(chain,i)
+			solve(chain,ankle_goals[i],pole)
+			set_bone_rotation(chain[2],skeleton.global_basis.orthonormalized().inverse()*foot_bases[i])
+		toe_world[i] = bone_world(chain[3]).origin
+		if leg_return_pending[i]:
+			leg_return_pending[i]=false
+			leg_return_poses[i]=[]
+			for bone in chain:leg_return_poses[i].append(skeleton.get_bone_pose(bone))
+			leg_return_time[i]=.10
+		# Expired reach must release for the next source step, never drag a planted sole.
+		if locked[i] and toe_world[i].distance_to(anchors[i])>.055: locked[i] = false
+	var anatomical_chest=chest_motion_frame()
+	for i in range(2):
+		var side = -1.0 if i==0 else 1.0
+		var athletic_arm=athletic and basketball_weight>.01
+		var stationary_guard=actor.ordinary_dribble() and speed<.3
+		var holding=actor.has_ball and actor.dribble_ended and actor.action=="idle"
+		var driven = actor.has_ball and (side==actor.dribble_hand or not actor.ordinary_dribble())
+		driven = driven or contact_mode or actor.crossing() or athletic_arm or stationary_guard
+		arm_weight[i] = move_toward(arm_weight[i],1.0 if driven else 0.0,delta*10)
+		var chain: Array = arms[i]
+		var source_palm=bone_world(chain[2])*palm_offsets[i]
+		var free_arm_ready=not initialized or previous_palms_local[i].distance_to(to_local(source_palm))<=delta*6.5
+		if not driven and arm_weight[i]<.001 and free_arm_ready:
+			# The free arm belongs to the authored full-body clip. Re-solving its
+			# almost-straight elbow can flip the same way as an extended knee.
+			palm_world[i]=source_palm
+			previous_palms_local[i]=to_local(palm_world[i])
+			arm_errors[i]=0
+			continue
+		var target: Vector3 = actor.hands[i].global_position
+		if actor.ordinary_dribble() and side==actor.dribble_hand:
+			# The old prototype's taller shoulder clamps low strokes out of reach.
+			# Retarget the actual ball/palm path on this skeleton instead.
+			target=actor.body.to_global(actor.dribble_hand_pose())
+		elif actor.crossing():
+			# Releasing the sender returns to the basketball counter-swing,
+			# not the imported sprint's high wrist near the face.
+			var foot_delta=(bone_world(feet[i][2]).origin-bone_world(feet[1-i][2]).origin).dot(global_basis.z)
+			var swing=-clampf(foot_delta/.60,-1,1)
+			var chest_frame=anatomical_chest
+			var balance=actor.body.to_local(bone_world(chain[0]).origin+chest_frame*Vector3(side*.035,-.33,.17+swing*.16))
+			target=actor.body.to_global(actor.cross_hand_pose(i,balance))
+		if actor.crossing() and side==actor.cross_to and actor.cross_phase()>=.85:
+			target=actor.cross_ball_world()+Vector3.UP*actor.DRIBBLE_PALM
+		var frame = actor.hands[i].global_basis.orthonormalized()
+		var guide=actor.body.to_global(actor.elbow_pose[i]) if driven else bone_world(chain[1]).origin
+		if (actor.ordinary_dribble() and side==actor.dribble_hand) or actor.crossing():
+			# Bend toward the ribs below the shoulder, rather than lifting an
+			# outward/backward elbow as the palm comes up to receive the ball.
+			guide=bone_world(chain[0]).origin+global_basis*Vector3(side*.025,-.50,.04)
+		if actor.crossing() or cross_weight>0:
+			var chest_frame=anatomical_chest
+			var low_pole=bone_world(chain[0]).origin+Vector3.DOWN*.50+chest_frame.x*side*.015-chest_frame.z*.15
+			guide=guide.lerp(low_pole,1.0 if actor.crossing() else cross_weight)
+		if holding:
+			target=actor.global_position+actor.global_basis*Vector3(side*.125,1.25,.28)
+			var normal=global_basis.x*-side
+			var fingers=(Vector3.UP*.55+global_basis.z*.83).normalized()
+			frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+			guide=bone_world(chain[0]).origin+global_basis*Vector3(side*.13,-.30,-.05)
+		elif stationary_guard and side!=actor.dribble_hand:
+			var shoulder=bone_world(chain[0]).origin
+			target=shoulder+global_basis*Vector3(side*.04,-.32,.18)
+			guide=shoulder+global_basis*Vector3(side*.15,-.27,-.07)
+		if shooting_pose:
+			var pose=shot_pose(actor,side,bone_world(chain[0]).origin)
+			target=pose.target
+			frame=pose.frame
+			guide=pose.guide
+			if initialized:target=palm_world[i].move_toward(target,delta*7.5)
+		if actor.action=="layup" or (actor.action=="gather" and actor.finish_kind=="layup"):
+			var pose=layup_pose(actor,side,bone_world(chain[0]).origin)
+			target=pose.target;frame=pose.frame;guide=pose.guide
+		if actor.action=="rebound" and actor.defense_target_valid:
+			var pose=rebound_pose(actor,i,bone_world(chain[0]).origin)
+			target=pose.target;frame=pose.frame;guide=pose.guide
+		if initialized and actor.action in ["gather","rebound"]:
+			var entry=smoothstep(0,.10,action_entry_time)
+			target=actor.to_global(entry_palms[i]).lerp(target,entry)
+			frame=entry_frames[i].slerp(frame,entry)
+		if athletic_arm and not contact_mode and not actor.crossing() and (not actor.has_ball or side!=actor.dribble_hand):
+			# Counter-swing comes from the visible legs, so a planted cut carries
+			# shoulder, elbow and hand together rather than using a second clock.
+			var foot_delta=(bone_world(feet[i][2]).origin-bone_world(feet[1-i][2]).origin).dot(global_basis.z)
+			var swing=-clampf(foot_delta/.60,-1,1)
+			var shoulder=bone_world(chain[0]).origin
+			var chest_frame=anatomical_chest
+			var run_target=shoulder+chest_frame*Vector3(side*.035,-.33,.17+swing*(.16 if actor.has_ball else .22))
+			if actor.cross_exit_left>0:run_target=(actor.global_position+actor.cross_exit_hands[i]).lerp(run_target,smoothstep(0,.16,.16-actor.cross_exit_left))
+			target=target.lerp(run_target,basketball_weight)
+			guide=shoulder+Vector3.DOWN*.50+chest_frame.x*side*.015-chest_frame.z*.15
+			frame=frame.slerp(chest_frame*Basis(Vector3.RIGHT,-.25),basketball_weight)
+		if actor.ordinary_dribble() or actor.crossing():
+			frame = Basis(actor.global_basis.x,actor.global_basis.z,Vector3.DOWN).orthonormalized()
+			if actor.ordinary_dribble() and side==actor.dribble_hand:
+				var bounce_phase=fposmod(actor.dribble_phase,TAU)/TAU
+				frame=Basis(actor.global_basis.x,actor.dribble_palm_pitch(bounce_phase))*frame
+			if actor.crossing():
+				var press=actor.dribble_palm_pitch(fposmod(actor.dribble_phase,TAU)/TAU) if actor.action_time<actor.cross_wait else .52*sin(clampf(actor.cross_phase()/.50,0,1)*PI)
+				if side==actor.cross_from:frame=Basis(actor.global_basis.x,press)*frame
+				frame=cross_entry_frames[i].slerp(frame,smoothstep(0,.11,actor.action_time))
+			elif actor.cross_exit_left>0:
+				frame=cross_return_frames[i].slerp(frame,smoothstep(0,.16,.16-actor.cross_exit_left))
+		if actor.stealing() and i==actor.steal_hand:
+			# Fingers lead the reach toward a low ball. An upright mannequin hand
+			# frame puts the palm above the wrist and makes contact unreachable.
+			var fingers=(target-bone_world(chain[0]).origin).normalized()
+			var normal=global_basis.z-fingers*global_basis.z.dot(fingers)
+			if normal.length_squared()>.01:
+				normal=normal.normalized()
+				frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+		var desired_hand = frame*palm_frames[i].inverse()
+		var source_hand = bone_world(chain[2])
+		target = (source_hand*palm_offsets[i]).lerp(target,arm_weight[i])
+		desired_hand = source_hand.basis.orthonormalized().slerp(desired_hand,arm_weight[i])
+		if (shooting_pose or actor.crossing() or actor.ordinary_dribble() or actor.action in ["layup","rebound"]) and initialized:
+			var angle=last_hand_basis[i].get_rotation_quaternion().angle_to(desired_hand.get_rotation_quaternion())
+			desired_hand=last_hand_basis[i].slerp(desired_hand,minf(1,delta*12/maxf(.001,angle)))
+		var contact_hand = actor.ordinary_dribble() and side==actor.dribble_hand
+		if initialized and not action_pose and not contact_hand:
+			var desired_local = to_local(target)
+			target = to_global(previous_palms_local[i].move_toward(desired_local,delta*6.5))
+			target=palm_world[i].move_toward(target,delta*11.0)
+		var wrist_target = target-desired_hand*palm_offsets[i]*render_scale
+		if contact_hand or actor.crossing() or actor.action in ["layup","rebound"] or (actor.stealing() and i==actor.steal_hand):
+			# A bounded scapula reach lets the shoulder help the dribble, not a longer arm.
+			var collar = skeleton.get_bone_parent(chain[0])
+			var collar_pose = skeleton.get_bone_global_pose(collar)
+			var arm_root = skeleton.get_bone_global_pose(chain[0]).origin
+			var toward = skeleton.to_local(wrist_target)-collar_pose.origin
+			var reach_rotation = Quaternion((arm_root-collar_pose.origin).normalized(),toward.normalized())
+			var reach_angle = reach_rotation.get_angle()
+			var reach_limit=.12 if contact_hand or actor.crossing() else .32
+			reach_rotation = Quaternion.IDENTITY.slerp(reach_rotation,minf(1,reach_limit/maxf(.001,reach_angle)))
+			set_bone_rotation(collar,Basis(reach_rotation)*collar_pose.basis)
+		solve(chain,wrist_target,guide)
+		if (athletic_arm or stationary_guard) and not contact_mode and not actor.crossing() and not holding and (not actor.has_ball or side!=actor.dribble_hand):
+			# The relaxed hand continues the forearm. An upright chest frame here
+			# leaves the wrist cocked upward for the entire running cycle.
+			desired_hand=relaxed_hand_basis(i,target,guide)
+			frame=desired_hand*palm_frames[i]
+			wrist_target=target-desired_hand*palm_offsets[i]*render_scale
+			solve(chain,wrist_target,guide)
+		if actor.crossing():
+			var relax=1-actor.cross_contact_weight(side)
+			var contact_frame=frame
+			var relaxed=relaxed_hand_basis(i,target,guide)*palm_frames[i]
+			frame=contact_frame.slerp(relaxed,relax)
+			frame=cross_entry_frames[i].slerp(frame,smoothstep(0,.11,actor.action_time))
+			desired_hand=frame*palm_frames[i].inverse()
+			wrist_target=target-desired_hand*palm_offsets[i]*render_scale
+			solve(chain,wrist_target,guide)
+		# Free-arm forearm alignment is itself a pose change. Bound it after
+		# solving too, so the sending wrist cannot snap when it becomes free.
+		if initialized and (actor.ordinary_dribble() or actor.crossing()):
+			var angle=last_hand_basis[i].get_rotation_quaternion().angle_to(desired_hand.get_rotation_quaternion())
+			desired_hand=last_hand_basis[i].slerp(desired_hand,minf(1,delta*20/maxf(.001,angle)))
+			frame=desired_hand*palm_frames[i]
+			wrist_target=target-desired_hand*palm_offsets[i]*render_scale
+			solve(chain,wrist_target,guide)
+		set_bone_rotation(chain[2],skeleton.global_basis.orthonormalized().inverse()*desired_hand)
+		if actor.ordinary_dribble() or actor.crossing() or actor.action in ["block","rebound","layup","shot","gather"]:
+			var cup=.20*smoothstep(0,.08,actor.action_time-actor.defense_catch_time) if actor.action=="rebound" and actor.defense_caught else 0.0
+			if actor.action=="gather":cup=.12
+			open_fingers(i,frame,cup)
+		arm_errors[i] = (bone_world(chain[2])*palm_offsets[i]).distance_to(target)
+		palm_world[i] = bone_world(arms[i][2])*palm_offsets[i]
+		last_hand_basis[i]=bone_world(chain[2]).basis.orthonormalized()
+		previous_palms_local[i] = to_local(palm_world[i])
+	# Gameplay contact follows the visible skinned palm, rather than the hidden target.
+	actor.hand_world = palm_world[1 if actor.dribble_hand>0 else 0]
+	update_gaze(actor,delta)
+	final_poses.clear()
+	for index in range(skeleton.get_bone_count()): final_poses.append(skeleton.get_bone_pose(index))
+	initialized = true
+	pelvis_world_height=bone_world(pelvis).origin.y
+	last_root = global_position
+

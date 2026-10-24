@@ -1,0 +1,12 @@
+{
+  "source": "https://github.com/gdquest-demos/godot-3d-mannequin",
+  "revision": "d48a4fdb49a3930f38cdbeb854cf5be3ae4b6b2a",
+  "original_path": "godot/assets/3d/mannequiny/mannequiny-0.3.0.glb",
+  "creator": "Luciano Munoz / GDQuest and contributors",
+  "license": "CC-BY-4.0",
+  "attribution": "GDQuest and contributors (https://www.gdquest.com/)",
+  "retrieved": "2026-10-24",
+  "sha256": "8005cc2ab9221ad605be2d1cbb89eea894583e72bd5f50a5fbe40243a64f0493",
+  "status": "Rig and basic clips used by in-game human athletes; original mannequin mesh retained only in source comparison, hidden in matches",
+  "edits": "Source GLB unchanged. v0.6.24 uses original named inverse skin binds for new original human/clothing geometry. Existing rigid bone scales, idle/run playback, layered palm/foot contact IK and transition phase alignment remain in Godot 4.7.2. See assets/characters/provenance.json."
+}

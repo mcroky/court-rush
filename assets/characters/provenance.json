@@ -1,0 +1,34 @@
+{
+  "asset_family": "COURT RUSH human athletes v2",
+  "created_at": "2026-10-24",
+  "authoring": "Original parameterized 3D geometry in tools/build_player_mesh.gd; original SVG paths in tools/build_jersey_marks.py; Godot 4.7.2 native compressed ArrayMesh; illustrated facial diffuse generated and edited with built-in image_gen.imagegen (prompt/selection record in face-painted-v2.prompt.txt)",
+  "files": [
+    "rush_player.res",
+    "rush_rival.res",
+    "jersey_07.svg",
+    "jersey_23.svg",
+    "court_fabric.gdshader",
+    "face-painted-v2.png",
+    "face-painted-v2.prompt.txt",
+    "court_face.gdshader"
+  ],
+  "reference": "User-provided FreeStyle screenshots as general street-basketball visual direction; no original game mesh or texture extraction",
+  "rig_dependency": {
+    "file": "assets/experiments/mannequiny/mannequiny.glb",
+    "creator": "GDQuest and contributors; Character design, rig and animation by Luciano Munoz",
+    "source": "https://github.com/gdquest-demos/godot-3d-mannequin",
+    "commit": "d48a4fdb49a3930f38cdbeb854cf5be3ae4b6b2a",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "modifications": "Original source GLB unmodified. New human and clothing geometry fitted to original inverse skin binds. Existing runtime contact IK and pose-scale normalization retained."
+  },
+  "budget": {
+    "bones": 45,
+    "max_weights_per_vertex": 4,
+    "surfaces_per_athlete": 7,
+    "player_triangles": 12998,
+    "rival_triangles": 13094,
+    "face_texture_max_edge": 1024
+  },
+  "status": "Local v0.6.25; illustrated face, anatomical silhouettes, cloth folds and connected waist; regression and browser validation; mobile hardware profiling pending"
+}

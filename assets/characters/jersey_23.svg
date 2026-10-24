@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="416" viewBox="0 0 256 416">
+<g fill="none" stroke="#efe4c6" stroke-width="7" stroke-linecap="square" stroke-linejoin="miter">
+<path d="M23 61V25H41Q54 25 54 35Q54 45 41 45H23M40 45L57 61 M72 25V49Q72 62 86 62Q100 62 100 49V25 M143 27H123Q113 27 113 36Q113 44 126 44H132Q145 44 145 53Q145 62 134 62H113 M160 25V62 M188 25V62 M160 44H188"/>
+</g><path fill="#efe4c6" d="M24 83H231V86H24Z"/>
+<g transform="translate(10,131)" fill="#efe4c6" stroke="#172e39" stroke-width="2">
+<polygon points="30,0 90,0 100,10 90,20 30,20 20,10"/>
+<polygon points="94,24 104,14 104,80 94,90 84,80 84,34"/>
+<polygon points="30,79 90,79 100,89 90,99 30,99 20,89"/>
+<polygon points="16,98 26,108 26,154 16,164 6,174 6,108"/>
+<polygon points="30,158 90,158 100,168 90,178 30,178 20,168"/>
+</g>
+<g transform="translate(132,131)" fill="#efe4c6" stroke="#172e39" stroke-width="2">
+<polygon points="30,0 90,0 100,10 90,20 30,20 20,10"/>
+<polygon points="94,24 104,14 104,80 94,90 84,80 84,34"/>
+<polygon points="30,79 90,79 100,89 90,99 30,99 20,89"/>
+<polygon points="94,98 104,108 104,174 94,164 84,154 84,108"/>
+<polygon points="30,158 90,158 100,168 90,178 30,178 20,168"/>
+</g>
+<path fill="#efe4c6" d="M96 350L128 340 160 350 128 360Z"/>
+</svg>

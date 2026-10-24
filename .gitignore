@@ -1,0 +1,9 @@
+.godot/
+build/
+artifacts/
+*.log
+screenshots/
+release/
+.env
+.env.*
+!.env.example
