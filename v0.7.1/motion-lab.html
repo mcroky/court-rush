@@ -16,4 +16,83 @@ nav.roky-social a.roky-ebook-link,a.roky-ebook-link{display:inline-flex;align-it
 <p class="note">비교 범위: 전신의 움직임과 클립 전환. 실제 경기의 방향 전환·드리블·공 접촉은 아직 오른쪽 리그에 연결하지 않았습니다. 농구 전용 동작을 검증한 뒤 경기 캐릭터에 적용할 기준을 정합니다.</p>
 <footer>실험 모델·애니메이션: <a href="https://github.com/gdquest-demos/godot-3d-mannequin" target="_blank" rel="noopener">GDQuest and contributors</a> · Character by Luciano Muñoz · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. 원본 GLB를 Godot 4.7.2로 가져와 별도 비교 장면에서 재생했습니다. 기존 경기 탭은 유지됩니다.</footer>
 </main><script src="engine-config.js"></script><script src="game.js"></script><script src="motion-lab.js"></script><script src="locales.js"></script><script src="i18n.js"></script>
+
+<script data-roky-bank-copy>
+/* Roky Studio shared web-only bank account copy. No payment or data collection. */
+(() => {
+  'use strict';
+  if (window.rokyBankCopyInstalled) return;
+  window.rokyBankCopyInstalled = true;
+  const account = '3333071025774';
+  const translations = {
+    ko:['카카오뱅크 계좌 복사','계좌번호를 복사했어요. 은행 앱에서 이체해 주세요.','복사할 수 없어요. 아래 계좌번호를 길게 누르거나 선택해 복사해 주세요.','닫기'],
+    en:['Copy KakaoBank account','Account number copied. You can transfer from your bank app.','Copy unavailable. Select and copy the account number below.','Close'],
+    ja:['カカオバンク口座をコピー','口座番号をコピーしました。銀行アプリで振り込めます。','コピーできません。下の口座番号を選択してコピーしてください。','閉じる'],
+    zh:['复制KakaoBank账号','账号已复制，可在银行应用中转账。','无法复制，请选择并复制下方账号。','关闭'],
+  };
+  function words() {
+    const lang = (window.RokyI18n?.language || document.documentElement.lang || 'ko').slice(0,2);
+    return translations[lang] || translations.ko;
+  }
+  const style = document.createElement('style');
+  style.textContent = '.roky-bank-copy-wrap{display:inline-flex;max-width:100%;vertical-align:middle}.roky-bank-copy{display:inline-flex!important;align-items:center;justify-content:center;min-height:44px;max-width:100%;padding:9px 12px!important;border:1px solid #a28a12!important;border-radius:9px;background:#fffbed!important;color:#342d08!important;font:600 12px/1.5 system-ui,sans-serif!important;white-space:normal;cursor:pointer;box-sizing:border-box;text-align:center}.roky-bank-copy:hover{background:#fff0a3!important}.roky-bank-copy:focus-visible{outline:3px solid #2676c4;outline-offset:3px}.roky-bank-status{position:fixed;z-index:2147483646;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);box-sizing:border-box;border-radius:10px;padding:13px 18px;background:#24372e;color:#fff;font:13px/1.6 system-ui,sans-serif;text-align:center;box-shadow:0 4px 24px #0003}.roky-bank-status[hidden]{display:none}.roky-bank-manual{position:fixed;z-index:2147483647;inset:0;background:#0008;display:grid;place-items:center;padding:20px}.roky-bank-manual>div{width:min(100%,360px);box-sizing:border-box;padding:24px;background:white;border-radius:14px;color:#222;font:14px/1.7 system-ui,sans-serif}.roky-bank-manual input{box-sizing:border-box;display:block;width:100%;padding:12px;font:600 19px/1.5 ui-monospace,monospace;margin:16px 0;color:#222;background:#fff;border:1px solid #bbb;border-radius:6px}.roky-bank-manual button{min-height:44px;padding:8px 16px;font:inherit;cursor:pointer}';
+  document.head.append(style);
+  let notice, noticeTimer;
+  function manual(button) {
+    const [,,message,close] = words();
+    const overlay = document.createElement('div'); overlay.className = 'roky-bank-manual';
+    const panel = document.createElement('div'); panel.setAttribute('role','dialog'); panel.setAttribute('aria-modal','true'); panel.setAttribute('aria-label',words()[0]);
+    const p = document.createElement('p'); p.textContent = message;
+    const label = document.createElement('label'); label.textContent = 'KakaoBank';
+    const input = document.createElement('input'); input.readOnly = true; input.value = account; input.setAttribute('aria-label','KakaoBank');
+    const done = document.createElement('button'); done.textContent = close;
+    const dismiss = () => { overlay.remove(); button.focus(); };
+    done.onclick = dismiss;
+    overlay.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){e.preventDefault();dismiss();}
+      if(e.key==='Tab'){e.preventDefault();(document.activeElement===input?done:input).focus();}
+      e.stopPropagation();
+    });
+    label.append(input); panel.append(p,label,done); overlay.append(panel); document.body.append(overlay); input.focus(); input.select();
+  }
+  async function copy(button) {
+    let copied = false;
+    try { await navigator.clipboard.writeText(account); copied = true; } catch {
+      const input = document.createElement('textarea'); input.value = account; input.readOnly = true;
+      input.style.cssText='position:fixed;left:-9999px;top:0;font-size:16px'; document.body.append(input); input.select();
+      try { copied = document.execCommand('copy'); } catch {}
+      input.remove(); button.focus({preventScroll:true});
+    }
+    if(!copied){manual(button);return;}
+    if(!notice){notice=document.createElement('div');notice.className='roky-bank-status';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');document.body.append(notice);}
+    notice.textContent=words()[1];notice.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.hidden=true,4500);
+  }
+  function install() {
+    for(const anchor of document.querySelectorAll('a[href="https://buymeacoffee.com/roky.studio"]')){
+      if(anchor.closest('#bank-transfer') && document.getElementById('bank-account-copy')) continue;
+      let wrap=anchor.nextElementSibling;
+      if(!wrap?.classList.contains('roky-bank-copy-wrap')){
+        wrap=document.createElement('span');wrap.className='roky-bank-copy-wrap';wrap.setAttribute('data-web-only-support','');
+        const button=document.createElement('button');button.type='button';button.className='roky-bank-copy';button.onclick=()=>copy(button);wrap.append(button);anchor.after(wrap);
+      }
+      const button=wrap.querySelector('button');if(button.textContent!==words()[0])button.textContent=words()[0];
+    }
+  }
+  function start(){
+    install();
+    // Some projects render their shared menus after loading, or replace them on navigation.
+    new MutationObserver(install).observe(document.body,{childList:true,subtree:true});
+    new MutationObserver(install).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+    window.addEventListener('roky:language',install);
+  }
+  function ready(){
+    // A Next.js layout must finish claiming its server-rendered body before we add a sibling.
+    // Its client component calls this after mount on future source builds as well.
+    if(window.__next_f && !Object.keys(document.body).some(key=>key.startsWith('__reactProps$'))){requestAnimationFrame(ready);return;}
+    start();
+  }
+  if(document.readyState==='complete')ready();else window.addEventListener('load',ready,{once:true});
+})();
+
+</script>
 </body></html>

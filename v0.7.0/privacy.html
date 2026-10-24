@@ -1,1 +1,80 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>코트러시 · 계정과 저장 안내</title><link rel="stylesheet" href="career.css"><style>body{background:#f1f1e5;color:#20383c;font:16px/1.9 system-ui;margin:0}main{max-width:760px;margin:auto;padding:30px 22px}h1{line-height:1.3}a{color:#235e50}nav{display:flex;gap:15px;flex-wrap:wrap}p,li{word-break:keep-all}</style></head><body><main><nav><a href="./">← 코트러시</a><a href="https://mcroky.github.io/roky-studio/">← Roky Studio</a></nav><h1>계정과 선수 기록 안내</h1><p>적용일: 2026-10-24 · 운영: Roky Studio</p><h2>어떤 정보를 사용하나요?</h2><p>아이디, 비밀번호 인증 정보, 선수 이름·포지션·경험치·훈련·코트 진행도와 경기 결과를 Supabase에 저장합니다. 이메일 주소는 입력받거나 인증하지 않습니다. 비밀번호의 저장·검증은 Supabase Auth가 담당하며 게임 데이터 테이블과 브라우저에 비밀번호를 저장하지 않습니다.</p><p>요청 제한을 위해 서버가 받은 접속 IP와 아이디에서 만든 해시와 요청 횟수를 보관합니다. 인증 서버·호스팅 제공자는 보안과 서비스 운영을 위한 접속 로그를 처리할 수 있습니다. 별도 광고·행동 분석 SDK는 사용하지 않습니다.</p><h2>어디에 저장되나요?</h2><p>GitHub Pages에서 게임 파일을 제공하고 Supabase 서울 리전에서 계정과 선수 기록을 처리합니다. 로그인 유지를 선택하면 로그인 세션을 해당 브라우저의 localStorage에, 선택하지 않으면 해당 탭의 sessionStorage에 저장합니다. 비밀번호와 복구 코드는 저장하지 않습니다. 경기 보상 재시도 자료는 해당 탭에 임시 저장합니다. 소리·효과 설정도 브라우저에 보관합니다.</p><h2>이메일 없이 계정을 찾으려면</h2><p>가입 때 한 번 제공하는 복구 코드를 안전한 곳에 보관하세요. 아이디와 복구 코드로 새 비밀번호를 설정할 수 있습니다. 코드가 없고 로그아웃한 상태라면 계정 복구를 보장할 수 없습니다. 로그인한 상태에서는 계정 관리에서 현재 비밀번호로 복구 코드를 다시 발급할 수 있습니다.</p><h2>계정 삭제</h2><p><a href="./?account=manage">게임의 내 선수 → 계정 관리</a>에서 현재 비밀번호로 재인증한 뒤 계정을 영구 삭제할 수 있습니다. 계정, 선수와 연결된 성장·경기 기록을 함께 삭제합니다. 로그아웃이나 앱 삭제는 계정 삭제가 아닙니다. 직접 로그인할 수 없다면 <a href="https://mcroky.github.io/roky-studio/#feedback" target="_blank" rel="noopener">운영자에게 삭제 요청 ↗</a>을 보내세요. 비밀번호·복구 코드·로그인 토큰은 의견 폼에 보내지 마세요.</p><p>계정 자료는 서비스 제공 동안 보관하며 사용자가 삭제하면 운영 데이터에서 제거합니다. 제공자의 백업·보안 로그 보관은 해당 제공자의 정책에 따릅니다. 요청 제한 자료는 비밀번호와 분리해 요청 제한 목적으로 보관하며 만료 자료는 서비스 요청 시 정리합니다.</p><h2>첫 공개판의 범위</h2><p>현재 육성 도전은 AI 1대1 PvE입니다. 보상 중복과 포인트 소비는 서버에서 검사하지만 경기 시뮬레이션은 기기에서 실행됩니다. 사람끼리의 온라인 경쟁전이나 서버가 모든 입력을 검증하는 경기로 제공하지 않습니다. 유료 재화·구매·공개 순위는 없습니다.</p><nav><a href="https://supabase.com/privacy" target="_blank" rel="noopener">Supabase 개인정보 안내 ↗</a><a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub 개인정보 안내 ↗</a><a href="https://x.com/loki60542" target="_blank" rel="me noopener noreferrer">X ↗</a><a href="https://www.threads.com/@loki60542" target="_blank" rel="me noopener noreferrer">Threads ↗</a></nav></main></body></html>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>코트러시 · 계정과 저장 안내</title><link rel="stylesheet" href="career.css"><style>body{background:#f1f1e5;color:#20383c;font:16px/1.9 system-ui;margin:0}main{max-width:760px;margin:auto;padding:30px 22px}h1{line-height:1.3}a{color:#235e50}nav{display:flex;gap:15px;flex-wrap:wrap}p,li{word-break:keep-all}</style></head><body><main><nav><a href="./">← 코트러시</a><a href="https://mcroky.github.io/roky-studio/">← Roky Studio</a></nav><h1>계정과 선수 기록 안내</h1><p>적용일: 2026-10-24 · 운영: Roky Studio</p><h2>어떤 정보를 사용하나요?</h2><p>아이디, 비밀번호 인증 정보, 선수 이름·포지션·경험치·훈련·코트 진행도와 경기 결과를 Supabase에 저장합니다. 이메일 주소는 입력받거나 인증하지 않습니다. 비밀번호의 저장·검증은 Supabase Auth가 담당하며 게임 데이터 테이블과 브라우저에 비밀번호를 저장하지 않습니다.</p><p>요청 제한을 위해 서버가 받은 접속 IP와 아이디에서 만든 해시와 요청 횟수를 보관합니다. 인증 서버·호스팅 제공자는 보안과 서비스 운영을 위한 접속 로그를 처리할 수 있습니다. 별도 광고·행동 분석 SDK는 사용하지 않습니다.</p><h2>어디에 저장되나요?</h2><p>GitHub Pages에서 게임 파일을 제공하고 Supabase 서울 리전에서 계정과 선수 기록을 처리합니다. 로그인 유지를 선택하면 로그인 세션을 해당 브라우저의 localStorage에, 선택하지 않으면 해당 탭의 sessionStorage에 저장합니다. 비밀번호와 복구 코드는 저장하지 않습니다. 경기 보상 재시도 자료는 해당 탭에 임시 저장합니다. 소리·효과 설정도 브라우저에 보관합니다.</p><h2>이메일 없이 계정을 찾으려면</h2><p>가입 때 한 번 제공하는 복구 코드를 안전한 곳에 보관하세요. 아이디와 복구 코드로 새 비밀번호를 설정할 수 있습니다. 코드가 없고 로그아웃한 상태라면 계정 복구를 보장할 수 없습니다. 로그인한 상태에서는 계정 관리에서 현재 비밀번호로 복구 코드를 다시 발급할 수 있습니다.</p><h2>계정 삭제</h2><p><a href="./?account=manage">게임의 내 선수 → 계정 관리</a>에서 현재 비밀번호로 재인증한 뒤 계정을 영구 삭제할 수 있습니다. 계정, 선수와 연결된 성장·경기 기록을 함께 삭제합니다. 로그아웃이나 앱 삭제는 계정 삭제가 아닙니다. 직접 로그인할 수 없다면 <a href="https://mcroky.github.io/roky-studio/#feedback" target="_blank" rel="noopener">운영자에게 삭제 요청 ↗</a>을 보내세요. 비밀번호·복구 코드·로그인 토큰은 의견 폼에 보내지 마세요.</p><p>계정 자료는 서비스 제공 동안 보관하며 사용자가 삭제하면 운영 데이터에서 제거합니다. 제공자의 백업·보안 로그 보관은 해당 제공자의 정책에 따릅니다. 요청 제한 자료는 비밀번호와 분리해 요청 제한 목적으로 보관하며 만료 자료는 서비스 요청 시 정리합니다.</p><h2>첫 공개판의 범위</h2><p>현재 육성 도전은 AI 1대1 PvE입니다. 보상 중복과 포인트 소비는 서버에서 검사하지만 경기 시뮬레이션은 기기에서 실행됩니다. 사람끼리의 온라인 경쟁전이나 서버가 모든 입력을 검증하는 경기로 제공하지 않습니다. 유료 재화·구매·공개 순위는 없습니다.</p><nav><a href="https://supabase.com/privacy" target="_blank" rel="noopener">Supabase 개인정보 안내 ↗</a><a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub 개인정보 안내 ↗</a><a href="https://x.com/loki60542" target="_blank" rel="me noopener noreferrer">X ↗</a><a href="https://www.threads.com/@loki60542" target="_blank" rel="me noopener noreferrer">Threads ↗</a></nav></main>
+<script data-roky-bank-copy>
+/* Roky Studio shared web-only bank account copy. No payment or data collection. */
+(() => {
+  'use strict';
+  if (window.rokyBankCopyInstalled) return;
+  window.rokyBankCopyInstalled = true;
+  const account = '3333071025774';
+  const translations = {
+    ko:['카카오뱅크 계좌 복사','계좌번호를 복사했어요. 은행 앱에서 이체해 주세요.','복사할 수 없어요. 아래 계좌번호를 길게 누르거나 선택해 복사해 주세요.','닫기'],
+    en:['Copy KakaoBank account','Account number copied. You can transfer from your bank app.','Copy unavailable. Select and copy the account number below.','Close'],
+    ja:['カカオバンク口座をコピー','口座番号をコピーしました。銀行アプリで振り込めます。','コピーできません。下の口座番号を選択してコピーしてください。','閉じる'],
+    zh:['复制KakaoBank账号','账号已复制，可在银行应用中转账。','无法复制，请选择并复制下方账号。','关闭'],
+  };
+  function words() {
+    const lang = (window.RokyI18n?.language || document.documentElement.lang || 'ko').slice(0,2);
+    return translations[lang] || translations.ko;
+  }
+  const style = document.createElement('style');
+  style.textContent = '.roky-bank-copy-wrap{display:inline-flex;max-width:100%;vertical-align:middle}.roky-bank-copy{display:inline-flex!important;align-items:center;justify-content:center;min-height:44px;max-width:100%;padding:9px 12px!important;border:1px solid #a28a12!important;border-radius:9px;background:#fffbed!important;color:#342d08!important;font:600 12px/1.5 system-ui,sans-serif!important;white-space:normal;cursor:pointer;box-sizing:border-box;text-align:center}.roky-bank-copy:hover{background:#fff0a3!important}.roky-bank-copy:focus-visible{outline:3px solid #2676c4;outline-offset:3px}.roky-bank-status{position:fixed;z-index:2147483646;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);box-sizing:border-box;border-radius:10px;padding:13px 18px;background:#24372e;color:#fff;font:13px/1.6 system-ui,sans-serif;text-align:center;box-shadow:0 4px 24px #0003}.roky-bank-status[hidden]{display:none}.roky-bank-manual{position:fixed;z-index:2147483647;inset:0;background:#0008;display:grid;place-items:center;padding:20px}.roky-bank-manual>div{width:min(100%,360px);box-sizing:border-box;padding:24px;background:white;border-radius:14px;color:#222;font:14px/1.7 system-ui,sans-serif}.roky-bank-manual input{box-sizing:border-box;display:block;width:100%;padding:12px;font:600 19px/1.5 ui-monospace,monospace;margin:16px 0;color:#222;background:#fff;border:1px solid #bbb;border-radius:6px}.roky-bank-manual button{min-height:44px;padding:8px 16px;font:inherit;cursor:pointer}';
+  document.head.append(style);
+  let notice, noticeTimer;
+  function manual(button) {
+    const [,,message,close] = words();
+    const overlay = document.createElement('div'); overlay.className = 'roky-bank-manual';
+    const panel = document.createElement('div'); panel.setAttribute('role','dialog'); panel.setAttribute('aria-modal','true'); panel.setAttribute('aria-label',words()[0]);
+    const p = document.createElement('p'); p.textContent = message;
+    const label = document.createElement('label'); label.textContent = 'KakaoBank';
+    const input = document.createElement('input'); input.readOnly = true; input.value = account; input.setAttribute('aria-label','KakaoBank');
+    const done = document.createElement('button'); done.textContent = close;
+    const dismiss = () => { overlay.remove(); button.focus(); };
+    done.onclick = dismiss;
+    overlay.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){e.preventDefault();dismiss();}
+      if(e.key==='Tab'){e.preventDefault();(document.activeElement===input?done:input).focus();}
+      e.stopPropagation();
+    });
+    label.append(input); panel.append(p,label,done); overlay.append(panel); document.body.append(overlay); input.focus(); input.select();
+  }
+  async function copy(button) {
+    let copied = false;
+    try { await navigator.clipboard.writeText(account); copied = true; } catch {
+      const input = document.createElement('textarea'); input.value = account; input.readOnly = true;
+      input.style.cssText='position:fixed;left:-9999px;top:0;font-size:16px'; document.body.append(input); input.select();
+      try { copied = document.execCommand('copy'); } catch {}
+      input.remove(); button.focus({preventScroll:true});
+    }
+    if(!copied){manual(button);return;}
+    if(!notice){notice=document.createElement('div');notice.className='roky-bank-status';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');document.body.append(notice);}
+    notice.textContent=words()[1];notice.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.hidden=true,4500);
+  }
+  function install() {
+    for(const anchor of document.querySelectorAll('a[href="https://buymeacoffee.com/roky.studio"]')){
+      if(anchor.closest('#bank-transfer') && document.getElementById('bank-account-copy')) continue;
+      let wrap=anchor.nextElementSibling;
+      if(!wrap?.classList.contains('roky-bank-copy-wrap')){
+        wrap=document.createElement('span');wrap.className='roky-bank-copy-wrap';wrap.setAttribute('data-web-only-support','');
+        const button=document.createElement('button');button.type='button';button.className='roky-bank-copy';button.onclick=()=>copy(button);wrap.append(button);anchor.after(wrap);
+      }
+      const button=wrap.querySelector('button');if(button.textContent!==words()[0])button.textContent=words()[0];
+    }
+  }
+  function start(){
+    install();
+    // Some projects render their shared menus after loading, or replace them on navigation.
+    new MutationObserver(install).observe(document.body,{childList:true,subtree:true});
+    new MutationObserver(install).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+    window.addEventListener('roky:language',install);
+  }
+  function ready(){
+    // A Next.js layout must finish claiming its server-rendered body before we add a sibling.
+    // Its client component calls this after mount on future source builds as well.
+    if(window.__next_f && !Object.keys(document.body).some(key=>key.startsWith('__reactProps$'))){requestAnimationFrame(ready);return;}
+    start();
+  }
+  if(document.readyState==='complete')ready();else window.addEventListener('load',ready,{once:true});
+})();
+
+</script>
+</body></html>
