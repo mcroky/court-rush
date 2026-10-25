@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 const source=readFileSync(new URL('../site/app.js',import.meta.url),'utf8');
 function fixture(raw=null,failWrite=false){
   const nodes=new Map(),events=new Map(),docEvents=new Map(),writes=[];
+  let textWrites=0;
+  const watchText=n=>{let value='';Object.defineProperty(n,'textContent',{get:()=>value,set:next=>{value=String(next);textWrites++;}});return n;};
   const classes=()=>{const s=new Set();return {add:x=>s.add(x),remove:x=>s.delete(x),contains:x=>s.has(x),toggle:(x,on)=>on?s.add(x):s.delete(x)}};
   let document;
   const node=id=>{
@@ -15,7 +17,7 @@ function fixture(raw=null,failWrite=false){
       click:()=>n.fire('click'),setAttribute:()=>{},focus:()=>document.activeElement=n,
       showModal:()=>{n.open=true;node('close-dialog').focus()},close:()=>{n.open=false;n.fire('close')},
       setPointerCapture:()=>{},getBoundingClientRect:()=>({left:0,top:0,width:100,height:100})};
-    nodes.set(id,n);return n;
+    watchText(n);watchText(n.lastElementChild);nodes.set(id,n);return n;
   };
   node('canvas').tagName='CANVAS';
   node('practice-option').dataset.select='practice';node('duel-option').dataset.select='duel';
@@ -30,7 +32,7 @@ function fixture(raw=null,failWrite=false){
   const run=s=>vm.runInContext(s,ctx);
   const playing=()=>run("ready=true;state={started:true,paused:false,phase:'live',mode:'practice'}");
   const key=(type,code,repeat=false)=>events.get(type)({code,repeat,target:node('canvas'),preventDefault(){}});
-  return {node,events,docEvents,document,window,storage,writes,run,playing,key};
+  return {node,events,docEvents,document,window,storage,writes,run,playing,key,get textWrites(){return textWrites;}};
 }
 {
   const f=fixture();f.playing();f.key('keydown','KeyD');assert.equal(f.window.ufInput.shoot,true);
@@ -86,5 +88,15 @@ function fixture(raw=null,failWrite=false){
  f.run('state.paused=true');f.node('resume-button').click();assert.equal(f.window.ufInput.audioSuspended,false);
  const malformed=fixture(JSON.stringify({sound:true,reduced:false,track:20,musicDb:'loud',voice:null}));
  audio=JSON.parse(malformed.window.ufInput.audio);assert.equal(audio.track,-1);assert.equal(audio.musicDb,-12);assert.equal(audio.voice,true);
+}
+{
+ const f=fixture();const next={started:true,paused:false,phase:'live',mode:'practice',score:[0,0],seconds:90,owner:0,action:'idle',charge:0,finish:'shot',makes:0,attempts:0};
+ f.window.ufUpdate(next);const before=f.textWrites;
+ for(let i=0;i<100;i++)f.window.ufUpdate({...next});
+ console.log('HUD_REPEAT_TEXT_WRITES',f.textWrites-before);
+ assert.equal(f.textWrites-before,0,'Unchanged HUD must not recreate text nodes and retrigger localization');
+ f.node('role-description').textContent='Guard · Fast movement';
+ f.window.ufUpdate({...next});assert.equal(f.node('role-description').textContent,'Guard · Fast movement','HUD source cache must preserve translated text');
+ f.window.ufUpdate({...next,score:[2,0]});assert.equal(f.node('score-you').textContent,'02','A changed score must still render immediately');
 }
 console.log('WEB_LIFECYCLE: focus/visibility, persistent pause, repeat keys, touch cancel, manual resume, shot-meter transitions and migrated audio settings passed');

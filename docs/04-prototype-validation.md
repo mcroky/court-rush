@@ -1,5 +1,17 @@
 # v0.1 시제품 검증 기록
 
+## 2026-10-25 모션 전체 점검 — 로컬 빌드
+
+- Godot 4.7.2.stable.official.ed1daf0bf / Compatibility 유지. 사용자 메인 경기 탭은 초기화하지 않고 별도 스튜디오·경기 탭에서 확인.
+- 새 motion_audit_test: 달리기·컷·급정지·크로스오버·블록·리바운드 진입/복귀, 30/60/120Hz, 실제 스킨 발 4,032샘플. 이전 회수 궤적을 다시 사용하는 첫 프레임 도약 재현. artifacts/motion-audit-before.txt와 motion-audit-diagnostic.txt에 원인 로그 보존.
+- 최대 무릎 속도: 급정지 34.38→9.74m/s, 블록 26.13→11.24m/s, 리바운드 26.13→13.57m/s. 최대 리바운드 손 속도 23.05→13.75m/s. 순간 이동 검출 지표이며 주관적 자연스러움이나 FPS 개선율은 아니다.
+- 통과 35개 Godot 검사: motion_audit, rig_transition, rig_gameplay, basketball_motion, dribble_feel, cross_body_flow, finish_flow, block_body_swing, contact_timing, contact_landing, defense_shuffle, steal_motion, arm_flow, stop_cut, run_rhythm, running_finish, rim_battle, planted_cut, low_run, leg_stability, layup_takeoff, landing_transition, held_shot_pose, gaze_motion, duel_animation, defense_stance, cut_response, cross_handoff, crossover, chase_recovery, chase_block, career_athlete, boxout, block_swat, game. 실제 블록 6회·공중 캐치 6회 회귀 유지.
+- 기존 실패 3개는 미해결로 분리: motion_test 26행은 옛 shoes 원점과 feet_world 일치를 요구해 중단. footwork_test 발 순서 12회, defensive_play_test 숨겨진 p.hands와 공 거리 8회 실패. HEAD 원본 리그로 재실행해 동일 실패 확인 후 작업 파일 복원. artifacts/legacy-*-baseline.txt 보존. 전체 검사 통과로 기록하지 않는다.
+- 중간 시도: 블록 손을 10m/s로 제한하자 실제 접촉 6회→3회로 감소. 해당 제한을 제거하고 진입 보간만 유지한 후 block_body_swing/contact_timing 통과. 접촉 창이나 기존 기준을 완화하지 않았다.
+- HUD 동일 상태 100회: 텍스트 쓰기 2,100→0. web_lifecycle_test는 변경 점수 즉시 표시·번역 유지·정지/입력/음악 설정도 통과. 데스크톱 headless animate CPU 중앙값은 약 0.3~0.5ms로 실행별 차이가 있어 FPS 개선을 주장하지 않는다.
+- 웹 release export 및 셸 빌드 성공. 브라우저에서 컷·급정지, 블록 준비, 공중 캐치, 레이업 확인. 실물 휴대폰·Android 미검증, 이번 변경의 GitHub Pages 배포 미수행. 별도 작업의 공통 메뉴·배포 스크립트·Pages 변경을 보존했다.
+- localization_test 408개 원문×3개 번역 통과, JavaScript 구문 및 diff 공백 검사 통과. 브라우저 영어 HUD가 반복 갱신 뒤에도 유지됨을 확인하고 한국어로 복원. 콘솔 warning/error 없음. screenshots/motion-audit-rebound-2026-10-25.png에 공중 캐치 화면 기록. 검증용 경기는 정지해 별도 탭으로 남겼다.
+
 ## v0.7.3 영어 해설·음악·모바일 스틱 (2026-10-25)
 
 - Godot4.7.2 Standard/Compatibility 유지. 영어27개는 Kokoro-82M v1.0 기본 am_michael로 로컬에서 미리 합성한 원본 문구다. 방송/특정 해설자 음성은 사용하지 않았다. 음악은 자체16마디 합성 악보3곡. 추가 음원2,398,575바이트. 모델325MB와 런타임은 ignored artifacts에만 있고 배포하지 않는다. Android에서도 같은 Godot 노드/버스를 사용할 수 있으나 Android 빌드는 미검증이다.

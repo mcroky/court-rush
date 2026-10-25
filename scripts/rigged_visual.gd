@@ -68,6 +68,22 @@ var cross_return_frames: Array=[Basis.IDENTITY,Basis.IDENTITY]
 var was_crossing=false
 var head_forward_local=Vector3.BACK
 var gaze_target=Vector2.ZERO
+var unlayered_poses: Array=[]
+var action_entry_height=0.0
+var finger_cups: Array=[0.0,0.0]
+
+func transition_pose() -> Array:
+	var result=final_poses.duplicate()
+	# Contact limbs retain their last pose. Additive torso/neck/collar layers
+	# must start from the authored pose, otherwise each transition applies them twice.
+	if unlayered_poses.size()==result.size():
+		for name in ["spine_01","spine_02","neck_01","head"]:
+			var bone=skeleton.find_bone(name)
+			result[bone]=unlayered_poses[bone]
+		for chain in arms:
+			var collar=skeleton.get_bone_parent(chain[0])
+			result[collar]=unlayered_poses[collar]
+	return result
 
 # The visible rig owns these contacts. The hidden prototype's shoe is larger
 # and cannot supply a reliable toe-off or landing anchor for the human mesh.
@@ -275,6 +291,7 @@ func reset_contacts() -> void:
 	last_action=""
 	was_crossing=false
 	gaze_target=Vector2.ZERO
+	finger_cups=[0.0,0.0]
 	player.stop()
 	visual_swing = [false,false]
 	physics_swing = [false,false]
@@ -309,7 +326,7 @@ func sample_base(delta: float, speed: float, airborne: bool) -> void:
 	var wanted = "run" if locomotion>.08 else "idle"
 	if wanted != clip:
 		if initialized and final_poses.size()==skeleton.get_bone_count():
-			return_poses=final_poses.duplicate()
+			return_poses=transition_pose()
 			return_blend=.12
 		clip = wanted
 		player.play(clip,.18 if initialized else 0.0)
@@ -432,6 +449,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	if teleported: reset_contacts()
 	if actor.action!=last_action:
 		action_entry_time=0
+		action_entry_height=root_height
 		if actor.action=="gather":gather_entry_height=root_height
 		if actor.action in ["shot","layup"]:
 			finish_entry_height=root_height
@@ -449,13 +467,22 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	var action_pose = actor.action not in ["idle","cross","spin","twostep","behind","hesi","showcase"] or actor.jump>.05
 	var transition = actor.brake_state!="" or actor.restart_left>0 or actor.chase_recovery
 	contact_mode = action_pose or actor.defense_weight>.35 or actor.boxout_weight>.2 or transition
+	if contact_mode and not previous_contact_mode and initialized:
+		# Free running can lag the authored recovery target to keep shoe speed
+		# bounded. Rebase an in-flight step on the shoe actually rendered before
+		# handing it to the contact layer; its old trajectory may be far ahead.
+		for i in 2:
+			if visual_swing[i]:
+				visual_swing_from[i]=toe_world[i]
+				visual_swing_duration[i]=maxf(.08,visual_swing_duration[i]-visual_swing_time[i])
+				visual_swing_time[i]=0
 	sample_base(delta,speed,(action_pose and not actor.moving_gather()) or actor.brake_state in ["load","settle"])
 	if previous_contact_mode and not contact_mode and clip=="run":
 		# Resume near toe-off on the supporting side, never at an unrelated leg phase.
 		phase = .40 if locked[1] else .90
 		player.seek(player.current_animation_length*phase,true)
 		for index in range(skeleton.get_bone_count()): skeleton.set_bone_pose_scale(index,Vector3.ONE)
-		return_poses = final_poses.duplicate()
+		return_poses = transition_pose()
 		return_blend = .12
 	if return_blend>0 and return_poses.size()==skeleton.get_bone_count():
 		return_blend = maxf(0,return_blend-delta)
@@ -488,6 +515,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	if actor.action=="gather" and actor.finish_kind in ["shot","layup"]:
 		height_target=lerpf(gather_entry_height,-.15 if actor.finish_kind=="shot" else -.16,smoothstep(0,.18,actor.action_time))
 	if actor.action in ["shot","layup"]:height_target=finish_root(actor)
+	if actor.defensive_jump():height_target=lerpf(action_entry_height,height_target,smoothstep(0,actor.DEFENSE_PLANT_TIME,action_entry_time))
 	root_height = move_toward(root_height,height_target,delta*1.8) if initialized and not action_pose else height_target
 	model.position = Vector3(0,root_height,-.255*render_scale)
 	model.position.x=cross_pose.shift*actor.cross_from*cross_weight
@@ -528,6 +556,8 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	# Cancellation of an authored yaw must use this frame's source pose;
 	# filtering that cancellation would leave yesterday's sprint twist behind.
 	if cross_weight>0:torso_layer.y=layer.y
+	unlayered_poses.clear()
+	for bone in range(skeleton.get_bone_count()):unlayered_poses.append(skeleton.get_bone_pose(bone))
 	for bone in [spine,chest]:
 		var rotation=skeleton.get_bone_global_pose(bone).basis
 		set_bone_rotation(bone,Basis.from_euler(torso_layer*.5)*rotation)
@@ -749,7 +779,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		if actor.action=="rebound" and actor.defense_target_valid:
 			var pose=rebound_pose(actor,i,bone_world(chain[0]).origin)
 			target=pose.target;frame=pose.frame;guide=pose.guide
-		if initialized and actor.action in ["gather","rebound"]:
+		if initialized and actor.action in ["gather","rebound","block","dunk","steal"]:
 			var entry=smoothstep(0,.10,action_entry_time)
 			target=actor.to_global(entry_palms[i]).lerp(target,entry)
 			frame=entry_frames[i].slerp(frame,entry)
@@ -784,6 +814,12 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			if normal.length_squared()>.01:
 				normal=normal.normalized()
 				frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+		if actor.rebound_release_left>0 and actor.ordinary_dribble():
+			# Let the captured ball leave the chest with the hands. Resuming the
+			# bounce clock must not instantly drop the receiving wrist to the hip.
+			var release=smoothstep(0,.20,.20-actor.rebound_release_left)
+			target=actor.to_global(entry_palms[i]).lerp(target,release)
+			frame=entry_frames[i].slerp(frame,release)
 		var desired_hand = frame*palm_frames[i].inverse()
 		var source_hand = bone_world(chain[2])
 		target = (source_hand*palm_offsets[i]).lerp(target,arm_weight[i])
@@ -834,10 +870,13 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			wrist_target=target-desired_hand*palm_offsets[i]*render_scale
 			solve(chain,wrist_target,guide)
 		set_bone_rotation(chain[2],skeleton.global_basis.orthonormalized().inverse()*desired_hand)
-		if actor.ordinary_dribble() or actor.crossing() or actor.action in ["block","rebound","layup","shot","gather"]:
-			var cup=.20*smoothstep(0,.08,actor.action_time-actor.defense_catch_time) if actor.action=="rebound" and actor.defense_caught else 0.0
+		if driven or arm_weight[i]>.001:
+			var cup=.32
+			if contact_hand or actor.crossing() or actor.action in ["block","rebound","layup","shot","gather"]:cup=.04
+			if actor.action=="rebound" and actor.defense_caught:cup=.20*smoothstep(0,.08,actor.action_time-actor.defense_catch_time)
 			if actor.action=="gather":cup=.12
-			open_fingers(i,frame,cup)
+			finger_cups[i]=move_toward(finger_cups[i],cup,delta*2.5)
+			open_fingers(i,frame,finger_cups[i])
 		arm_errors[i] = (bone_world(chain[2])*palm_offsets[i]).distance_to(target)
 		palm_world[i] = bone_world(arms[i][2])*palm_offsets[i]
 		last_hand_basis[i]=bone_world(chain[2]).basis.orthonormalized()
