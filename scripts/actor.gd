@@ -945,19 +945,24 @@ func update_guard_footwork(delta: float, velocity: Vector3) -> void:
 	guard_plant_time = maxf(0,guard_plant_time-delta)
 	if not swinging[0] and not swinging[1] and guard_plant_time <= 0:
 		var local = placement_velocity.rotated(Vector3.UP,-rotation.y)
-		if speed > .15 and absf(local.x) > .2 and (guard_travel_direction.length_squared() < .01 or placement_velocity.dot(guard_travel_direction) < 0):
+		# Only pick the lead side when starting. During a reversal the newly
+		# planted foot must support the other foot, not immediately lift again.
+		if speed > .15 and absf(local.x) > .2 and guard_travel_direction.length_squared() < .01:
 			next_step = 1 if local.x > 0 else 0
 		guard_travel_direction = placement_velocity.normalized() if speed > .15 else Vector3.ZERO
 		var rest = stance_rest(next_step)
 		var recovery = feet_world[next_step].distance_to(rest)
 		if speed > .15 or recovery > .10:
-			begin_step(next_step,rest,placement_velocity,clampf(.18/maxf(speed,.5),.055,.11))
+			# Give the lead foot time to open and accept weight before the trail
+			# follows. Very short 55 ms steps outran the rendered contact transfer.
+			begin_step(next_step,rest,placement_velocity,clampf(.32/maxf(speed,.5),.12,.16))
 	for i in range(2):
 		if not swinging[i]: continue
 		swing_progress[i] = minf(1,swing_progress[i]+delta/swing_duration[i])
 		var t: float = swing_progress[i]
 		if t < .65:
-			var target = stance_rest(i)+placement_velocity*(swing_duration[i]*(1-t)+.025)
+			# Land ahead of the hips far enough to support the next trailing step.
+			var target = stance_rest(i)+placement_velocity*(swing_duration[i]*(1-t)+.10)
 			var lateral = global_basis.x.normalized()
 			var gap = (target-feet_world[1-i]).dot(lateral)
 			target += lateral*(minf(0,-.20-gap) if i == 0 else maxf(0,.20-gap))
@@ -1010,7 +1015,7 @@ func movement_step(delta: float) -> Vector3:
 		var ankle = feet_world[i]+landing_shoe_offset(i)+body.global_basis*ANKLE_OFFSET
 		var offset = hip-ankle
 		var reserve = .003 if run_contacts or stealing() or landing_push_left > 0 or restart_left > 0 or brake_state != "" else .045
-		var reach = (THIGH_LENGTH+SHIN_LENGTH-.002)*VISUAL_SCALE-reserve
+		var reach = (THIGH_LENGTH+SHIN_LENGTH-.002)*VISUAL_SCALE*height_ratio-reserve
 		var a = step.length_squared()
 		var b = offset.dot(step)
 		var c = offset.length_squared()-reach*reach
@@ -1040,7 +1045,7 @@ func settle_guard_support(delta: float) -> void:
 		var contact = body.to_global(defense_foot(i)) if planting_jump else feet_world[i]+landing_shoe_offset(i)
 		var ankle = contact+body.global_basis*ANKLE_OFFSET
 		var horizontal = Vector2(hip.x-ankle.x,hip.z-ankle.z).length_squared()
-		var reach = (THIGH_LENGTH+SHIN_LENGTH-.004)*VISUAL_SCALE
+		var reach = (THIGH_LENGTH+SHIN_LENGTH-.004)*VISUAL_SCALE*height_ratio
 		var height = sqrt(maxf(0,reach*reach-horizontal))
 		lower = maxf(lower,hip.y-ankle.y-height)
 	if stealing() or restart_left > 0 or brake_state != "" or landing_recovery_left > 0 or landing_push_left > 0 or landing_support_drop > 0:

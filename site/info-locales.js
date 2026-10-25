@@ -45,7 +45,8 @@
  ]]
  };
  const news={
- en:['Smoother motion transitions.','v0.7.4 · Motion transitions',[
+ en:['Plant your feet. Stay with the play.','v0.7.5 · Defensive movement',[
+  'v0.7.5 · Defense: short alternating side steps, planted transitions from pursuit into a low stance, and smoother arm and shoulder recovery. Height-aware support fixes foot sliding for shorter guards. Character Studio adds low stance, defensive slides and box-out previews.',
   'Fixed foot and knee snaps when stopping or entering blocks and rebounds. Reduced repeated torso and shoulder corrections, refined the rebound-to-dribble handoff and relaxed the free hand. Unchanged HUD text now skips redundant updates.',
   '27 original English voice calls react to baskets, dribble skills, blocks and airborne rebounds. Choose one of 3 original instrumental tracks or rotate them. Separate music, commentary and effects volumes; music dips during commentary. The mobile left stick sits higher for easier reach.',
   'Mobile now follows the player at a closer distance. The large shot panel is replaced by a small timing rail beside Shoot, shown only during shot preparation. A smaller scoreboard keeps the court clear.',
@@ -53,7 +54,8 @@
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. Online competition, 3v3 and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['動作のつながりを滑らかに。','v0.7.4・モーションのつながり',[
+ ja:['足を踏ん張り、自然な守備へ。','v0.7.5・守備動作の改善',[
+  'v0.7.5 · 守備：左右の足を交互に運ぶ短いサイドステップ、追走から接地して低く構える動作、腕と肩の回収を調整。身長に合わせた脚の計算で、小柄なガードの足滑りも修正しました。キャラクタースタジオに低い守備・左右のステップ・ボックスアウトを追加しました。',
   '急停止・ブロック・リバウンドへの移行時に足や膝が跳ねる不具合を修正。胴体と肩の補正の重複を減らし、リバウンドからドリブルへ戻る手と反対の手の姿勢を調整しました。同じ試合表示の不要な更新も省きました。',
   '得点・ドリブル技・ブロック・空中リバウンドに英語実況27本を追加。オリジナルBGM3曲を選択または順番再生でき、音楽・実況・効果音の音量を個別に調節できます。実況中は音楽を下げます。モバイルの左スティックを上に移動しました。',
   'モバイルは選手に近い追従カメラへ。大きなシュートパネルを廃止し、準備中だけボタン脇の小さなゲージを表示。スコア表示も小さくしました。',
@@ -61,7 +63,8 @@
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。オンライン対戦・3対3・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['让动作衔接更流畅。','v0.7.4 · 动作衔接优化',[
+ 'zh-CN':['站稳脚步，自然防守。','v0.7.5 · 防守动作优化',[
+  'v0.7.5 · 防守：调整双脚交替的小幅横移、追防后落脚进入低姿防守的衔接，以及手臂与肩部的回收。按身高计算腿部支撑，修复较矮后卫的脚底滑动。角色工作室新增低姿防守、横向滑步和卡位三种预览。',
   '修复急停、盖帽及篮板动作开始时脚和膝盖突然跳动的问题，减少躯干和肩部的重复修正，调整抢到篮板后恢复运球的手部衔接及另一只手的放松姿势。同时减少相同比赛文字的不必要刷新。',
   '新增27段原创英语解说，响应得分、运球技能、盖帽及空中篮板。3首原创背景音乐可单曲或轮换播放，音乐、解说及音效音量可分别调节，解说时音乐会降低。手机左摇杆已上移。',
   '手机镜头更近地跟随球员。移除大型投篮提示框，仅在收球准备时于投篮按钮旁显示细条，并缩小比分牌以留出视野。',

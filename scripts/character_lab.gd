@@ -79,6 +79,16 @@ func _physics_process(delta):
 			actor.animate(.016,elapsed)
 		actor.has_ball=mode in ["dribble","handle","hold","shot","cross","cut"]
 		actor.dribble_ended=mode=="hold"
+		var defensive_preview=mode in ["guard","shuffle","boxout"]
+		var defense_time=fposmod(elapsed,8.4)
+		var stance_active=defensive_preview and defense_time>=.45 and defense_time<7.4
+		actor.defending=stance_active
+		actor.boxing_out=stance_active and mode=="boxout"
+		# Use the match's stance/contact inputs so the preview exercises the real
+		# receiving foot and support exchange, rather than a separate animation.
+		actor.contact_pressure=(.60+.25*sin(defense_time*2.2))*smoothstep(.9,1.8,defense_time) if actor.boxing_out else 0.0
+		actor.contact_direction=(-actor.global_basis.z+actor.global_basis.x*sin(defense_time*1.8)*.35).normalized() if actor.boxing_out else Vector3.ZERO
+		actor.watch_direction=(actor.global_basis.z+actor.global_basis.x*sin(defense_time)*.22) if stance_active else Vector3.ZERO
 		actor.jump=0
 		if mode=="shot":
 			var t=fposmod(elapsed,2.4)
@@ -91,6 +101,14 @@ func _physics_process(delta):
 				actor.has_ball=actor.action_time<.22
 		var stopping=mode=="cut" and fposmod(elapsed,8.4)>=7.2
 		var velocity=Vector2(sin(facing),cos(facing))*(4.7 if mode not in ["idle","handle","hold","shot"] and not stopping else 0)
+		if defensive_preview:
+			var slide=0.0
+			if mode!="guard":
+				if defense_time>=1.0 and defense_time<2.2:slide=1.0
+				elif defense_time>=2.65 and defense_time<4.85:slide=-1.0
+				elif defense_time>=5.3 and defense_time<6.3:slide=1.0
+			var direction=actor.global_basis.x*slide
+			velocity=Vector2(direction.x,direction.z)*(1.2 if mode=="boxout" else 2.7)
 		actor.steer_motion(velocity,24,delta)
 		if mode!="cross" and actor.action=="cross":actor.finish_cross()
 		if mode=="cross" and actor.action=="idle" and fposmod(elapsed,2.4)<.09:

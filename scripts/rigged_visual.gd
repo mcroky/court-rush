@@ -71,6 +71,13 @@ var gaze_target=Vector2.ZERO
 var unlayered_poses: Array=[]
 var action_entry_height=0.0
 var finger_cups: Array=[0.0,0.0]
+var guard_step_from: Array=[Vector3.ZERO,Vector3.ZERO]
+var guard_step_serial: Array=[-1,-1]
+var guard_step_phase: Array=[0.0,0.0]
+var guard_landing_targets: Array=[Vector3.ZERO,Vector3.ZERO]
+var guard_entry_bases: Array=[Basis.IDENTITY,Basis.IDENTITY]
+var guard_entry_time=0.0
+var guard_was_active=false
 
 func transition_pose() -> Array:
 	var result=final_poses.duplicate()
@@ -292,6 +299,9 @@ func reset_contacts() -> void:
 	was_crossing=false
 	gaze_target=Vector2.ZERO
 	finger_cups=[0.0,0.0]
+	guard_step_serial=[-1,-1]
+	guard_was_active=false
+	guard_entry_time=0.0
 	player.stop()
 	visual_swing = [false,false]
 	physics_swing = [false,false]
@@ -308,6 +318,8 @@ func shift_world_contacts(offset: Vector3) -> void:
 		visual_swing_from[i] += offset
 		visual_swing_to[i] += offset
 		finish_entry_world[i] += offset
+		guard_step_from[i] += offset
+		guard_landing_targets[i] += offset
 
 func sync_cut_contacts(_actor) -> void:
 	if not initialized: return
@@ -465,6 +477,26 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	action_entry_time+=delta
 	was_crossing=actor.crossing()
 	var action_pose = actor.action not in ["idle","cross","spin","twostep","behind","hesi","showcase"] or actor.jump>.05
+	var guard_weight: float=actor.defense_weight if not actor.has_ball and actor.action=="idle" and not actor.chase_recovery else 0.0
+	var guard_active=guard_weight>.5
+	if guard_active and not guard_was_active and initialized:
+		# Finish the pursuit stride before adopting the short shuffle contacts.
+		# A foot still far behind the hips cannot become a defensive plant: it
+		# would pull the entire torso down to satisfy an unreachable old anchor.
+		for i in 2:
+			var offset=actor.to_local(toe_world[i])
+			if Vector2(offset.x,offset.z).length()>.60 or toe_world[i].y>.12:guard_active=false
+	if guard_active and not guard_was_active:
+		guard_entry_time=0.0
+		for i in 2:
+			guard_step_from[i]=toe_world[i]
+			guard_step_serial[i]=-1
+			guard_landing_targets[i]=toe_world[i]
+			guard_landing_targets[i].y=.026
+			guard_entry_bases[i]=bone_world(feet[i][2]).basis.orthonormalized()
+			visual_swing[i]=false
+	if guard_active:guard_entry_time+=delta
+	guard_was_active=guard_active
 	var transition = actor.brake_state!="" or actor.restart_left>0 or actor.chase_recovery
 	contact_mode = action_pose or actor.defense_weight>.35 or actor.boxout_weight>.2 or transition
 	if contact_mode and not previous_contact_mode and initialized:
@@ -476,7 +508,9 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 				visual_swing_from[i]=toe_world[i]
 				visual_swing_duration[i]=maxf(.08,visual_swing_duration[i]-visual_swing_time[i])
 				visual_swing_time[i]=0
-	sample_base(delta,speed,(action_pose and not actor.moving_gather()) or actor.brake_state in ["load","settle"])
+	# A shuffle has its own alternating contacts. Do not retain sprint pelvis
+	# rotation and shoulder bob underneath a planted defensive stance.
+	sample_base(delta,speed,(action_pose and not actor.moving_gather()) or actor.brake_state in ["load","settle"] or guard_active)
 	if previous_contact_mode and not contact_mode and clip=="run":
 		# Resume near toe-off on the supporting side, never at an unrelated leg phase.
 		phase = .40 if locked[1] else .90
@@ -499,6 +533,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			skeleton.set_bone_pose(bone,leg_return_poses[i][j].interpolate_with(skeleton.get_bone_pose(bone),weight))
 	# Center the imported root on the player's hips, keeping the authored sway.
 	var athletic=not action_pose and actor.defense_weight<.1 and actor.boxout_weight<.1 and not actor.dribble_ended
+	var free_grounded=not action_pose and not contact_mode and not actor.dribble_ended
 	basketball_weight=move_toward(basketball_weight,clampf(speed/3.0,0,1) if athletic else 0.0,delta*7)
 	var stance_drop=.045*basketball_weight
 	var cross_pose=actor.cross_body_pose()
@@ -507,6 +542,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	height_target-=cross_pose.drop*.55*cross_weight
 	if action_pose: height_target = actor.body.position.y+.08
 	elif contact_mode: height_target = minf(0,actor.body.position.y+.16)
+	if guard_weight>0:height_target=lerpf(height_target,-.20-.035*actor.boxout_weight-.025*actor.pressure_weight,guard_weight)
 	var shooting_pose=actor.action in ["gather","fake","shot"] and actor.finish_kind=="shot"
 	if shooting_pose:
 		height_target=actor.jump-.055
@@ -519,6 +555,12 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	root_height = move_toward(root_height,height_target,delta*1.8) if initialized and not action_pose else height_target
 	model.position = Vector3(0,root_height,-.255*render_scale)
 	model.position.x=cross_pose.shift*actor.cross_from*cross_weight
+	if guard_weight>0:
+		var support=0.0
+		for i in 2:
+			if actor.swinging[i]:support=(-1.0 if i==1 else 1.0)*sin(actor.swing_progress[i]*PI)
+		model.position.x+=support*.025*guard_weight
+		model.position+=actor.body.position*Vector3(1,0,1)*guard_weight
 	var pelvis=skeleton.find_bone("pelvis")
 	var stopping=actor.brake_state!="" and not actor.chase_recovery and not action_pose
 	if stopping and not was_stopping:stop_height=pelvis_world_height if initialized else bone_world(pelvis).origin.y
@@ -532,6 +574,15 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	var layer = Vector3((.055 if actor.has_ball else 0.0)+(.10 if actor.has_ball else .12)*basketball_weight,turn*.65+gait_sway*.055*basketball_weight,actor.body.rotation.z*.45)
 	if actor.redirect_left>0:layer.x+=.055*sin(actor.redirect_left/.22*PI)
 	if contact_mode: layer = Vector3(actor.upper.rotation.x*.45,actor.upper.rotation.y*.6,actor.upper.rotation.z*.5)
+	if guard_weight>0:
+		var travel=actor.global_basis.inverse()*Vector3(actor.motion.x,0,actor.motion.y)
+		var load=0.0
+		for i in 2:
+			if actor.swinging[i]:load=(-1.0 if i==0 else 1.0)*sin(actor.swing_progress[i]*PI)
+		var torso_axis=(bone_world(arms[0][0]).origin+bone_world(arms[1][0]).origin-bone_world(feet[0][0]).origin-bone_world(feet[1][0]).origin)*.5
+		var source_pitch=atan2(torso_axis.dot(global_basis.z),torso_axis.y)
+		var guard_layer=Vector3(lerpf(.24,.15,actor.boxout_weight)-source_pitch,clampf(travel.x*.016,-.07,.07),clampf(-travel.x*.022,-.08,.08)+load*.018)
+		layer=layer.lerp(guard_layer,guard_weight)
 	if cross_weight>0:
 		# The sprint clip has its own torso yaw. Replace that yaw during the
 		# transfer instead of adding an unrelated second shoulder rhythm.
@@ -580,6 +631,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		# Imported .l is the right side in this model's +Z facing convention.
 		if clip=="idle": source_contact = true
 		if contact_mode: source_contact = not actor.swinging[i] and not visual_swing[i] and actor.jump<.05 and (was_locked or not initialized or toe_world[i].y<.045)
+		if guard_active:source_contact=not actor.swinging[i] and was_locked
 		if visual_swing[i]:source_contact=false
 		if not source_contact:contact_spent[i]=false
 		if not contact_mode and source_contact and not locked[i] and initialized:
@@ -598,7 +650,8 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		# Preserve the authored foot trajectory while lowering the pelvis. Both
 		# knees flex; lowering the whole source alone would sink free feet.
 		var authored_toe=skeleton.global_transform*source_poses[chain[3]].origin
-		var free_goal=authored_toe+Vector3.UP*maxf(0,-root_height) if athletic else toe
+		var free_goal=authored_toe+Vector3.UP*maxf(0,-root_height) if athletic or free_grounded else toe
+		if free_grounded:free_goal.y=maxf(.026,free_goal.y)
 		if athletic:
 			var step_local=actor.to_local(free_goal)
 			step_local.z*=lerpf(1,.72,basketball_weight)
@@ -610,7 +663,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		if settling:
 			var rest_goal=Vector3(toe.x,.026,toe.z)
 			goal=toe_world[i].move_toward(rest_goal,delta*2)
-		free_foot_ik.append(settling or (athletic and basketball_weight>.001))
+		free_foot_ik.append(settling or free_grounded or (athletic and basketball_weight>.001))
 		if not contact_mode and visual_swing[i]:
 			goal=sample_visual_swing(i,delta)
 			free_foot_ik[i]=true
@@ -622,7 +675,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			# A newly planted foot is already captured from the visible rig above.
 			# Do not replace that first contact with the old rig's different-size shoe.
 			if locked[i]: goal = anchors[i]
-			if initialized and not locked[i]:
+			if initialized and not locked[i] and not guard_active:
 				if actor.swinging[i] and not physics_swing[i] and not visual_swing[i]:
 						visual_swing_from[i]=toe_world[i]
 						visual_swing_to[i]=goal+actor.swing_to[i]-actor.shoes[i].global_position
@@ -639,6 +692,34 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			desired_basis = desired_basis.slerp(contact_basis,cut_weight)
 			if locked[i]:
 				anchors[i] = goal
+		if guard_active:
+			# One clock owns both rigs. Rebuilding a .15s visual swing for a
+			# shorter gameplay step leaves the trailing foot airborne at the
+			# next lead step. Use the same progress, starting at the visible toe.
+			visual_swing[i]=false
+			if actor.swinging[i]:
+				if guard_step_serial[i]!=actor.step_serial:
+					guard_step_from[i]=toe_world[i]
+					guard_step_serial[i]=actor.step_serial
+					guard_step_phase[i]=maxf(0,actor.swing_progress[i]-delta/actor.swing_duration[i])
+				var landing: Vector3=actor.swing_to[i]+Basis(Vector3.UP,actor.feet_yaw[i])*Vector3(0,0,.10*actor.height_ratio)
+				landing.y=.026
+				guard_landing_targets[i]=landing
+				var t=clampf((actor.swing_progress[i]-guard_step_phase[i])/maxf(.01,1-guard_step_phase[i]),0,1)
+				goal=guard_step_from[i].lerp(landing,smoothstep(0,1,t))
+				goal.y+=sin(t*PI)*.026
+				locked[i]=false
+			else:
+				if physics_swing[i]:
+					guard_landing_targets[i]=actor.swing_to[i]+Basis(Vector3.UP,actor.feet_yaw[i])*Vector3(0,0,.10*actor.height_ratio)
+					guard_landing_targets[i].y=.026
+				goal=anchors[i] if locked[i] else guard_landing_targets[i]
+			if not locked[i]:
+				goal=toe_world[i].move_toward(goal,delta*6.5)
+				if not actor.swinging[i] and goal.distance_to(guard_landing_targets[i])<.002:
+					anchors[i]=goal
+					locked[i]=true
+			desired_basis=guard_entry_bases[i].slerp(Basis(Vector3.UP,actor.feet_yaw[i])*foot_rest_basis[i],smoothstep(0,.14,guard_entry_time))
 		physics_swing[i]=actor.swinging[i]
 		if actor.action in ["shot","layup"]:
 			var times=finish_times(actor)
@@ -649,7 +730,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			if locked[i]:anchors[i]=goal
 			var heel=.34*smoothstep(.02,times.x,actor.action_time)*(1-smoothstep(times.x,times.x+.14,actor.action_time))
 			desired_basis=global_basis*Basis(Vector3.RIGHT,heel if planted or actor.action_time<times.x+.14 else 0.0)*foot_rest_basis[i]
-		if athletic and initialized and not locked[i] and not contact_mode:
+		if (athletic or free_grounded) and initialized and not locked[i] and not contact_mode:
 			# Completing a recovery step must not jump straight to a distant
 			# authored stride sample. Carry the actual foot through that handoff.
 			goal=toe_world[i].move_toward(goal,delta*8.0)
@@ -667,13 +748,19 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			support_drop = maxf(support_drop,hip.y-ankle_goal.y-vertical)
 	# Let the supporting knee absorb the source pelvis bob; never pull the shoe.
 	ground_drop=move_toward(ground_drop,clampf(support_drop,0,.18),delta*2.0) if initialized else clampf(support_drop,0,.18)
+	if guard_active:
+		# Contact is a hard reach limit. A height filter may delay standing up,
+		# but must not keep the hips above a planted leg's reachable height.
+		ground_drop=maxf(clampf(support_drop,0,.28),move_toward(ground_drop,0,delta*.9))
 	model.position.y -= ground_drop
 	if not action_pose: model.position.y = maxf(-.32,model.position.y)
 	# Filter the final supported height, after support-drop correction. Doing
 	# it before that correction applies a second vertical impulse on contact.
 	var target_pelvis=bone_world(pelvis).origin.y
 	if stopping:target_pelvis=minf(target_pelvis,stop_height-actor.brake_weight*.08)
-	if initialized and not action_pose:target_pelvis=move_toward(pelvis_world_height,target_pelvis,delta*1.6)
+	if initialized and not action_pose:
+		var filtered=move_toward(pelvis_world_height,target_pelvis,delta*1.6)
+		target_pelvis=minf(filtered,target_pelvis) if guard_active and support_drop>0 else filtered
 	var pelvis_shift=(target_pelvis-bone_world(pelvis).origin.y)/render_scale
 	var pelvis_parent=skeleton.get_bone_parent(pelvis)
 	var parent_basis=skeleton.get_bone_global_pose(pelvis_parent).basis if pelvis_parent>=0 else Basis.IDENTITY
@@ -685,7 +772,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			var knee=bone_world(chain[1]).origin
 			var ankle=bone_world(chain[2]).origin
 			var reach=hip.distance_to(knee)+knee.distance_to(ankle)-.004
-			if hip.distance_to(ankle_goals[i])>reach:
+			if hip.distance_to(ankle_goals[i])>reach and not guard_active:
 				# The input controller already scheduled this transfer. The shorter
 				# render rig must toe off, not drag the sole or stop the player again.
 				locked[i]=false
@@ -716,7 +803,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	var anatomical_chest=chest_motion_frame()
 	for i in range(2):
 		var side = -1.0 if i==0 else 1.0
-		var athletic_arm=athletic and basketball_weight>.01
+		var athletic_arm=(athletic and basketball_weight>.01) or (not action_pose and not actor.has_ball and speed>.15)
 		var stationary_guard=actor.ordinary_dribble() and speed<.3
 		var holding=actor.has_ball and actor.dribble_ended and actor.action=="idle"
 		var driven = actor.has_ball and (side==actor.dribble_hand or not actor.ordinary_dribble())
@@ -725,11 +812,15 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		var chain: Array = arms[i]
 		var source_palm=bone_world(chain[2])*palm_offsets[i]
 		var free_arm_ready=not initialized or previous_palms_local[i].distance_to(to_local(source_palm))<=delta*6.5
+		if initialized:
+			var source_angle=last_hand_basis[i].get_rotation_quaternion().angle_to(bone_world(chain[2]).basis.orthonormalized().get_rotation_quaternion())
+			free_arm_ready=free_arm_ready and source_angle<=delta*12
 		if not driven and arm_weight[i]<.001 and free_arm_ready:
 			# The free arm belongs to the authored full-body clip. Re-solving its
 			# almost-straight elbow can flip the same way as an extended knee.
 			palm_world[i]=source_palm
 			previous_palms_local[i]=to_local(palm_world[i])
+			last_hand_basis[i]=bone_world(chain[2]).basis.orthonormalized()
 			arm_errors[i]=0
 			continue
 		var target: Vector3 = actor.hands[i].global_position
@@ -783,7 +874,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			var entry=smoothstep(0,.10,action_entry_time)
 			target=actor.to_global(entry_palms[i]).lerp(target,entry)
 			frame=entry_frames[i].slerp(frame,entry)
-		if athletic_arm and not contact_mode and not actor.crossing() and (not actor.has_ball or side!=actor.dribble_hand):
+		if athletic_arm and (not contact_mode or guard_weight>0) and not actor.crossing() and (not actor.has_ball or side!=actor.dribble_hand):
 			# Counter-swing comes from the visible legs, so a planted cut carries
 			# shoulder, elbow and hand together rather than using a second clock.
 			var foot_delta=(bone_world(feet[i][2]).origin-bone_world(feet[1-i][2]).origin).dot(global_basis.z)
@@ -792,9 +883,23 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			var chest_frame=anatomical_chest
 			var run_target=shoulder+chest_frame*Vector3(side*.035,-.33,.17+swing*(.16 if actor.has_ball else .22))
 			if actor.cross_exit_left>0:run_target=(actor.global_position+actor.cross_exit_hands[i]).lerp(run_target,smoothstep(0,.16,.16-actor.cross_exit_left))
-			target=target.lerp(run_target,basketball_weight)
+			var run_weight=basketball_weight if actor.has_ball else clampf(speed/3.0,0,1)
+			target=target.lerp(run_target,run_weight)
 			guide=shoulder+Vector3.DOWN*.50+chest_frame.x*side*.015-chest_frame.z*.15
-			frame=frame.slerp(chest_frame*Basis(Vector3.RIGHT,-.25),basketball_weight)
+			frame=frame.slerp(chest_frame*Basis(Vector3.RIGHT,-.25),run_weight)
+		if guard_weight>0:
+			# Blend the guard after the running layer so releasing a stance never
+			# replaces the shoulder and palm frame at an arbitrary weight threshold.
+			var shoulder=bone_world(chain[0]).origin
+			var travel=actor.global_basis.inverse()*Vector3(actor.motion.x,0,actor.motion.y)
+			var counter=clampf(travel.x*side*.018,-.045,.045)
+			var guard_target=shoulder+anatomical_chest*Vector3(side*(.23+counter),-.12 if i==1 else -.27,.27)
+			var brace_target=shoulder+anatomical_chest*Vector3(side*.29,-.27,-.05-.035*actor.pressure_weight)
+			target=target.lerp(guard_target.lerp(brace_target,actor.boxout_weight),guard_weight)
+			guide=guide.lerp(shoulder+anatomical_chest*Vector3(side*.20,-.23,-.05),guard_weight)
+			var fingers=(Vector3.UP*.90+anatomical_chest.x*side*.25).normalized()
+			var normal=anatomical_chest.z
+			frame=frame.slerp(Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized(),guard_weight)
 		if actor.ordinary_dribble() or actor.crossing():
 			frame = Basis(actor.global_basis.x,actor.global_basis.z,Vector3.DOWN).orthonormalized()
 			if actor.ordinary_dribble() and side==actor.dribble_hand:
@@ -821,6 +926,11 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			target=actor.to_global(entry_palms[i]).lerp(target,release)
 			frame=entry_frames[i].slerp(frame,release)
 		var desired_hand = frame*palm_frames[i].inverse()
+		if not action_pose and not actor.has_ball:
+			# Guard and pursuit use different elbow guides. Carry the bend plane
+			# with the shoulder instead of swapping IK branches in a single tick.
+			var shoulder=bone_world(chain[0]).origin
+			guide=shoulder+global_basis*Vector3(side*.32,-.30,-.18)
 		var source_hand = bone_world(chain[2])
 		target = (source_hand*palm_offsets[i]).lerp(target,arm_weight[i])
 		desired_hand = source_hand.basis.orthonormalized().slerp(desired_hand,arm_weight[i])
@@ -845,10 +955,10 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			reach_rotation = Quaternion.IDENTITY.slerp(reach_rotation,minf(1,reach_limit/maxf(.001,reach_angle)))
 			set_bone_rotation(collar,Basis(reach_rotation)*collar_pose.basis)
 		solve(chain,wrist_target,guide)
-		if (athletic_arm or stationary_guard) and not contact_mode and not actor.crossing() and not holding and (not actor.has_ball or side!=actor.dribble_hand):
+		if (athletic_arm or stationary_guard) and (not contact_mode or guard_weight>0) and not actor.crossing() and not holding and (not actor.has_ball or side!=actor.dribble_hand):
 			# The relaxed hand continues the forearm. An upright chest frame here
 			# leaves the wrist cocked upward for the entire running cycle.
-			desired_hand=relaxed_hand_basis(i,target,guide)
+			desired_hand=desired_hand.slerp(relaxed_hand_basis(i,target,guide),1-guard_weight)
 			frame=desired_hand*palm_frames[i]
 			wrist_target=target-desired_hand*palm_offsets[i]*render_scale
 			solve(chain,wrist_target,guide)
@@ -863,15 +973,17 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			solve(chain,wrist_target,guide)
 		# Free-arm forearm alignment is itself a pose change. Bound it after
 		# solving too, so the sending wrist cannot snap when it becomes free.
-		if initialized and (actor.ordinary_dribble() or actor.crossing()):
+		if initialized and (actor.ordinary_dribble() or actor.crossing() or (not action_pose and not actor.has_ball)):
 			var angle=last_hand_basis[i].get_rotation_quaternion().angle_to(desired_hand.get_rotation_quaternion())
-			desired_hand=last_hand_basis[i].slerp(desired_hand,minf(1,delta*20/maxf(.001,angle)))
+			var wrist_rate=12.0 if not actor.has_ball else 20.0
+			desired_hand=last_hand_basis[i].slerp(desired_hand,minf(1,delta*wrist_rate/maxf(.001,angle)))
 			frame=desired_hand*palm_frames[i]
 			wrist_target=target-desired_hand*palm_offsets[i]*render_scale
 			solve(chain,wrist_target,guide)
 		set_bone_rotation(chain[2],skeleton.global_basis.orthonormalized().inverse()*desired_hand)
 		if driven or arm_weight[i]>.001:
 			var cup=.32
+			if guard_weight>0:cup=lerpf(cup,.08,guard_weight)
 			if contact_hand or actor.crossing() or actor.action in ["block","rebound","layup","shot","gather"]:cup=.04
 			if actor.action=="rebound" and actor.defense_caught:cup=.20*smoothstep(0,.08,actor.action_time-actor.defense_catch_time)
 			if actor.action=="gather":cup=.12
