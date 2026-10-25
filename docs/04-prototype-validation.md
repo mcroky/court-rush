@@ -1,6 +1,6 @@
 # v0.1 시제품 검증 기록
 
-## 2026-10-25 모션 전체 점검 — 로컬 빌드
+## v0.7.4 모션 전체 점검 — 2026-10-25
 
 - Godot 4.7.2.stable.official.ed1daf0bf / Compatibility 유지. 사용자 메인 경기 탭은 초기화하지 않고 별도 스튜디오·경기 탭에서 확인.
 - 새 motion_audit_test: 달리기·컷·급정지·크로스오버·블록·리바운드 진입/복귀, 30/60/120Hz, 실제 스킨 발 4,032샘플. 이전 회수 궤적을 다시 사용하는 첫 프레임 도약 재현. artifacts/motion-audit-before.txt와 motion-audit-diagnostic.txt에 원인 로그 보존.
@@ -9,8 +9,10 @@
 - 기존 실패 3개는 미해결로 분리: motion_test 26행은 옛 shoes 원점과 feet_world 일치를 요구해 중단. footwork_test 발 순서 12회, defensive_play_test 숨겨진 p.hands와 공 거리 8회 실패. HEAD 원본 리그로 재실행해 동일 실패 확인 후 작업 파일 복원. artifacts/legacy-*-baseline.txt 보존. 전체 검사 통과로 기록하지 않는다.
 - 중간 시도: 블록 손을 10m/s로 제한하자 실제 접촉 6회→3회로 감소. 해당 제한을 제거하고 진입 보간만 유지한 후 block_body_swing/contact_timing 통과. 접촉 창이나 기존 기준을 완화하지 않았다.
 - HUD 동일 상태 100회: 텍스트 쓰기 2,100→0. web_lifecycle_test는 변경 점수 즉시 표시·번역 유지·정지/입력/음악 설정도 통과. 데스크톱 headless animate CPU 중앙값은 약 0.3~0.5ms로 실행별 차이가 있어 FPS 개선을 주장하지 않는다.
-- 웹 release export 및 셸 빌드 성공. 브라우저에서 컷·급정지, 블록 준비, 공중 캐치, 레이업 확인. 실물 휴대폰·Android 미검증, 이번 변경의 GitHub Pages 배포 미수행. 별도 작업의 공통 메뉴·배포 스크립트·Pages 변경을 보존했다.
+- 웹 release export 및 셸 빌드 성공. 로컬 브라우저에서 컷·급정지, 블록 준비, 공중 캐치, 레이업 확인. 실물 휴대폰·Android 미검증. 별도 작업의 공통 메뉴·배포 스크립트·Pages 변경을 보존했다.
 - localization_test 408개 원문×3개 번역 통과, JavaScript 구문 및 diff 공백 검사 통과. 브라우저 영어 HUD가 반복 갱신 뒤에도 유지됨을 확인하고 한국어로 복원. 콘솔 warning/error 없음. screenshots/motion-audit-rebound-2026-10-25.png에 공중 캐치 화면 기록. 검증용 경기는 정지해 별도 탭으로 남겼다.
+- 사용자 배포 요청 후 원격 main 92aecc6의 기본 주소·하단 후원 메뉴를 유지하고 소스 10298a0 / Pages c81ebda를 게시했다. 기존 release/pages 작업 폴더를 건드리지 않고 release/motion-pages에서 준비. 공개 빌드 built(2026-10-25T04:32:33Z), 커밋 소스와 웹 셸 17개 파일 일치 확인.
+- 실제 https://mcroky.github.io/court-rush/ 에서 v0.7.4 표시, 연습 시작, 좌우 달리기·크로스오버·방향 전환, 업데이트 안내를 확인했다. 콘솔 warning/error 없음. screenshots/public-v0.7.4-release.png 기록. 사용자 기존 경기 탭은 초기화하지 않았다.
 
 ## v0.7.3 영어 해설·음악·모바일 스틱 (2026-10-25)
 
