@@ -1,5 +1,7 @@
 /* Source text stays Korean; identifiers, player names and saved data never change. */
 window.CourtMessages = [
+['블록','Block','ブロック','盖帽'],
+['상대가 공을 올릴 때 D · 가까이서 손바닥으로 쳐내기','Press D as the shooter raises the ball · get close and swat with your palm','相手がボールを上げる時にD・近づいて手のひらで弾く','对手举球时按D · 靠近并用手掌封盖'],
 ['코트의 리듬','Court rhythm','コートのリズム','球场节奏'],
 ['음악 켬','Music on','音楽オン','音乐开'],
 ['음악 끔','Music off','音楽オフ','音乐关'],
