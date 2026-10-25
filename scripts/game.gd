@@ -860,9 +860,11 @@ func _physics_process(delta: float) -> void:
 	previous_ball_position = ball.position
 
 func defense_kind(index: int) -> String:
-	if players[index].boxing_out: return "rebound"
 	if phase == "loose": return "rebound"
 	if phase == "flight" and (shooter == index or flight_t/maxf(flight_duration,.01) >= .45): return "rebound"
+	# W also establishes inside position as the shot leaves the hand. It must
+	# not replace a reachable early-flight block with a two-hand catch.
+	if players[index].boxing_out and ball.position.y > 2.45*players[index].height_ratio+.62: return "rebound"
 	return "block"
 
 func start_defensive_jump(index: int,kind: String) -> void:
@@ -1188,8 +1190,13 @@ func try_block() -> bool:
 	if not opponent_enabled() or phase not in ["takeoff","flight"]: return false
 	var defender = players[1 - shooter]
 	if defender.action != "block" or defender.action_time < .13 or defender.action_time > .52: return false
-	if defender.defensive_jump() and not block_lane_open(defender): return false
-	if defender.defensive_jump() and (defender.hand_world.y-defender.previous_hand_world.y)/maxf(defender.pose_delta,.0001) >= -.12: return false
+	if defender.defensive_jump():
+		if not block_lane_open(defender) or defender.action_time < .16 or defender.action_time > .40: return false
+		# A downward palm stroke can still rise in world space during takeoff.
+		# Measure the arm against the jumping torso; keep windup and recovery
+		# inactive and require the same swept, visible palm/ball contact below.
+		var palm_velocity = (defender.hand_world.y-defender.previous_hand_world.y)/maxf(defender.pose_delta,.0001)
+		if palm_velocity-defender.body_vertical_velocity >= -.12: return false
 	if hand_ball_distance(defender.hand_world,defender.previous_hand_world) >= .28: return false
 	phase = "loose"
 	ball_owner = -1
@@ -1207,7 +1214,9 @@ func try_block() -> bool:
 func block_lane_open(defender: Node3D) -> bool:
 	var offset = ball.position-defender.position
 	offset.y = 0
-	var forward = Basis(Vector3.UP,defender.defense_yaw).z
+	# The launch direction is selected on input. The incoming run heading can
+	# still differ while the feet and torso turn through the windup.
+	var forward = Basis(Vector3.UP,defender.defense_landing_yaw).z
 	if offset.length()>1.15 or (offset.length()>.15 and offset.normalized().dot(forward)<.15): return false
 	var hand = defender.hand_world
 	var path = ball.position-hand
@@ -1472,7 +1481,8 @@ func send_state() -> void:
 	state["careerStage"]=career_stage
 	state["canChangeRole"] = not started or phase == "ended" or (mode == "practice" and phase == "live" and players[0].action == "idle")
 	if not career_match_id.is_empty():state["canChangeRole"]=false
-	state["reboundWindow"] = phase in ["flight","loose"] and ball_owner == -1
+	state["defenseAction"] = defense_kind(0) if not players[0].has_ball and phase in ["live","takeoff","flight","loose"] else ""
+	state["reboundWindow"] = state["defenseAction"] == "rebound"
 	if court_audio != null:
 		state["musicTrack"] = court_audio.track_index
 		state["audioCalls"] = court_audio.calls_played

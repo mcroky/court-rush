@@ -45,7 +45,7 @@ func run() -> void:
 					contact_time = p.action_time
 					contact_height = p.hand_world.y
 					contact_velocity = (p.hand_world.y-old_hand.y)*fps
-					check(contact_velocity < -.12,"Block deflected ball while palm was still rising at %dfps" % fps)
+					check(contact_velocity-p.body_vertical_velocity < -.12,"Block deflected ball without a downward arm stroke at %dfps" % fps)
 				if contact_time >= 0 and p.action == "block" and p.action_time > contact_time:
 					if first_down < 0 and p.hand_world.y < contact_height-.0005:
 						first_down = p.action_time-contact_time

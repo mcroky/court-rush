@@ -1,5 +1,5 @@
 param(
- [string]$Version='0.7.5',
+ [string]$Version='0.7.6',
  [string]$Repository='mcroky/court-rush',
  [switch]$Push
 )

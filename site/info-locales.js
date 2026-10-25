@@ -45,7 +45,8 @@
  ]]
  };
  const news={
- en:['Plant your feet. Stay with the play.','v0.7.5 · Defensive movement',[
+ en:['Make contact. Make the block.','v0.7.6 · Block contact',[
+  'v0.7.6 · Fixed downward blocks rejected during upward takeoff, early-shot block selection while holding Guard, and the strike direction after a turn. Touch labels now distinguish Block from Rebound.',
   'v0.7.5 · Defense: short alternating side steps, planted transitions from pursuit into a low stance, and smoother arm and shoulder recovery. Height-aware support fixes foot sliding for shorter guards. Character Studio adds low stance, defensive slides and box-out previews.',
   'Fixed foot and knee snaps when stopping or entering blocks and rebounds. Reduced repeated torso and shoulder corrections, refined the rebound-to-dribble handoff and relaxed the free hand. Unchanged HUD text now skips redundant updates.',
   '27 original English voice calls react to baskets, dribble skills, blocks and airborne rebounds. Choose one of 3 original instrumental tracks or rotate them. Separate music, commentary and effects volumes; music dips during commentary. The mobile left stick sits higher for easier reach.',
@@ -54,7 +55,8 @@
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. Online competition, 3v3 and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['足を踏ん張り、自然な守備へ。','v0.7.5・守備動作の改善',[
+ ja:['手のひらが届く、その瞬間に。','v0.7.6・ブロック判定の修正',[
+  'v0.7.6 · 上昇中に腕を振り下ろしてもブロックが無効になる不具合、守備を押しながらのシュート直後の選択、方向転換後の打撃方向を修正。タッチ表示もブロックとリバウンドを区別します。',
   'v0.7.5 · 守備：左右の足を交互に運ぶ短いサイドステップ、追走から接地して低く構える動作、腕と肩の回収を調整。身長に合わせた脚の計算で、小柄なガードの足滑りも修正しました。キャラクタースタジオに低い守備・左右のステップ・ボックスアウトを追加しました。',
   '急停止・ブロック・リバウンドへの移行時に足や膝が跳ねる不具合を修正。胴体と肩の補正の重複を減らし、リバウンドからドリブルへ戻る手と反対の手の姿勢を調整しました。同じ試合表示の不要な更新も省きました。',
   '得点・ドリブル技・ブロック・空中リバウンドに英語実況27本を追加。オリジナルBGM3曲を選択または順番再生でき、音楽・実況・効果音の音量を個別に調節できます。実況中は音楽を下げます。モバイルの左スティックを上に移動しました。',
@@ -63,7 +65,8 @@
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。オンライン対戦・3対3・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['站稳脚步，自然防守。','v0.7.5 · 防守动作优化',[
+ 'zh-CN':['手掌触球，完成封盖。','v0.7.6 · 盖帽判定修复',[
+  'v0.7.6 · 修复起跳上升时向下挥掌接触球却被判无效、按住防守时投篮初期误选篮板，以及转向后的封盖方向。触屏按钮区分盖帽和篮板。',
   'v0.7.5 · 防守：调整双脚交替的小幅横移、追防后落脚进入低姿防守的衔接，以及手臂与肩部的回收。按身高计算腿部支撑，修复较矮后卫的脚底滑动。角色工作室新增低姿防守、横向滑步和卡位三种预览。',
   '修复急停、盖帽及篮板动作开始时脚和膝盖突然跳动的问题，减少躯干和肩部的重复修正，调整抢到篮板后恢复运球的手部衔接及另一只手的放松姿势。同时减少相同比赛文字的不必要刷新。',
   '新增27段原创英语解说，响应得分、运球技能、盖帽及空中篮板。3首原创背景音乐可单曲或轮换播放，音乐、解说及音效音量可分别调节，解说时音乐会降低。手机左摇杆已上移。',

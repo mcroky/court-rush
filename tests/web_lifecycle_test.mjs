@@ -99,4 +99,13 @@ function fixture(raw=null,failWrite=false){
  f.window.ufUpdate({...next});assert.equal(f.node('role-description').textContent,'Guard · Fast movement','HUD source cache must preserve translated text');
  f.window.ufUpdate({...next,score:[2,0]});assert.equal(f.node('score-you').textContent,'02','A changed score must still render immediately');
 }
-console.log('WEB_LIFECYCLE: focus/visibility, persistent pause, repeat keys, touch cancel, manual resume, shot-meter transitions and migrated audio settings passed');
+{
+ const f=fixture();const next={started:true,paused:false,phase:'flight',mode:'practice',score:[0,0],seconds:90,owner:-1,action:'idle',charge:0,finish:'shot',makes:0,attempts:0};
+ f.window.ufUpdate({...next,defenseAction:'block',reboundWindow:true});
+ assert.equal(f.node('touch-shot-label').textContent,'블록','Touch label must follow the actual selected defensive jump');
+ assert.equal(f.node('finish-label').textContent,'D · BLOCK','An early-flight block must not show a rebound cue');
+ f.window.ufUpdate({...next,defenseAction:'rebound',reboundWindow:true});
+ assert.equal(f.node('touch-shot-label').textContent,'리바운드');
+ assert.equal(f.node('finish-label').textContent,'D · REBOUND');
+}
+console.log('WEB_LIFECYCLE: focus/visibility, persistent pause, repeat keys, touch cancel, manual resume, shot-meter and defensive-action cues, migrated audio settings passed');
