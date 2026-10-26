@@ -59,13 +59,13 @@ func run():
         if p.turnaround_shot:approach_yaw=p.rotation.y
         check(absf(angle_difference(approach_yaw,p.rotation.y))<.002,"Hips turned across the running plants "+tag)
         check(gap>=minf(initial_gap,.12)-.025,"Receiving foot cut across the old support "+tag+" width="+str(gap))
-        if p.action_time>=.10:
+        if p.action_time>=.12:
          check(gap>.12*p.height_ratio,"Gather feet crossed before takeoff "+tag+" width="+str(gap))
          check(knee_gap>.10*p.height_ratio,"Gather knees crossed "+tag+" width="+str(knee_gap))
          if not p.turnaround_shot or p.held.entry_time>=.12:check(v.locked[0] or v.locked[1],"Gather lost both supporting feet "+tag)
         if p.action_time>=.19:
          gathered=true;min_plant_width=minf(min_plant_width,gap)
-         if p.action_time>=.25 and (not p.turnaround_shot or p.held.square_ready(p)):
+         if p.action_time>=.27 and (not p.turnaround_shot or p.held.square_ready(p)):
           for toe in v.toe_world:check(absf(toe.y-.026)<.006,"Shoe was still airborne at the shot load "+tag+" toe="+str(toe)+" ready="+str(p.held.square_ready(p)))
         check(p.step_serial-p.gather_step_start<=2,"Gather added an illegal third step "+tag)
        if shot and p.action_time<=p.SHOT_PLANT_TIME:

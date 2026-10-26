@@ -13,6 +13,7 @@ var player: AnimationPlayer
 var phase = .28
 var clip = ""
 var locomotion = 0.0
+var run_start_serial=-1
 var initialized = false
 var feet: Array = []
 var arms: Array = []
@@ -77,7 +78,8 @@ var shot_gather_closing=false
 var shot_gather_release_origin=Vector3.ZERO
 var shot_gather_release_toe=Vector3.ZERO
 var shot_gather_release_time=0.0
-const SHOT_GATHER_STEP_END=.24
+const SHOT_GATHER_STEP_END=.26
+const SHOT_GATHER_FIRST_END=.12
 
 func begin_shot_gather(actor) -> void:
 	shot_gather_steps=initialized and actor.finish_kind=="shot" and actor.approach_velocity.length()>1.2 and not actor.turnaround_shot
@@ -105,10 +107,10 @@ func begin_shot_gather(actor) -> void:
 
 func shot_gather_toe(actor,index: int,elapsed: float=-1.0) -> Vector3:
 	var t=actor.action_time if elapsed<0 else elapsed
-	if index!=shot_gather_first and shot_gather_released and t<.09:
-		return shot_gather_release_toe+actor.global_position-shot_gather_release_origin+Vector3.UP*.035*smoothstep(shot_gather_release_time,.09,t)
-	var start=0.0 if index==shot_gather_first else .09
-	var duration=.09 if index==shot_gather_first else SHOT_GATHER_STEP_END-.09
+	if index!=shot_gather_first and shot_gather_released and t<SHOT_GATHER_FIRST_END:
+		return shot_gather_release_toe+actor.global_position-shot_gather_release_origin+Vector3.UP*.035*smoothstep(shot_gather_release_time,SHOT_GATHER_FIRST_END,t)
+	var start=0.0 if index==shot_gather_first else SHOT_GATHER_FIRST_END
+	var duration=SHOT_GATHER_FIRST_END if index==shot_gather_first else SHOT_GATHER_STEP_END-SHOT_GATHER_FIRST_END
 	var progress=clampf((t-start)/duration,0,1)
 	var goal: Vector3=shot_gather_from[index].lerp(shot_gather_to[index],smoothstep(0,1,progress))
 	goal.y+=sin(progress*PI)*.055
@@ -412,6 +414,7 @@ func sample_visual_swing(side: int, delta: float) -> Vector3:
 
 func reset_contacts() -> void:
 	locked = [false,false]
+	run_start_serial=-1
 	initialized = false
 	arm_weight = [0.0,0.0]
 	previous_contact_mode = false
@@ -467,7 +470,7 @@ func sync_cut_contacts(_actor) -> void:
 			anchors[i] = toe_world[i]
 			anchors[i].y = .026
 
-func sample_base(delta: float, speed: float, airborne: bool) -> void:
+func sample_base(delta: float, speed: float, airborne: bool, contact_phase: float=-1.0) -> void:
 	for index in range(base_local.size()): skeleton.set_bone_pose(index,base_local[index])
 	var desired = clampf((speed-.12)/2.5,0,1) if not airborne else 0.0
 	locomotion = move_toward(locomotion,desired,delta*7)
@@ -481,6 +484,7 @@ func sample_base(delta: float, speed: float, airborne: bool) -> void:
 		player.play(clip,.18 if initialized else 0.0)
 	player.speed_scale = clampf(speed/RUN_SPEED,.16,1.15) if clip=="run" else 1.0
 	player.advance(delta)
+	if clip=="run" and contact_phase>=0:player.seek(fposmod(contact_phase,1)*player.current_animation_length,true)
 	# The source bakes stretch into some chains. Gameplay contacts keep rigid lengths.
 	for index in range(skeleton.get_bone_count()): skeleton.set_bone_pose_scale(index,Vector3.ONE)
 	phase = fposmod(player.current_animation_position/maxf(player.current_animation_length,.01),1) if clip=="run" else .28
@@ -568,11 +572,19 @@ func shot_pose(actor, side: float, shoulder: Vector3) -> Dictionary:
 			fingers=aim.z*cos(angle)-Vector3.UP*sin(angle)
 			target+=aim.z*.08*follow+Vector3.UP*.025*follow
 		else:
-			var peel=smoothstep(.12,.28,clock)
-			target=target.lerp(shot_target(actor,Vector3(side*.29,head_height+.16+actor.jump,center.z),aim),peel)
-		var recover=smoothstep(.44,.84,clock)
+			# The guide hand peels down from the ball after release; it must not
+			# remain beside the head as if both arms threw the shot together.
+			var peel=smoothstep(.22,.40,clock)
+			target=target.lerp(shot_target(actor,Vector3(side*.27,head_height-.26+actor.jump,.30),aim),peel)
+			guide=guide.lerp(shoulder+aim*Vector3(side*.16,-.24,.17),peel)
+			var relaxed_fingers=(Vector3.DOWN*.25+aim.z*.97).normalized()
+			var relaxed_normal=(aim.x*-side+Vector3.UP*.15).normalized()
+			var relaxed=Basis(relaxed_fingers.cross(relaxed_normal).normalized(),relaxed_fingers,relaxed_normal).orthonormalized()
+			var present=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized().slerp(relaxed,peel)
+			normal=present.z;fingers=present.y
+		var recover=smoothstep(.44 if shooting else .40,.84 if shooting else .72,clock)
 		target=target.lerp(athlete_target(actor,Vector3(side*.24,1.24+root_height+.055,.18)),recover)
-		guide=guide.lerp(shoulder+global_basis*Vector3(side*.12,-.28,.05),recover)
+		guide=guide.lerp(shoulder+aim*Vector3(side*.12,-.28,.10),recover)
 	var frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
 	return {"target":target,"frame":frame,"guide":guide}
 
@@ -733,12 +745,13 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 				visual_swing_time[i]=0
 	# A shuffle has its own alternating contacts. Do not retain sprint pelvis
 	# rotation and shoulder bob underneath a planted defensive stance.
-	sample_base(delta,speed,(action_pose and not actor.moving_gather()) or actor.brake_state in ["load","settle"] or guard_active or actor.held.owns(actor))
+	var was_run_clip=clip=="run"
+	sample_base(delta,speed,(action_pose and not actor.moving_gather()) or actor.brake_state in ["load","settle"] or guard_active or actor.held.owns(actor),actor.stride/TAU+.21)
+	if clip=="run" and not was_run_clip:run_start_serial=actor.step_serial
+	var first_run_step=clip=="run" and not contact_mode and actor.step_serial==run_start_serial and actor.last_step>=0
 	if previous_contact_mode and not contact_mode and clip=="run":
-		# Resume near toe-off on the supporting side, never at an unrelated leg phase.
-		phase = .40 if locked[1] else .90
-		player.seek(player.current_animation_length*phase,true)
-		for index in range(skeleton.get_bone_count()): skeleton.set_bone_pose_scale(index,Vector3.ONE)
+		# The authored clip already follows the same alternating contact phase.
+		# Do not seek to a second guessed foot at the first free running frame.
 		return_poses = transition_pose()
 		return_window=.20 if actor.run_entry_left>0 and not actor.has_ball else .12
 		return_blend = return_window
@@ -875,6 +888,9 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		if clip=="idle": source_contact = true
 		if contact_mode: source_contact = not actor.swinging[i] and not visual_swing[i] and actor.jump<.05 and (was_locked or not initialized or toe_world[i].y<.045)
 		if guard_active:source_contact=not actor.swinging[i] and was_locked
+		if first_run_step and i!=actor.last_step:
+			source_contact=true
+			visual_swing[i]=false
 		if visual_swing[i]:source_contact=false
 		if not source_contact:contact_spent[i]=false
 		if not contact_mode and source_contact and not locked[i] and initialized:
@@ -893,6 +909,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		# Preserve the authored foot trajectory while lowering the pelvis. Both
 		# knees flex; lowering the whole source alone would sink free feet.
 		var authored_toe=skeleton.global_transform*source_poses[chain[3]].origin
+		if return_blend>0:authored_toe=toe
 		var free_goal=authored_toe+Vector3.UP*maxf(0,-root_height) if athletic or free_grounded else toe
 		if free_grounded:free_goal.y=maxf(.026,free_goal.y)
 		if athletic:
@@ -965,19 +982,19 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			desired_basis=guard_entry_bases[i].slerp(Basis(Vector3.UP,actor.feet_yaw[i])*foot_rest_basis[i],smoothstep(0,.14,guard_entry_time))
 		physics_swing[i]=actor.swinging[i]
 		if actor.action=="gather" and shot_gather_steps:
-			if i!=shot_gather_first and actor.action_time>=.09 and not shot_gather_closing:
+			if i!=shot_gather_first and actor.action_time>=SHOT_GATHER_FIRST_END and not shot_gather_closing:
 				shot_gather_closing=true
 				if shot_gather_released:shot_gather_from[i]=toe_world[i]
-			var start=0.0 if i==shot_gather_first else .09
-			var duration=.09 if i==shot_gather_first else SHOT_GATHER_STEP_END-.09
+			var start=0.0 if i==shot_gather_first else SHOT_GATHER_FIRST_END
+			var duration=SHOT_GATHER_FIRST_END if i==shot_gather_first else SHOT_GATHER_STEP_END-SHOT_GATHER_FIRST_END
 			var progress=clampf((actor.action_time-start)/duration,0,1)
 			goal=shot_gather_toe(actor,i)
 			locked[i]=progress>=1 or (actor.action_time<=start and shot_gather_from[i].y<.045)
 			if locked[i]:anchors[i]=goal
 			visual_swing[i]=false
-			var heel=.40*smoothstep(0,.09,actor.action_time)*(1-smoothstep(.09,.15,actor.action_time)) if i!=shot_gather_first else 0.0
+			var heel=.40*smoothstep(0,SHOT_GATHER_FIRST_END,actor.action_time)*(1-smoothstep(SHOT_GATHER_FIRST_END,.15,actor.action_time)) if i!=shot_gather_first else 0.0
 			desired_basis=shot_gather_bases[i].orthonormalized().slerp((global_basis*Basis(Vector3.RIGHT,heel)*foot_rest_basis[i]).orthonormalized(),smoothstep(0,.04,actor.action_time))
-			if i!=shot_gather_first and actor.action_time<.09:
+			if i!=shot_gather_first and actor.action_time<SHOT_GATHER_FIRST_END:
 				var hip=bone_world(chain[0]).origin
 				var reach=hip.distance_to(bone_world(chain[1]).origin)+bone_world(chain[1]).origin.distance_to(foot.origin)-.004
 				var offset=foot.affine_inverse()*bone_world(chain[3]).origin
@@ -1028,7 +1045,8 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			support_drop = maxf(support_drop,hip.y-ankle_goal.y-vertical)
 	# Let the supporting knee absorb the source pelvis bob; never pull the shoe.
 	ground_drop=move_toward(ground_drop,clampf(support_drop,0,.18),delta*2.0) if initialized else clampf(support_drop,0,.18)
-	if guard_active or (actor.action=="gather" and shot_gather_steps):
+	var standing_contact=clip=="idle" and speed<.15 and not action_pose and actor.jump<.05
+	if guard_active or standing_contact or first_run_step or (actor.action=="gather" and shot_gather_steps):
 		# Contact is a hard reach limit. A height filter may delay standing up,
 		# but must not keep the hips above a planted leg's reachable height.
 		ground_drop=maxf(clampf(support_drop,0,.28),move_toward(ground_drop,0,delta*.9))
@@ -1052,7 +1070,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			var knee=bone_world(chain[1]).origin
 			var ankle=bone_world(chain[2]).origin
 			var reach=hip.distance_to(knee)+knee.distance_to(ankle)-.004
-			if hip.distance_to(ankle_goals[i])>reach and not guard_active and not (actor.action=="gather" and shot_gather_steps):
+			if hip.distance_to(ankle_goals[i])>reach and not guard_active and not standing_contact and not (first_run_step and i!=actor.last_step) and not (actor.action=="gather" and shot_gather_steps):
 				# The input controller already scheduled this transfer. The shorter
 				# render rig must toe off, not drag the sole or stop the player again.
 				locked[i]=false
@@ -1268,7 +1286,10 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			var reach_limit=.12 if contact_hand or actor.crossing() else .32
 			reach_rotation = Quaternion.IDENTITY.slerp(reach_rotation,minf(1,reach_limit/maxf(.001,reach_angle)))
 			set_bone_rotation(collar,Basis(reach_rotation)*collar_pose.basis)
-		if shooting_pose and actor.shot_style!="hook" and (actor.action!="shot" or actor.shot_arm_time()<.22):guide=shot_elbow_guide(actor,chain,wrist_target,target)
+		if shooting_pose and actor.shot_style!="hook":
+			var stacked=shot_elbow_guide(actor,chain,wrist_target,target)
+			var peel=smoothstep(.22,.40,actor.shot_arm_time()) if actor.action=="shot" else 0.0
+			guide=stacked.lerp(guide,peel)
 		solve(chain,wrist_target,guide,rear_axis,rear_limit,actor.to_global(previous_elbows_local[i]),delta*10 if shooting_pose and initialized else 0.0)
 		if shooting_pose and actor.action=="shot" and actor.shot_arm_time()>.48:
 			var relax=smoothstep(.48,.84,actor.shot_arm_time())

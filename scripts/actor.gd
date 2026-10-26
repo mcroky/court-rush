@@ -957,7 +957,8 @@ func start_ground_step(velocity: Vector3) -> void:
 		var side = -1.0 if next_step == 0 else 1.0
 		var rest = stance_rest(next_step)
 		if moving or feet_world[next_step].distance_to(rest) > lerpf(.07,.025,defense_weight):
-			var distance = .28 if last_visual_velocity.length() < .15 else lerpf(.72,.40,defense_weight)
+			var ordinary_run=locomotion_pose() and defense_weight<.5 and brake_state=="" and not chase_recovery and restart_left<=0 and landing_recovery_left<=0 and landing_push_left<=0
+			var distance = .28 if last_visual_velocity.length() < .15 else lerpf(.96 if ordinary_run else .72,.40,defense_weight)
 			# In a defensive slide, open with the foot on the movement side.
 			var local = velocity.rotated(Vector3.UP,-rotation.y)
 			if defense_weight > .5 and last_visual_velocity.length() < .15 and absf(local.x) > .2:
@@ -965,7 +966,7 @@ func start_ground_step(velocity: Vector3) -> void:
 				side = -1.0 if next_step == 0 else 1.0
 				rest = stance_rest(next_step)
 			var duration = clampf(distance / maxf(velocity.length(), .5), .05, .26)
-			if locomotion_pose() and defense_weight < .5: duration = maxf(duration,.12)
+			if locomotion_pose() and defense_weight < .5: duration = maxf(duration,.18 if ordinary_run else .12)
 			if landing_push_left > 0:
 				duration = .18 if step_serial == landing_push_serial else .16
 			elif landing_recovery_left > 0: duration = .16
