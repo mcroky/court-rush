@@ -2,6 +2,7 @@
  const i18n=window.CourtI18n;
  const help={
  en:['Find your rhythm.',[
+  'W+D or A+Shoot together: within 3.5 m, a hook shot; add a direction away from the hoop, or shoot farther out, for a fadeaway. Hold Shoot for at least 0.18 seconds. On touchscreens, hold the existing Drive and Shoot buttons together.',
   'Arrow keys / left stick: move in screen directions. D / Shoot: hold to gather, jump and release. Tap under 0.18 seconds for a pump fake.',
   'Release D during the green window (0.36–0.50 seconds) for a timing bonus. Distance and defensive pressure still affect the result.',
   'Drive within 3 m and press D for a layup. Nearer the rim (1.85 m) you can dunk; within 1.05 m, a standing dunk is possible. Check the D · DUNK cue. Behind the basket, you take a normal shot.',
@@ -16,6 +17,7 @@
   'On a phone, landscape is recommended. Use the left stick and right action buttons. A small timing rail appears beside Shoot only while preparing a shot.'
  ]],
  ja:['まずは、自分のリズムを。',[
+  'W+D、またはA+シュートを同時押し：3.5m以内はフックシュート。ゴールと逆方向を加えるか、遠い位置ではフェイダウェイ。シュートは0.18秒以上押してください。タッチ操作も既存のドライブとシュートを同時に押します。',
   '矢印キー／左スティック：画面基準で移動。D／シュート長押し：ボールを集めて跳び、リリース。0.18秒未満の短押しでシュートフェイク。',
   '緑の区間（0.36〜0.50秒）でDを離すとタイミングボーナス。距離と守備の圧力により失敗することもあります。',
   '走って3m以内に入りDでレイアップ。さらに近い1.85m以内ではダンク、正面1.05m以内ならその場ダンクも可能です。D · DUNK表示を確認。ゴール裏では通常シュートです。',
@@ -30,6 +32,7 @@
   'スマートフォンは横向き推奨。左スティックと右のアクションボタンで操作。シュート準備中だけ、ボタン脇の小さなゲージを表示します。'
  ]],
  'zh-CN':['找到你的节奏。',[
+  '同时按W+D或A+投篮：3.5米内为勾手；加上背离篮筐的方向，或在更远处使用，则为后仰跳投。投篮键按住至少0.18秒。触屏使用现有突破与投篮按钮同时按住。',
   '方向键／左侧摇杆：按屏幕方向移动。按住 D／投篮：收球、起跳并出手；轻点不足 0.18 秒可做投篮假动作。',
   '在绿色区间（0.36–0.50 秒）松开 D 可获得时机加成，距离和防守压力仍会影响命中。',
   '跑动切入距篮筐 3 米内按 D 上篮；更近的 1.85 米内可扣篮，正前方 1.05 米内也可原地扣篮。请看 D · DUNK 提示，篮筐后方为普通投篮。',
@@ -45,7 +48,9 @@
  ]]
  };
  const news={
- en:['Keep the court clear.','v0.8.5 · Less HUD over the court',[
+ en:['Sell the fake. Own the space.','v0.8.6 · Readable fakes and shot combinations',[
+  "Larger ball and shoulder threats with readable holds and counters; shoe squeaks follow planted pivot and jab contacts. W+D or Drive+Shoot adds a close hook, or a fadeaway with input away from the hoop. Moving turnaround shots continue rotating in the air. Loose balls can be secured on body/hand contact from their first bounce.",
+  "v0.8.5",
   'Removed the panel covering the court with defender-switch instructions, a duplicate switch button and current-player details. E, the contextual bottom touch switch and the selected-player ring remain. Controls are still available in Help.',
   'v0.8.4 · Turnaround shots & held-ball fakes:',
   'When shooting while moving away from the hoop or sideways, plant, load the pivot foot, turn the body and receive the other foot before lifting the ball. Refined the sudden release-time turn and the knee transition back into running.',
@@ -72,7 +77,9 @@
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. AI 3v3 is a separate mode without rewards. Online competition and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['コートを広く見渡す。','v0.8.5・コート上の案内パネルを削除',[
+ ja:['見せて、揺さぶるバスケ。','v0.8.6・大きく読めるフェイクとシュートの組合せ',[
+  "ボールと肩を大きく動かすフェイク、見せる間と切り返し、軸足の接地に合わせた靴の摩擦音。W+Dまたはドライブ＋シュートでゴール下フック、逆方向入力でフェイダウェイ。移動中のターンシュートは空中まで回転が続き、最初のバウンドから体や手に触れたルーズボールを確保します。",
+  "v0.8.5",
   'コートを覆っていた守備切替ボタン・操作説明・選手情報のパネルを削除しました。Eキー、画面下の状況別タッチ切替、操作選手の足元リングは維持。操作方法はヘルプで確認できます。',
   'v0.8.4・振り向きシュートと持球フェイク：',
   'リングと反対方向や横に走ってから打つとき、接地して軸足に荷重を移し、体を回して反対の足を受けてからボールを上げます。リリース直前に急旋回する動作と、走りへ戻る際の膝の跳ねを調整しました。',
@@ -99,7 +106,9 @@
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。AI3対3は報酬なしの別モードです。オンライン対戦・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['把球场留给比赛。','v0.8.5 · 移除遮挡球场的提示面板',[
+ 'zh-CN':['让假动作看得见。','v0.8.6 · 清晰假动作与组合投篮',[
+  "加大球和肩部的假动作，加入展示停顿及反向回收，并按轴心脚和试探步落地时机播放鞋底摩擦声。W+D或突破+投篮为近距离勾手，加背离篮筐方向为后仰。移动转身投篮继续在空中旋转；活球从第一次弹起就可在身体或手接触时拿到。",
+  "v0.8.5",
   '移除了遮挡球场的防守切换按钮、操作说明和当前球员信息面板。保留E键、底部情境触屏切换按钮以及脚下选中光圈，操作方法仍可在帮助中查看。',
   'v0.8.4 · 转身投篮与持球假动作：',
   '背向篮筐或横向移动后投篮时，先落脚、将重心移到中枢脚、转动身体，再接住另一只脚并抬球。调整出手前突然转身和投篮后恢复跑动时的膝部跳动。',

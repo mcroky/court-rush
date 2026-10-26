@@ -38,13 +38,13 @@ func run() -> void:
 	key(KEY_D, false)
 	ticks(1)
 	check(game.players[0].action == "held_fake" and game.players[0].held.kind=="pump" and game.attempts == 0, "short tap is a fake, not a shot")
-	ticks(40)
+	ticks(50)
 	var held_position = game.players[0].position
 	var held_phase = game.players[0].dribble_phase
 	var pivot_foot = game.players[0].skinned.toe_world[game.players[0].held.support]
 	key(KEY_RIGHT, true)
 	key(KEY_A, true)
-	ticks(40)
+	ticks(50)
 	key(KEY_RIGHT, false)
 	key(KEY_A, false)
 	check(game.players[0].dribble_ended and game.players[0].action == "idle" and game.players[0].position.distance_to(held_position)<.65, "held fake turns around the planted foot without restarting a drive")

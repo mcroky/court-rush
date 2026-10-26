@@ -27,6 +27,20 @@ func apply_appearance(ids: Dictionary) -> void:
 var transfer_target = Vector3.ZERO
 var transfer_from = Vector3.ZERO
 var transfer_caught = false
+var pickup_from=Vector3.ZERO
+var pickup_height=0.0
+var pickup_velocity=0.0
+
+func begin_pickup(point: Vector3) -> void:
+	pickup_from=to_local(point)
+	pickup_height=jump
+	pickup_velocity=clampf(body_vertical_velocity,-4,3) if jump>.05 else 0.0
+	action="pickup";action_time=0;dribble_phase=0;dribble_ended=false
+	held.reset()
+
+func pickup_center() -> Vector3:
+	var pocket=Vector3(0,1.16*height_ratio+jump,.30*height_ratio)
+	return to_global(pickup_from.lerp(pocket,smoothstep(.025,.24,action_time)))
 
 func transfer_pose(index: int) -> Vector3:
 	var side = -1.0 if index == 0 else 1.0
@@ -125,6 +139,7 @@ func stance_rest(index: int) -> Vector3:
 	return rest
 
 func reset_stance() -> void:
+	shot_style="jumper";turnaround_shot=false;shot_release_time=.22
 	held.reset()
 	if skinned != null: skinned.reset_contacts()
 	shot_recovery_left=0.0
@@ -218,10 +233,20 @@ var turn_origin = 0.0
 var turn_sign = 1.0
 var finish_running = false
 var gather_step_start = 0
+var shot_style = "jumper"
+var shot_rim_yaw = 0.0
+var turnaround_shot = false
+var shot_release_time = .22
 var shot_gather_turn = false
 var shot_gather_yaw = 0.0
 var shot_exit_intent = Vector2.ZERO
 var shot_recovery_left=0.0
+
+func shot_arm_time() -> float:
+	if not turnaround_shot or action!="shot":return action_time
+	if action_time<=SHOT_PLANT_TIME:return action_time
+	if action_time<=shot_release_time:return lerpf(SHOT_PLANT_TIME,.22,(action_time-SHOT_PLANT_TIME)/(shot_release_time-SHOT_PLANT_TIME))
+	return lerpf(.22,.88,clampf((action_time-shot_release_time)/(.88-shot_release_time),0,1))
 
 func shot_aim_yaw() -> float:
 	return rotation.y+clampf(angle_difference(rotation.y,facing),-.32,.32)*smoothstep(.08,.22,action_time) if action=="shot" else rotation.y
@@ -1471,7 +1496,7 @@ func animate(delta: float, _time: float) -> void:
 	gait_weight = move_toward(gait_weight, clampf(speed / 3.2, 0, 1), delta * 6)
 	gait_length = lerpf(1.25, 2.15, clampf(speed / 4.7, 0, 1))
 	if crossing(): dribble_phase = (cross_start_phase+minf(action_time,cross_wait)*cross_rate/TAU)*TAU
-	elif not dribble_ended and not (action == "rebound" and defense_caught) and not (stealing() and steal_success):
+	elif action!="pickup" and not dribble_ended and not (action == "rebound" and defense_caught) and not (stealing() and steal_success):
 		var resume_bounce = smoothstep(0,.16,.16-cross_exit_left) if cross_exit_left > 0 and ordinary_dribble() else 1.0
 		dribble_phase += delta*dribble_rate(speed)*resume_bounce
 	ball_side = move_toward(ball_side, dribble_hand, delta * 12)
@@ -1485,8 +1510,9 @@ func animate(delta: float, _time: float) -> void:
 	if not held.owns(self):rotation.y += yaw_step
 	# A running pull-up plants in its approach heading. Turning the hips to the
 	# rim over the old sprint contacts winds the two legs across one another.
-	if shot_gather_turn and action in ["gather","shot"]:
-		rotation.y = shot_gather_yaw if action=="gather" else lerp_angle(shot_gather_yaw,facing,smoothstep(SHOT_PLANT_TIME+.008,.25,action_time))
+	if shot_gather_turn and action in ["gather","shot"] and not held.owns(self):
+		var turn_end=shot_release_time-.025 if turnaround_shot else .25
+		rotation.y = shot_gather_yaw if action=="gather" else lerp_angle(shot_gather_yaw,facing,smoothstep(SHOT_PLANT_TIME+.008,turn_end,action_time))
 	elif action not in ["gather","shot"]:
 		shot_gather_turn = false
 	if held.owns(self):held.tick(self,delta)
@@ -1900,6 +1926,7 @@ func animate(delta: float, _time: float) -> void:
 			hand_world=receiver
 
 func ball_anchor(_time: float) -> Vector3:
+	if action=="pickup":return pickup_center()
 	if held.owns(self):return (palm_position(0)+palm_position(1))*.5
 	if action in ["pass","receive"]:
 		var center = (palm_position(0)+palm_position(1))*.5

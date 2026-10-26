@@ -23,6 +23,20 @@ static func clamp_to_court(pos: Vector3) -> Vector3:
 static func ball_outside(pos: Vector3) -> bool:
 	return absf(pos.x) > COURT_HALF_WIDTH or pos.z < COURT_BACK or pos.z > COURT_FRONT
 
+static func segment_gap(a: Vector3,b: Vector3,c: Vector3,d: Vector3) -> float:
+	var u=b-a;var v=d-c;var offset=a-c
+	var aa=u.dot(u);var ee=v.dot(v);var f=v.dot(offset)
+	var s=0.0;var t=0.0
+	if ee<.000001:return a.distance_to(c) if aa<.000001 else (a+u*clampf(-u.dot(offset)/aa,0,1)).distance_to(c)
+	if aa<.000001:t=clampf(f/ee,0,1)
+	else:
+		var cc=u.dot(offset);var bb=u.dot(v);var denom=aa*ee-bb*bb
+		if absf(denom)>.000001:s=clampf((bb*f-cc*ee)/denom,0,1)
+		t=(bb*s+f)/ee
+		if t<0:t=0;s=clampf(-cc/aa,0,1)
+		elif t>1:t=1;s=clampf((bb-cc)/aa,0,1)
+	return (a+u*s).distance_to(c+v*t)
+
 static func finish_type(from: Vector3, velocity: Vector2) -> String:
 	var offset = Vector2(HOOP.x - from.x, HOOP.z - from.z)
 	var distance = offset.length()

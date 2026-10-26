@@ -44,7 +44,7 @@ func run():
       if p.action=="shot":
        var shooter=1 if hand>0 else 0
        var frame=v.bone_world(v.arms[shooter][2]).basis.orthonormalized()*v.palm_frames[shooter]
-       if p.action_time>=.34 and p.action_time<=.44:
+       if p.shot_arm_time()>=.34 and p.shot_arm_time()<=.44:
         check(frame.y.dot(Vector3.DOWN)>.65,"No visible wrist snap "+tag);folded=true
        if p.action_time>=.79:
         var head=v.bone_world(v.skeleton.find_bone("head")).origin

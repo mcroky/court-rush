@@ -190,9 +190,9 @@ func tick(delta: float, input: Dictionary) -> void:
 			game.needs_clear = false
 			game.announce("CLEARED", "이제 공격할 수 있어요.",1)
 		if pressed(input,"pass") and (p.action in ["idle","fake"] or p.action=="held_fake" and p.action_time>=p.held.duration*.6): begin_pass(selected,choose_receiver(selected,desired))
-		elif pressed(input,"shoot") and (p.action == "idle" or p.action=="held_fake" and p.action_time>=p.held.duration*.60 or p.crossing() and p.cross_received):
+		elif pressed(input,"shoot") and ((input.cross and p.action_time<.12 and (p.action=="cross" or p.action=="held_fake" and p.held.kind=="pivot")) or p.action == "idle" or p.action=="held_fake" and p.action_time>=p.held.duration*.60 or p.crossing() and p.cross_received):
 			if game.needs_clear: game.announce("CLEAR THE BALL", "외곽선 밖으로 공을 가져가세요.")
-			else: game.begin_gather(selected)
+			else: game.begin_gather(selected,false,game.combo_shot(selected,input,desired))
 		if p.action == "gather":
 			game.gather_input(selected,input.shoot,delta)
 		if p.action == "idle" and not p.dribble_ended and game.crossover_cooldown <= 0:
@@ -237,6 +237,9 @@ func tick(delta: float, input: Dictionary) -> void:
 				actor.defense_target = game.players[game.ball_owner].ball_anchor(game.time)
 				actor.defense_target.y = maxf(2.30,actor.defense_target.y)
 			actor.position = Rules.clamp_to_court(actor.defense_position())
+		if game.phase=="takeoff" and i==game.shooter and game.finish_kind=="shot":
+			var progress=clampf((actor.action_time-Actor.SHOT_PLANT_TIME)/(game.release_at-Actor.SHOT_PLANT_TIME),0,1)
+			actor.position=game.takeoff_start.lerp(game.takeoff_target,smoothstep(0,1,progress))
 		actor.animate(delta,game.time)
 	if game.phase == "live":
 		game.ball.position = game.players[game.ball_owner].ball_anchor(game.time)
@@ -270,6 +273,7 @@ func move_actor(index: int, desired: Vector3, delta: float) -> void:
 	var p = game.players[index]
 	if p.action=="shot":p.shot_exit_intent=Vector2(desired.x,desired.z)
 	var velocity = Vector2(desired.x,desired.z)*p.landing_speed_scale()
+	if p.action=="pickup":velocity*=.45
 	if p.action in ["gather","shot","layup","dunk","block","rebound","pass","receive","fake"] or game.phase == "dead": velocity = Vector2.ZERO
 	if p.defensive_jump() and p.action_time >= p.defense_land_time()+.115:
 		velocity = Vector2(desired.x,desired.z)*p.landing_speed_scale()*.4
@@ -599,6 +603,7 @@ func separate() -> void:
 
 func update_loose(delta: float) -> void:
 	game.loose_timer += delta
+	var previous=game.ball.position
 	game.ball_velocity.y -= 9.8*delta
 	game.ball.position += game.ball_velocity*delta
 	if game.ball.position.y < Actor.DRIBBLE_FLOOR:
@@ -614,9 +619,8 @@ func update_loose(delta: float) -> void:
 		var distance = game.hand_ball_distance(p.rebound_anchor(),p.previous_rebound_anchor)
 		var both = maxf(game.ball.position.distance_to(p.palm_position(0)),game.ball.position.distance_to(p.palm_position(1))) < .34
 		var air = p.action == "rebound" and p.jump > .18 and p.action_time > .16 and p.action_time < p.defense_land_time() and distance < .24 and both
-		var horizontal = Vector2(p.position.x-game.ball.position.x,p.position.z-game.ball.position.z).length()
-		var pickup = p.action == "idle" and p.jump < .05 and horizontal < .52 and game.ball.position.y < .85
-		if game.loose_timer > .12 and not rebound_blocked(i) and (air or pickup): candidates.append({"id":i,"distance":distance if air else horizontal,"air":air})
+		var contact=game.loose_contact(p,previous)
+		if contact<1.0 or air and not rebound_blocked(i): candidates.append({"id":i,"distance":distance if air else contact,"air":air})
 	if not candidates.is_empty():
 		candidates.sort_custom(func(a,b): return a.distance < b.distance if a.distance != b.distance else a.id < b.id)
 		var winner = candidates[0]
@@ -624,6 +628,7 @@ func update_loose(delta: float) -> void:
 			game.players[winner.id].capture_rebound(game.ball.position,game.ball_velocity)
 			rebounds += 1
 			game.court_audio.cue("rebound")
+		else:game.players[winner.id].begin_pickup(game.ball.position)
 		if team(winner.id) == possession: game.shot_clock = maxf(game.shot_clock,12)
 		claim(winner.id,"AIR CATCH!" if winner.air else "LOOSE BALL")
 	elif game.loose_timer > 8: turnover("CHECK BALL", "체크볼로 다시 시작합니다.",1-possession)
@@ -683,7 +688,7 @@ func decorate_state(state: Dictionary) -> void:
 	state.action = p.action
 	state.player = [p.position.x,p.position.z]
 	state.charge = game.shot_hold/.62 if p.action == "gather" else 0
-	state.finish = p.finish_kind if p.action == "gather" else Rules.finish_type(p.position,p.motion)
+	state.finish = (p.shot_style if p.shot_style!="jumper" else p.finish_kind) if p.action in ["gather","shot"] else Rules.finish_type(p.position,p.motion)
 	state.sweet = Rules.release_bonus(game.shot_hold) > 0 and p.action == "gather"
 	state.held = p.has_ball and p.dribble_ended
 	state.boxout = p.boxing_out

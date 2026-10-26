@@ -835,6 +835,7 @@ func _physics_process(delta: float) -> void:
 	held_ball_controls(0,input,desired,delta)
 	if players[0].action=="shot":players[0].shot_exit_intent=Vector2(desired.x,desired.z)*players[0].athletic_profile().speed
 	var speed: float = players[0].athletic_profile().speed if not input.guard else 2.7
+	if players[0].action=="pickup":speed*=.45
 	if input.guard and players[0].boxing_out: speed = 1.7
 	if players[0].action in ["gather", "shot", "layup", "dunk", "fake", "block", "rebound"]:
 		speed *= 0.16
@@ -878,12 +879,13 @@ func _physics_process(delta: float) -> void:
 		if needs_clear and Rules.is_clear(players[0].position):
 			needs_clear = false
 			announce("CLEARED", "이제 공격할 수 있어요.", 1.2)
-		var can_finish = players[0].action == "idle" or (players[0].action=="held_fake" and players[0].action_time>=players[0].held.duration*.60) or (players[0].crossing() and players[0].cross_received) or (players[0].action in DRIBBLE_DURATIONS and players[0].action != "cross" and players[0].action_time >= DRIBBLE_DURATIONS[players[0].action] * .55)
+		var combo_entry=input.cross and ((players[0].action=="cross" and players[0].action_time<.12) or (players[0].action=="held_fake" and players[0].held.kind=="pivot" and players[0].action_time<.12))
+		var can_finish = combo_entry or players[0].action == "idle" or (players[0].action=="held_fake" and players[0].action_time>=players[0].held.duration*.60) or (players[0].crossing() and players[0].cross_received) or (players[0].action in DRIBBLE_DURATIONS and players[0].action != "cross" and players[0].action_time >= DRIBBLE_DURATIONS[players[0].action] * .55)
 		if input.shoot and not last_shoot and can_finish:
 			if needs_clear:
 				announce("CLEAR THE BALL", "외곽선 밖으로 공을 가져가세요.")
 			else:
-				begin_gather(0)
+				begin_gather(0,false,combo_shot(0,input,desired))
 		if players[0].action == "gather":
 			gather_input(0,input.shoot,delta)
 		if input.cross and not last_cross and crossover_cooldown <= 0 and players[0].action == "idle":
@@ -909,7 +911,7 @@ func _physics_process(delta: float) -> void:
 	last_hesi = input.hesi
 	last_steal = input.steal
 	if phase == "takeoff" and finish_kind == "shot":
-		var progress = clampf(players[shooter].action_time / release_at, 0, 1)
+		var progress = clampf((players[shooter].action_time-Actor.SHOT_PLANT_TIME) / (release_at-Actor.SHOT_PLANT_TIME), 0, 1)
 		players[shooter].position = takeoff_start.lerp(takeoff_target, smoothstep(0, 1, progress))
 	var pose_players = [players[1],players[0]] if (players[0].stealing() and phase == "live" and ball_owner == 1) or (players[0].action == "block" and shooter == 1 and phase == "takeoff") else players
 	for player in pose_players:
@@ -982,6 +984,10 @@ func update_actions(delta: float) -> void:
 		if player.action in ["square","held_fake"] and not player.has_ball:
 			player.action="idle";player.action_time=0;player.dribble_ended=false;player.held.reset()
 		if player.action=="square":player.held.yaw_target=atan2(HOOP.x-player.position.x,HOOP.z-player.position.z)
+		if player.action=="held_fake" and player.held.kind in ["pivot","jab","turn","upunder","through"]:
+			var beats=[.12,.54] if player.held.kind=="upunder" else [.12,.36] if player.held.kind=="turn" else [.12]
+			for beat in beats:
+				if player.action_time<beat and player.action_time+delta>=beat:play_sound("squeak",-12 if beat==.12 else -16)
 		if player.action in ["spin", "twostep", "behind", "hesi"]:
 			for beat in ([.16, .48] if player.action == "twostep" else [DRIBBLE_DURATIONS[player.action] * .5]):
 				if player.action_time < beat and player.action_time + delta >= beat: play_sound("bounce", -11)
@@ -989,7 +995,10 @@ func update_actions(delta: float) -> void:
 		if player.action == "cross" and player.action_time < cross_bounce and player.action_time + delta >= cross_bounce:
 			play_sound("bounce", -10)
 		player.action_time += delta
-		if player.action=="square" and player!=controlled_player() and player.held.square_ready(player):
+		if player.action=="pickup":
+			player.jump=maxf(0,player.pickup_height+player.pickup_velocity*player.action_time-4.9*player.action_time*player.action_time)
+			if player.action_time>=.28 and player.jump<=.001:player.action="idle";player.action_time=0
+		elif player.action=="square" and player!=controlled_player() and player.held.square_ready(player):
 			begin_gather(players.find(player),true)
 		elif player.action=="held_fake" and player.action_time>=player.held.duration:
 			player.action="idle";player.action_time=0
@@ -1146,7 +1155,6 @@ func held_ball_controls(index: int,input: Dictionary,desired: Vector3,delta: flo
 		if requested!="":
 			if desired.length()>.2:h.direction_latched=true;h.last_direction=desired.normalized()
 			h.begin(p,requested,desired,ball.position)
-			play_sound("squeak",-20)
 			announce({"pivot":"PIVOT FAKE","jab":"JAB STEP","pump":"PUMP FAKE","upunder":"UP AND UNDER","through":"THROUGH THE LEGS","turn":"TURN FAKE"}[requested],"축발 유지 · 방향 피벗 / A 피벗 · Z 턴 · C 업앤언더 · V 다리 사이 · X 펌프",1.8)
 			if requested in ["jab","pivot","turn"]:defender_feint(desired if desired.length()>.1 else p.global_basis.x*p.dribble_hand)
 	for key in ["cross","spin","twostep","behind","hesi"]:h.input_edges[key]=input.get(key,false)
@@ -1162,22 +1170,33 @@ func gather_input(index: int,shoot: bool,delta: float) -> void:
 		if shot_hold>=.20:launch_shot(index)
 	elif not shoot:
 		if shot_hold+p.held.press_time<.18:fake_shot(index)
-		else:launch_shot(index)
-	elif shot_hold>=.62:launch_shot(index)
+		elif not p.turnaround_shot or p.held.square_ready(p):launch_shot(index)
+	elif shot_hold>=(.48 if p.turnaround_shot else .62) and (not p.turnaround_shot or p.held.square_ready(p)):launch_shot(index)
 
-func begin_gather(index: int,aligned: bool=false) -> void:
+func combo_shot(index: int,input: Dictionary,desired: Vector3) -> String:
+	if not (input.guard or input.cross):return "jumper"
+	var toward=(HOOP-players[index].position)*Vector3(1,0,1)
+	if desired.length()>.2 and desired.normalized().dot(toward.normalized())<-.35:return "fadeaway"
+	return "hook" if toward.length()<3.5 else "fadeaway"
+
+func begin_gather(index: int,aligned: bool=false,style: String="jumper") -> void:
 	var p=players[index]
-	var aim=atan2(HOOP.x-p.position.x,HOOP.z-p.position.z)
+	if aligned:style=p.shot_style
+	p.shot_style=style
+	p.shot_rim_yaw=atan2(HOOP.x-p.position.x,HOOP.z-p.position.z)
+	var aim=p.shot_rim_yaw-p.dribble_hand*PI*.5 if style=="hook" else p.shot_rim_yaw
+	var moving_turn=not aligned and (style!="jumper" or (not p.dribble_ended and p.motion.length()>1.2 and Rules.finish_type(p.position,p.motion)=="shot" and absf(angle_difference(p.rotation.y,aim))>.65))
+	p.turnaround_shot=moving_turn;p.shot_release_time=.34 if moving_turn else .22
 	if not aligned:
 		p.held.queued_release=false;p.held.pump_release=false;p.held.press_time=0
-		if Rules.finish_type(p.position,p.motion)=="shot" and absf(angle_difference(p.rotation.y,aim))>.65:
+		if not moving_turn and Rules.finish_type(p.position,p.motion)=="shot" and absf(angle_difference(p.rotation.y,aim))>.65:
 			p.held.begin(p,"square",Vector3.ZERO,ball.position,aim)
 			p.finish_kind="shot";p.finish_running=false
 			return
 	players[index].gather_ball_from=players[index].to_local(ball.position)
 	players[index].gather_ball_valid=true
 	players[index].approach_velocity = players[index].motion
-	players[index].finish_kind = Rules.finish_type(players[index].position, players[index].motion)
+	players[index].finish_kind = "shot" if style!="jumper" else Rules.finish_type(players[index].position, players[index].motion)
 	players[index].shot_gather_turn = players[index].finish_kind=="shot" and (players[index].motion.length()>1.2 or aligned)
 	players[index].shot_gather_yaw = players[index].rotation.y
 	players[index].finish_running = not players[index].dribble_ended and players[index].finish_kind != "shot" and players[index].motion.length() > 1.2
@@ -1190,6 +1209,7 @@ func begin_gather(index: int,aligned: bool=false) -> void:
 	players[index].motion = players[index].gather_velocity()
 	shot_hold = 0
 	face_target(index, HOOP)
+	if moving_turn:p.held.begin_turn_shot(p,ball.position,aim);p.shot_gather_turn=true
 
 func fake_shot(index: int) -> void:
 	players[index].held.queued_release=false
@@ -1270,9 +1290,16 @@ func launch_shot(index: int) -> void:
 	phase = "takeoff"
 	shot_committed = true
 	timing_bonus = Rules.release_bonus(shot_hold) if index == (team_match.selected if mode == "team" else 0) else 0.0
-	release_at = 0.22 if finish_kind == "shot" else (0.34 if finish_kind == "layup" else 0.38)
+	release_at = player.shot_release_time if finish_kind == "shot" else (0.34 if finish_kind == "layup" else 0.38)
 	takeoff_start = player.position
 	takeoff_target = takeoff_start
+	if finish_kind=="shot" and player.turnaround_shot:
+		player.shot_gather_yaw=player.rotation.y
+		var travel=Vector3(player.approach_velocity.x,0,player.approach_velocity.y).normalized()*.36
+		if player.shot_style=="fadeaway":travel=Vector3(sin(player.shot_rim_yaw),0,cos(player.shot_rim_yaw))*-.68
+		elif player.shot_style=="hook":travel=Vector3(sin(player.shot_rim_yaw),0,cos(player.shot_rim_yaw))*.18
+		takeoff_target=Rules.clamp_to_court(takeoff_start+travel)
+	if player.shot_style=="hook":player.facing=player.shot_rim_yaw-player.dribble_hand*PI*.5
 	if finish_kind != "shot":
 		var landing = Vector3(HOOP.x, 0, HOOP.z + 0.52)
 		takeoff_target = takeoff_start.move_toward(landing, 1.5 if finish_kind == "dunk" else 0.9)
@@ -1302,6 +1329,7 @@ func release_ball() -> void:
 	var distance = Vector2(player.position.x, player.position.z - HOOP.z).length()
 	flight_duration = clampf(0.52 + distance * 0.07, 0.65, 1.25)
 	flight_arc = clampf(distance * 0.28, 1.1, 3.0)
+	if player.shot_style=="hook":flight_arc=1.45;flight_duration=maxf(.75,flight_duration)
 	if finish_kind == "layup":
 		flight_duration = 0.48
 		flight_arc = 0.45
@@ -1315,6 +1343,8 @@ func release_ball() -> void:
 		if defender.action == "block": contest = minf(1, contest + 0.15)
 	elif mode == "team": contest = team_match.contest(shooter)
 	var probability = Rules.shot_probability(distance, contest, player.approach_velocity.length() > 3.0 and finish_kind == "shot")
+	if player.shot_style=="fadeaway":probability-=.06
+	elif player.shot_style=="hook":probability-=maxf(0,distance-2.5)*.08
 	if finish_kind == "dunk": probability = 0.98 - contest * 0.35
 	if finish_kind == "layup": probability = 0.93 - contest * 0.48
 	if not player.growth.is_empty():
@@ -1327,7 +1357,9 @@ func release_ball() -> void:
 		var angle = rng.randf_range(-1.2,1.2)
 		if mode == "practice" and practice_drill == "rim" and shooter == 1: angle = 0
 		flight_target += Vector3(sin(angle)*.23,.06,cos(angle)*.23)
-	if shooter == 0 and finish_kind == "shot":
+	if shooter == 0 and player.shot_style!="jumper":
+		announce("HOOK SHOT" if player.shot_style=="hook" else "FADEAWAY", "옆으로 몸을 보호하고 한 손으로 높게" if player.shot_style=="hook" else "뒤로 공간을 만들고 손목으로 마무리",1.8)
+	elif shooter == 0 and finish_kind == "shot":
 		announce("SWEET RELEASE" if timing_bonus > 0 else ("OPEN LOOK" if contest < 0.3 else "CONTESTED"), "좋은 릴리즈 타이밍!" if timing_bonus > 0 else ("좋은 공간에서 던졌어요." if contest < 0.3 else "수비가 가까워요. 페이크나 돌파로 공간을 만드세요."), 1.6)
 	play_sound("release", -15)
 	ball.position = flight_start
@@ -1435,6 +1467,7 @@ func register_score() -> void:
 
 func update_loose(delta: float) -> void:
 	loose_timer += delta
+	var previous=ball.position
 	ball_velocity.y -= 9.8 * delta
 	ball.position += ball_velocity * delta
 	if ball.position.y < Actor.DRIBBLE_FLOOR:
@@ -1449,13 +1482,12 @@ func update_loose(delta: float) -> void:
 	var candidates: Array = []
 	for i in range(2 if opponent_enabled() else 1):
 		var player = players[i]
-		var horizontal = Vector2(player.position.x - ball.position.x, player.position.z - ball.position.z).length()
 		var catch_distance = hand_ball_distance(player.rebound_anchor(),player.previous_rebound_anchor)
 		var both_hands = maxf(ball.position.distance_to(player.palm_position(0)),ball.position.distance_to(player.palm_position(1))) < .34
 		var airborne_catch = player.action == "rebound" and player.jump > .18 and player.action_time > .16 and player.action_time < player.defense_land_time() and catch_distance < .24 and both_hands
-		var pickup = player.action == "idle" and player.jump < .05 and horizontal < .52 and ball.position.y < .85
-		if (airborne_catch or pickup) and loose_timer > .12 and not rebound_blocked(i):
-			candidates.append({"id": i, "distance": catch_distance if airborne_catch else horizontal})
+		var contact=loose_contact(player,previous)
+		if contact<1.0 or airborne_catch and not rebound_blocked(i):
+			candidates.append({"id": i, "distance": catch_distance if airborne_catch else contact})
 	if not candidates.is_empty():
 		candidates.sort_custom(func(a, b): return a.distance < b.distance if a.distance != b.distance else a.id < b.id)
 		claim_ball(candidates[0].id)
@@ -1466,6 +1498,7 @@ func update_loose(delta: float) -> void:
 
 func claim_ball(index: int) -> void:
 	if players[index].action == "rebound": players[index].capture_rebound(ball.position,ball_velocity)
+	else:players[index].begin_pickup(ball.position)
 	ball_owner = index
 	phase = "live"
 	needs_clear = mode == "duel" and index != shooter and not Rules.is_clear(players[index].position)
@@ -1480,6 +1513,18 @@ func claim_ball(index: int) -> void:
 	if air_catch: court_audio.cue("rebound")
 	announce("AIR CATCH!" if index == 0 and air_catch else ("YOUR REBOUND" if index == 0 else "RIVAL REBOUND"), "양손 확보 → 가슴으로 당기기 → 착지" if air_catch else ("외곽선 밖으로 공을 빼세요." if needs_clear and index == 0 else "다음 공격을 이어가세요."))
 	play_sound("block", -18) # Short hand/ball impact, not a floor bounce at an air catch.
+
+func loose_contact(player,previous: Vector3) -> float:
+	# A free ball touching the body or an open catching hand is playable at
+	# once, including the rising first bounce. No timer or low-height gate.
+	var low=player.global_position+Vector3.UP*(player.jump+.18*player.height_ratio)
+	var high=player.global_position+Vector3.UP*(player.jump+1.70*player.height_ratio)
+	var distance=Rules.segment_gap(previous,ball.position,low,high)/(.31*player.height_ratio+Art.BALL_RADIUS)
+	if player.action!="block":
+		for side in 2:
+			var palm=player.palm_position(side)
+			distance=minf(distance,Rules.segment_gap(previous,ball.position,palm,palm)/(.13+Art.BALL_RADIUS))
+	return distance
 
 func attempt_steal() -> void:
 	if players[0].action != "idle" or phase != "live" or ball_owner != 1: return
@@ -1634,7 +1679,7 @@ func send_state() -> void:
 	}
 	if frame_probe:
 		state["profile"]={"processMs":Performance.get_monitor(Performance.TIME_PROCESS)*1000,"physicsMs":Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)*1000,"drawCalls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"primitives":Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),"objects":Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),"adapter":RenderingServer.get_video_adapter_name()}
-	state["finish"] = players[0].finish_kind if players[0].action == "gather" else Rules.finish_type(players[0].position, players[0].motion)
+	state["finish"] = (players[0].shot_style if players[0].shot_style!="jumper" else players[0].finish_kind) if players[0].action in ["gather","shot"] else Rules.finish_type(players[0].position, players[0].motion)
 	state["sweet"] = Rules.release_bonus(shot_hold) > 0 and players[0].action == "gather"
 	state["drill"] = practice_drill
 	state["slowPractice"] = practice_slow

@@ -2,13 +2,14 @@ extends RefCounted
 
 # One planted forefoot owns a held-ball possession. Direction changes move the
 # other foot and the hips around that contact; they never restart a dribble.
-const DURATIONS={"pivot":.56,"jab":.50,"pump":.60,"upunder":.82,"through":.72,"turn":.74}
+const DURATIONS={"pivot":.68,"jab":.62,"pump":.70,"upunder":.95,"through":.85,"turn":.84}
 var valid=false
 var support=0
 var anchor=Vector3.ZERO
 var support_from=Vector3.ZERO
 var root_offset=Vector3.ZERO
 var toes=[Vector3.ZERO,Vector3.ZERO]
+var foot_bases=[Basis.IDENTITY,Basis.IDENTITY]
 var kind=""
 var duration=.5
 var yaw_from=0.0
@@ -26,7 +27,7 @@ var input_edges={}
 var free_goal=Vector3.ZERO
 
 func square_ready(actor) -> bool:
-	return actor.action_time>=duration and absf(angle_difference(actor.rotation.y,yaw_target))<.06 and toes[1-support].distance_to(free_goal)<.025
+	return actor.action_time>=duration and absf(angle_difference(actor.rotation.y,yaw_target))<.003 and toes[1-support].distance_to(free_goal)<.004
 
 func freeze(actor,ball: Vector3) -> void:
 	capture(actor,ball)
@@ -46,6 +47,8 @@ func reset() -> void:
 func capture(actor,ball: Vector3) -> void:
 	if valid:return
 	valid=true
+	for i in 2:
+		if actor.skinned!=null:foot_bases[i]=actor.skinned.bone_world(actor.skinned.feet[i][2]).basis.orthonormalized()
 	for i in 2:toes[i]=actor.skinned.toe_world[i] if actor.skinned!=null else actor.shoes[i].to_global(actor.LAYUP_TOE)
 	# Prefer a grounded, nearby foot instead of pinning a distant sprint toe.
 	var scores=[]
@@ -59,7 +62,7 @@ func capture(actor,ball: Vector3) -> void:
 	entry_ball=ball;entry_time=0.0
 
 func owns(actor) -> bool:
-	return valid and actor.has_ball and actor.dribble_ended and actor.action in ["idle","held_fake","square"]
+	return valid and actor.has_ball and actor.dribble_ended and (actor.action in ["idle","held_fake","square"] or (actor.action=="gather" and kind=="turnshot"))
 
 func begin(actor,next_kind: String,desired: Vector3,ball: Vector3,target_yaw: float=INF) -> void:
 	capture(actor,ball)
@@ -76,11 +79,17 @@ func begin(actor,next_kind: String,desired: Vector3,ball: Vector3,target_yaw: fl
 	yaw_target=target_yaw if is_finite(target_yaw) else yaw_from
 	if kind=="square":duration=.18+absf(angle_difference(yaw_from,yaw_target))/6.0
 	elif kind=="pivot" and desired.length()>.1:yaw_target=atan2(desired.x,desired.z)
-	elif kind=="turn":yaw_target=yaw_from+sign_side*1.15
+	elif kind=="turn":yaw_target=yaw_from+sign_side*1.80
 	actor.action="square" if kind=="square" else "held_fake"
 	actor.action_time=0;actor.jump=0;actor.motion=Vector2.ZERO
 	actor.dribble_ended=true;actor.shot_gather_turn=false
 	entry_ball=ball;entry_time=0.0
+
+func begin_turn_shot(actor,ball: Vector3,aim: float) -> void:
+	begin(actor,"square",Vector3.ZERO,ball,aim)
+	kind="turnshot";duration=.36
+	yaw_target=lerp_angle(yaw_from,aim,.66)
+	actor.action="gather";actor.facing=aim
 
 func tick(actor,delta: float) -> void:
 	if not owns(actor):
@@ -89,9 +98,9 @@ func tick(actor,delta: float) -> void:
 	entry_time+=delta
 	var t=clampf(actor.action_time/maxf(.01,duration),0,1) if actor.action!="idle" else 1.0
 	var yaw=yaw_target
-	if actor.action!="idle":yaw=lerp_angle(yaw_from,yaw_target,smoothstep(.12,duration,actor.action_time))
+	if actor.action!="idle":yaw=lerp_angle(yaw_from,yaw_target,smoothstep(.08 if kind=="turnshot" else .12,duration,actor.action_time))
 	actor.rotation.y+=clampf(angle_difference(actor.rotation.y,yaw),-delta*6.5,delta*6.5)
-	actor.facing=actor.rotation.y
+	if kind!="turnshot":actor.facing=actor.rotation.y
 	# A sprint contact can trail far behind the hips. Load the planted leg
 	# before rotating, rather than rotating an overextended leg in place.
 	var balanced=Vector3(.20 if support==0 else -.20,0,-.06)*actor.height_ratio
@@ -100,16 +109,18 @@ func tick(actor,delta: float) -> void:
 	actor.position.y=0
 	toes[support]=support_from.lerp(anchor,smoothstep(0,.12,entry_time))
 	var side=-1.0 if 1-support==0 else 1.0
-	var width=.28 if kind!="through" else .34
+	var width=.28 if kind!="through" else .40
 	var goal=actor.to_global(Vector3(side*width*actor.height_ratio,0,.10))
-	if actor.action=="held_fake" and kind in ["jab","upunder"]:goal+=direction*(.26 if kind=="jab" else .20)*sin(t*PI)
+	if actor.action=="held_fake" and kind in ["jab","upunder"]:
+		var step=smoothstep(0,.22,t)*(1-smoothstep(.48,.90,t)) if kind=="jab" else smoothstep(.25,.50,t)*(1-smoothstep(.75,1,t))
+		goal+=direction*(.42 if kind=="jab" else .32)*step
 	goal.y=.026
 	free_goal=goal
 	var distance=Vector2(goal.x-toes[1-support].x,goal.z-toes[1-support].z).length()
 	# The outer foot travels a longer arc than the hips during a half turn.
 	# Let it keep up, then plant, instead of adding a dead wait after the turn.
-	toes[1-support]=toes[1-support].move_toward(goal,delta*3.8)
-	toes[1-support].y=.026+minf(.055,distance*.18)
+	var lifted_goal=goal+Vector3.UP*minf(.055,maxf(0,distance-.02)*.18)
+	toes[1-support]=toes[1-support].move_toward(lifted_goal,delta*3.8)
 	actor.motion=Vector2.ZERO;actor.swinging=[false,false]
 	for i in 2:
 		actor.feet_world[i]=toes[i]-Basis(Vector3.UP,actor.rotation.y)*Vector3(0,0,.19)
@@ -118,19 +129,33 @@ func tick(actor,delta: float) -> void:
 
 func pose(actor) -> Dictionary:
 	var t=clampf(actor.action_time/maxf(.01,duration),0,1) if actor.action=="held_fake" else 0.0
-	var wave=sin(t*PI)
+	# Readable game poses: preload, show a committed threat, then counter and
+	# recover. A sine-only wiggle has no moment for an opponent to read.
+	var load=sin(clampf(t/.22,0,1)*PI)
+	var show=smoothstep(0,.22,t)*(1-smoothstep(.48,.86,t))
+	var counter=smoothstep(.22,.48,t)*(1-smoothstep(.72,1,t))
 	var center=Vector3(0,1.19,.34)
-	var twist=0.0;var pitch=.10;var drop=.10
+	var twist=0.0;var pitch=.10;var drop=.10;var roll=0.0
 	match kind if actor.action=="held_fake" else "":
-		"pump":center.y+=.47*wave;drop-=.06*wave
+		"pump":
+			center.y+=.70*show-.10*load;drop+=.12*load-.08*show
+			pitch+=.16*load-.06*show;roll=-sign_side*.07*show
 		"upunder":
-			var lift=sin(clampf(t/.55,0,1)*PI)
-			center+=Vector3(sign_side*.23*sin(t*TAU),.43*lift-.13*sin(t*PI),.14*wave)
-			twist=sign_side*.28*sin(t*TAU);drop+=.07*wave
-		"through":center+=Vector3(sign_side*.20*sin(t*TAU),-.49*wave,-.13*wave);drop+=.08*wave;pitch+=.12*wave
-		"turn":center+=Vector3(-sign_side*.21*wave,.02,-.08*wave);twist=-sign_side*.25*wave
-		"jab":center+=Vector3(sign_side*.10*wave,-.09*wave,.08*wave);pitch+=.12*wave
-		"pivot":center.x+=sign_side*.18*sin(t*TAU);twist=sign_side*.18*wave
+			center+=Vector3(sign_side*(.28*show-.42*counter),.65*show-.22*counter,.16*show+.20*counter)
+			twist=sign_side*(.34*show-.56*counter);drop+=.14*counter-.05*show
+			pitch+=.28*counter;roll=sign_side*(.10*show-.13*counter)
+		"through":
+			center+=Vector3(sign_side*.32*sin(t*TAU),-.62*show,-.28*show)
+			drop+=.16*show;pitch+=.20*show;twist=sign_side*.40*sin(t*TAU);roll=-sign_side*.08*sin(t*TAU)
+		"turn":
+			center+=Vector3(-sign_side*.30*show,-.08*show,-.18*show)
+			twist=sign_side*.55*show;drop+=.10*load;roll=-sign_side*.13*show
+		"jab":
+			center+=Vector3(sign_side*.26*show,-.16*show,.24*show)
+			pitch+=.28*show;twist=sign_side*.36*show;roll=-sign_side*.14*show;drop+=.08*show
+		"pivot":
+			center.x+=sign_side*(.30*show-.18*counter)
+			twist=sign_side*.42*show;drop+=.08*show;roll=sign_side*.10*show
 	var world=actor.to_global(Vector3(center.x*actor.height_ratio,center.y*actor.height_ratio,center.z*actor.height_ratio))
 	world=entry_ball.lerp(world,smoothstep(0,.18,entry_time))
-	return {"center":world,"twist":twist,"pitch":pitch,"drop":drop}
+	return {"center":world,"twist":twist,"pitch":pitch,"drop":drop,"roll":roll,"gaze":twist*.55}

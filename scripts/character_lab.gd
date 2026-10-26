@@ -79,7 +79,7 @@ func _physics_process(delta):
 			actor.motion=Vector2.ZERO
 			actor.action="idle"
 			actor.animate(.016,elapsed)
-		actor.has_ball=mode in ["dribble","handle","hold","shot","cross","cut","pullup"]
+		actor.has_ball=mode in ["dribble","handle","hold","shot","hook","fadeaway","cross","cut","pullup"]
 		if mode in HELD_PREVIEWS:actor.has_ball=true
 		actor.dribble_ended=mode=="hold"
 		var defensive_preview=mode in ["guard","shuffle","boxout"]
@@ -101,7 +101,9 @@ func _physics_process(delta):
 			if actor.action=="held_fake":
 				actor.action_time+=delta
 				if actor.action_time>=actor.held.duration:actor.action="idle";actor.action_time=0
-		if mode=="shot":
+		if mode in ["shot","hook","fadeaway"]:
+			actor.shot_style="jumper" if mode=="shot" else mode
+			actor.turnaround_shot=mode!="shot";actor.shot_release_time=.22 if mode=="shot" else .34
 			var t=fposmod(elapsed,2.4)
 			actor.finish_kind="shot"
 			actor.dribble_ended=true
@@ -109,9 +111,9 @@ func _physics_process(delta):
 			actor.action_time=t if t<.55 else t-.55
 			if actor.action=="shot":
 				actor.jump=Actor.shot_height(actor.action_time)
-				actor.has_ball=actor.action_time<.22
+				actor.has_ball=actor.action_time<actor.shot_release_time
 		var stopping=mode=="cut" and fposmod(elapsed,8.4)>=7.2
-		var velocity=Vector2(sin(facing),cos(facing))*(4.7 if mode not in ["idle","handle","hold","shot"] and not stopping else 0)
+		var velocity=Vector2(sin(facing),cos(facing))*(4.7 if mode not in ["idle","handle","hold","shot","hook","fadeaway"] and not stopping else 0)
 		if mode in HELD_PREVIEWS:velocity=Vector2.ZERO
 		if mode=="pullup":
 			var t=fposmod(elapsed,3.4)
@@ -172,9 +174,9 @@ func _physics_process(delta):
 	previous_view=view
 	var aspect=get_viewport().get_visible_rect().size.aspect()
 	camera.projection=Camera3D.PROJECTION_ORTHOGONAL
-	camera.size=(.72 if view=="face" else (3.6 if mode in ["shot","pullup"] else 2.8))*maxf(1,1.1/maxf(.35,aspect))
-	camera.position=Vector3(-.80,1.94,4) if view=="face" else Vector3(0,2.45 if mode in ["shot","pullup"] else 2.15,6)
-	camera.look_at(Vector3(-.80,1.64,0) if view=="face" else Vector3(0,1.20 if mode in ["shot","pullup"] else .94,0))
+	camera.size=(.72 if view=="face" else (3.6 if mode in ["shot","pullup","hook","fadeaway"] else 2.8))*maxf(1,1.1/maxf(.35,aspect))
+	camera.position=Vector3(-.80,1.94,4) if view=="face" else Vector3(0,2.45 if mode in ["shot","pullup","hook","fadeaway"] else 2.15,6)
+	camera.look_at(Vector3(-.80,1.64,0) if view=="face" else Vector3(0,1.20 if mode in ["shot","pullup","hook","fadeaway"] else .94,0))
 	if view=="jersey":
 		camera.size=1.30*maxf(1,1.1/maxf(.35,aspect))
 		camera.position=Vector3(-.8,1.7,4)
