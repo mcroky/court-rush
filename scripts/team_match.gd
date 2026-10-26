@@ -179,6 +179,7 @@ func tick(delta: float, input: Dictionary) -> void:
 		switch_cooldown = .18
 		game.announce("SWITCH", "선택한 선수의 발밑 링을 확인하세요.", 1)
 	var p = game.players[selected]
+	game.held_ball_controls(selected,input,desired,delta)
 	p.defending = input.guard and not p.has_ball
 	move_actor(selected,desired*float(p.athletic_profile().speed if not input.guard else 2.7),delta)
 	if desired.length() > .1 and p.action == "idle":
@@ -188,16 +189,12 @@ func tick(delta: float, input: Dictionary) -> void:
 		if game.needs_clear and Rules.is_clear(p.position):
 			game.needs_clear = false
 			game.announce("CLEARED", "이제 공격할 수 있어요.",1)
-		if pressed(input,"pass") and p.action in ["idle","fake"]: begin_pass(selected,choose_receiver(selected,desired))
-		elif pressed(input,"shoot") and (p.action == "idle" or p.crossing() and p.cross_received):
+		if pressed(input,"pass") and (p.action in ["idle","fake"] or p.action=="held_fake" and p.action_time>=p.held.duration*.6): begin_pass(selected,choose_receiver(selected,desired))
+		elif pressed(input,"shoot") and (p.action == "idle" or p.action=="held_fake" and p.action_time>=p.held.duration*.60 or p.crossing() and p.cross_received):
 			if game.needs_clear: game.announce("CLEAR THE BALL", "외곽선 밖으로 공을 가져가세요.")
 			else: game.begin_gather(selected)
 		if p.action == "gather":
-			game.shot_hold += delta
-			if (p.finish_running and game.shot_hold >= .20) or game.shot_hold >= .62 or (not input.shoot and game.shot_hold >= .18): game.launch_shot(selected)
-			elif not input.shoot:
-				p.action = "fake"
-				p.action_time = .10
+			game.gather_input(selected,input.shoot,delta)
 		if p.action == "idle" and not p.dribble_ended and game.crossover_cooldown <= 0:
 			for kind in ["cross","spin","twostep","behind","hesi"]:
 				if pressed(input,kind):
@@ -277,7 +274,7 @@ func move_actor(index: int, desired: Vector3, delta: float) -> void:
 	if p.defensive_jump() and p.action_time >= p.defense_land_time()+.115:
 		velocity = Vector2(desired.x,desired.z)*p.landing_speed_scale()*.4
 	if p.action == "gather": velocity = p.gather_velocity()
-	if p.has_ball and p.dribble_ended and p.action == "idle": velocity = Vector2.ZERO
+	if p.has_ball and p.dribble_ended: velocity = Vector2.ZERO if p.action!="gather" else p.gather_velocity()
 	if p.crossing():
 		velocity += Vector2(cos(p.facing),-sin(p.facing))*p.cross_to*2*sin(clampf(p.cross_phase(),0,1)*PI)
 	elif p.action in ["spin","twostep","behind","hesi"]:
@@ -311,7 +308,7 @@ func begin_pass(sender: int, receiver: int) -> bool:
 	if game.phase != "live" or game.ball_owner != sender or receiver < 0 or team(sender) != team(receiver) or receiver == sender: return false
 	var p = game.players[sender]
 	var r = game.players[receiver]
-	if p.action not in ["idle","fake"] or r.action != "idle": return false
+	if (p.action not in ["idle","fake"] and not (p.action=="held_fake" and p.action_time>=p.held.duration*.6)) or r.action != "idle": return false
 	passing_from = sender
 	passing_to = receiver
 	game.face_target(sender,r.position)

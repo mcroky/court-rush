@@ -11,6 +11,7 @@ var mode = "idle"
 var view = "full"
 var previous_mode = "idle"
 var previous_view = "full"
+const HELD_PREVIEWS=["pivot","jab","pump","upunder","through","turn"]
 
 func _ready():
 	DisplayServer.window_set_title("코트러시 · 캐릭터 스튜디오")
@@ -79,6 +80,7 @@ func _physics_process(delta):
 			actor.action="idle"
 			actor.animate(.016,elapsed)
 		actor.has_ball=mode in ["dribble","handle","hold","shot","cross","cut","pullup"]
+		if mode in HELD_PREVIEWS:actor.has_ball=true
 		actor.dribble_ended=mode=="hold"
 		var defensive_preview=mode in ["guard","shuffle","boxout"]
 		var defense_time=fposmod(elapsed,8.4)
@@ -91,6 +93,14 @@ func _physics_process(delta):
 		actor.contact_direction=(-actor.global_basis.z+actor.global_basis.x*sin(defense_time*1.8)*.35).normalized() if actor.boxing_out else Vector3.ZERO
 		actor.watch_direction=(actor.global_basis.z+actor.global_basis.x*sin(defense_time)*.22) if stance_active else Vector3.ZERO
 		actor.jump=0
+		if mode in HELD_PREVIEWS:
+			actor.dribble_ended=true
+			if not actor.held.valid:actor.held.capture(actor,balls[i].position)
+			if actor.action=="idle" and fposmod(elapsed,2.1)<.08:
+				actor.held.begin(actor,mode,actor.global_basis.x*(1 if i==0 else -1),balls[i].position)
+			if actor.action=="held_fake":
+				actor.action_time+=delta
+				if actor.action_time>=actor.held.duration:actor.action="idle";actor.action_time=0
 		if mode=="shot":
 			var t=fposmod(elapsed,2.4)
 			actor.finish_kind="shot"
@@ -102,6 +112,7 @@ func _physics_process(delta):
 				actor.has_ball=actor.action_time<.22
 		var stopping=mode=="cut" and fposmod(elapsed,8.4)>=7.2
 		var velocity=Vector2(sin(facing),cos(facing))*(4.7 if mode not in ["idle","handle","hold","shot"] and not stopping else 0)
+		if mode in HELD_PREVIEWS:velocity=Vector2.ZERO
 		if mode=="pullup":
 			var t=fposmod(elapsed,3.4)
 			var next_action="idle" if t<.55 or t>=1.98 else ("gather" if t<1.10 else "shot")

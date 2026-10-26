@@ -28,6 +28,7 @@ func run() -> void:
 	game.sound_enabled = false
 	game.start_mode("practice")
 	var p = game.players[0]
+	p.rotation.y=PI;p.facing=PI;p.reset_stance();p.feet_world.clear()
 	ticks(2)
 	key(KEY_D,true)
 	ticks(8)
@@ -39,6 +40,16 @@ func run() -> void:
 	pause_game(false)
 	ticks(15)
 	check(p.action == "idle" and game.attempts == 0,"Resume released an unintended fake or shot")
+	# The added turn-to-shoot also carries a pending release. Cancel it on pause.
+	game.start_mode("practice");p.rotation.y=0;p.facing=0;p.reset_stance();p.feet_world.clear();ticks(2)
+	key(KEY_D,true);ticks(5)
+	check(p.action=="square","Setup did not enter grounded turn-to-shoot")
+	pause_game(true);key(KEY_D,false);ticks(10)
+	check(p.action=="idle" and p.dribble_ended and not p.held.queued_release,"Pause kept a pending turnaround release")
+	pause_game(false);ticks(80)
+	check(game.attempts==0 and p.has_ball,"Resuming a turn-to-shoot fired an unrequested shot")
+	game.fake_shot(0);ticks(8);pause_game(true);pause_game(false);ticks(60)
+	check(p.has_ball and p.action=="idle" and game.attempts==0,"Paused held fake did not return safely to possession")
 	# Repeated pause requests are idempotent, including a menu over an existing pause.
 	pause_game(true)
 	pause_game(true)

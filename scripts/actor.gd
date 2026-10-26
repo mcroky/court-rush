@@ -10,6 +10,8 @@ const ANKLE_OFFSET = Vector3(0, .15, -.03)
 const CrossClip = preload("res://scripts/crossover_clip.gd")
 const RunClip = preload("res://scripts/run_clip.gd")
 const RigVisual = preload("res://scripts/rigged_visual.gd")
+const HeldBall=preload("res://scripts/held_ball.gd")
+var held=HeldBall.new()
 const DRIBBLE_FLOOR = CourtArt.BALL_RADIUS+.003
 const DRIBBLE_PALM = CourtArt.BALL_RADIUS+.015
 var use_skinned = true
@@ -123,6 +125,7 @@ func stance_rest(index: int) -> Vector3:
 	return rest
 
 func reset_stance() -> void:
+	held.reset()
 	if skinned != null: skinned.reset_contacts()
 	shot_recovery_left=0.0
 	shot_exit_intent=Vector2.ZERO
@@ -1479,13 +1482,15 @@ func animate(delta: float, _time: float) -> void:
 	if redirect_left>0 or (locomotion_pose() and not chase_recovery):yaw_step=clampf(yaw_step,-delta*7,delta*7)
 	if brake_state != "" or brake_weight > .05: yaw_step = clampf(yaw_step,-delta*7,delta*7)
 	if crossing() or cross_exit_left > 0: yaw_step = clampf(yaw_step,-delta*6,delta*6)
-	rotation.y += yaw_step
+	if not held.owns(self):rotation.y += yaw_step
 	# A running pull-up plants in its approach heading. Turning the hips to the
 	# rim over the old sprint contacts winds the two legs across one another.
 	if shot_gather_turn and action in ["gather","shot"]:
 		rotation.y = shot_gather_yaw if action=="gather" else lerp_angle(shot_gather_yaw,facing,smoothstep(SHOT_PLANT_TIME+.008,.25,action_time))
 	elif action not in ["gather","shot"]:
 		shot_gather_turn = false
+	if held.owns(self):held.tick(self,delta)
+	elif not has_ball or not dribble_ended:held.reset()
 	if action == "spin": rotation.y = turn_origin + turn_sign * TAU * smoothstep(0, 1, action_time / .64)
 	update_footwork(delta, velocity)
 	update_landing_push(delta)
@@ -1895,6 +1900,7 @@ func animate(delta: float, _time: float) -> void:
 			hand_world=receiver
 
 func ball_anchor(_time: float) -> Vector3:
+	if held.owns(self):return (palm_position(0)+palm_position(1))*.5
 	if action in ["pass","receive"]:
 		var center = (palm_position(0)+palm_position(1))*.5
 		return transfer_from.lerp(center,smoothstep(0,.10,action_time)) if action == "pass" else center

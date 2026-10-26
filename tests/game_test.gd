@@ -31,26 +31,27 @@ func run() -> void:
 	game.set_physics_process(false)
 	game.sound_enabled = false
 	game.start_mode("practice")
+	game.players[0].rotation.y=PI;game.players[0].facing=PI;game.players[0].reset_stance();game.players[0].feet_world.clear()
 	ticks(2)
 	key(KEY_D, true)
 	ticks(5)
 	key(KEY_D, false)
 	ticks(1)
-	check(game.players[0].action == "fake" and game.attempts == 0, "short tap is a fake, not a shot")
-	ticks(30)
+	check(game.players[0].action == "held_fake" and game.players[0].held.kind=="pump" and game.attempts == 0, "short tap is a fake, not a shot")
+	ticks(40)
 	var held_position = game.players[0].position
 	var held_phase = game.players[0].dribble_phase
-	var pivot_foot = game.players[0].feet_world[0]
+	var pivot_foot = game.players[0].skinned.toe_world[game.players[0].held.support]
 	key(KEY_RIGHT, true)
 	key(KEY_A, true)
 	ticks(40)
 	key(KEY_RIGHT, false)
 	key(KEY_A, false)
-	check(game.players[0].dribble_ended and game.players[0].action == "idle" and game.players[0].position == held_position, "pump fake ends dribble and prevents movement or crossover")
-	check(game.players[0].dribble_phase == held_phase and game.players[0].feet_world[0] == pivot_foot, "held ball stops bounce cycle and preserves pivot foot")
+	check(game.players[0].dribble_ended and game.players[0].action == "idle" and game.players[0].position.distance_to(held_position)<.65, "held fake turns around the planted foot without restarting a drive")
+	check(game.players[0].dribble_phase == held_phase and game.players[0].skinned.toe_world[game.players[0].held.support].distance_to(pivot_foot)<.001, "held ball stops bounce cycle and preserves actual pivot toe")
 	check(game.ball.position.distance_to((game.players[0].palm_position(0)+game.players[0].palm_position(1))*.5) < .001, "held ball stays between actual skinned palms")
 	key(KEY_D, true)
-	ticks(56)
+	ticks(102)
 	key(KEY_D, false)
 	check(game.phase == "flight" and game.attempts == 1, "held D releases exactly one shot")
 	game.flight_made = true

@@ -29,7 +29,8 @@ func run():
      var old_palms=v.palm_world.duplicate();var old_toes=v.toe_world.duplicate();var old_knees=[]
      for chain in v.feet:old_knees.append(v.bone_world(chain[1]).origin)
      var released=false;var folded=false;var lowered=false;var exited=false;var exit_origin=Vector3.ZERO;var was_shot=false;var tag=""
-     for f in int(fps*2.25):
+     # Turn away from the rim now requires a grounded plant/turn before gather.
+     for f in int(fps*3.20):
       if p.action=="gather" and p.action_time>=.40:key(KEY_D,false)
       if run_after and p.action=="shot" and p.action_time>=.55:key(KEY_RIGHT,true)
       game._physics_process(dt);game.flight_made=false

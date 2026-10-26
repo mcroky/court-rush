@@ -39,6 +39,7 @@ var previous_contact_mode = false
 var final_poses: Array = []
 var return_poses: Array = []
 var return_blend = 0.0
+var return_window=.12
 var human_mesh: MeshInstance3D
 var visual_swing: Array = [false,false]
 var visual_swing_from: Array = [Vector3.ZERO,Vector3.ZERO]
@@ -414,6 +415,7 @@ func reset_contacts() -> void:
 	arm_weight = [0.0,0.0]
 	previous_contact_mode = false
 	return_blend = 0
+	return_window=.12
 	cut_weight = 0
 	root_height = 0
 	shot_posture_time=0.0
@@ -472,6 +474,7 @@ func sample_base(delta: float, speed: float, airborne: bool) -> void:
 	if wanted != clip:
 		if initialized and final_poses.size()==skeleton.get_bone_count():
 			return_poses=transition_pose()
+			return_window=.12
 			return_blend=.12
 		clip = wanted
 		player.play(clip,.18 if initialized else 0.0)
@@ -684,7 +687,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	if guard_active:guard_entry_time+=delta
 	guard_was_active=guard_active
 	var transition = actor.brake_state!="" or actor.restart_left>0 or actor.chase_recovery or actor.shot_recovery_left>0
-	contact_mode = action_pose or actor.defense_weight>.35 or actor.boxout_weight>.2 or transition
+	contact_mode = action_pose or actor.defense_weight>.35 or actor.boxout_weight>.2 or transition or actor.held.owns(actor)
 	if contact_mode and not previous_contact_mode and initialized:
 		# Free running can lag the authored recovery target to keep shoe speed
 		# bounded. Rebase an in-flight step on the shoe actually rendered before
@@ -696,17 +699,18 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 				visual_swing_time[i]=0
 	# A shuffle has its own alternating contacts. Do not retain sprint pelvis
 	# rotation and shoulder bob underneath a planted defensive stance.
-	sample_base(delta,speed,(action_pose and not actor.moving_gather()) or actor.brake_state in ["load","settle"] or guard_active)
+	sample_base(delta,speed,(action_pose and not actor.moving_gather()) or actor.brake_state in ["load","settle"] or guard_active or actor.held.owns(actor))
 	if previous_contact_mode and not contact_mode and clip=="run":
 		# Resume near toe-off on the supporting side, never at an unrelated leg phase.
 		phase = .40 if locked[1] else .90
 		player.seek(player.current_animation_length*phase,true)
 		for index in range(skeleton.get_bone_count()): skeleton.set_bone_pose_scale(index,Vector3.ONE)
 		return_poses = transition_pose()
-		return_blend = .12
+		return_window=.20 if actor.run_entry_left>0 and not actor.has_ball else .12
+		return_blend = return_window
 	if return_blend>0 and return_poses.size()==skeleton.get_bone_count():
 		return_blend = maxf(0,return_blend-delta)
-		var weight = smoothstep(0,.12,.12-return_blend)
+		var weight = smoothstep(0,return_window,return_window-return_blend)
 		for index in range(return_poses.size()):
 			skeleton.set_bone_pose(index,return_poses[index].interpolate_with(skeleton.get_bone_pose(index),weight))
 	previous_contact_mode = contact_mode
@@ -739,6 +743,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	if actor.action=="fake" and actor.finish_kind=="shot":
 		height_target=lerpf(action_entry_height,height_target,smoothstep(0,.12,actor.action_time))
 	if actor.action in ["shot","layup"]:height_target=finish_root(actor)
+	if actor.held.owns(actor):height_target=-actor.held.pose(actor).drop
 	if actor.defensive_jump():height_target=lerpf(action_entry_height,height_target,smoothstep(0,actor.DEFENSE_PLANT_TIME,action_entry_time))
 	root_height = move_toward(root_height,height_target,delta*1.8) if initialized and not action_pose else height_target
 	model.position = Vector3(0,root_height,-.255*render_scale)
@@ -803,6 +808,10 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	# filtering that cancellation would leave yesterday's sprint twist behind.
 	if cross_weight>0:torso_layer.y=layer.y
 	if shooting_pose:torso_layer=layer
+	if actor.held.owns(actor):
+		var held_pose=actor.held.pose(actor)
+		var line=actor.global_basis.inverse()*(bone_world(arms[1][0]).origin-bone_world(arms[0][0]).origin)
+		torso_layer=Vector3(held_pose.pitch,held_pose.twist-atan2(-line.z,line.x),0)
 	unlayered_poses.clear()
 	for bone in range(skeleton.get_bone_count()):unlayered_poses.append(skeleton.get_bone_pose(bone))
 	for bone in [spine,chest]:
@@ -929,7 +938,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			if locked[i]:anchors[i]=goal
 			visual_swing[i]=false
 			var heel=.40*smoothstep(0,.09,actor.action_time)*(1-smoothstep(.09,.15,actor.action_time)) if i!=shot_gather_first else 0.0
-			desired_basis=shot_gather_bases[i].slerp(global_basis*Basis(Vector3.RIGHT,heel)*foot_rest_basis[i],smoothstep(0,.04,actor.action_time))
+			desired_basis=shot_gather_bases[i].orthonormalized().slerp((global_basis*Basis(Vector3.RIGHT,heel)*foot_rest_basis[i]).orthonormalized(),smoothstep(0,.04,actor.action_time))
 			if i!=shot_gather_first and actor.action_time<.09:
 				var hip=bone_world(chain[0]).origin
 				var reach=hip.distance_to(bone_world(chain[1]).origin)+bone_world(chain[1]).origin.distance_to(foot.origin)-.004
@@ -961,6 +970,12 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			# Completing a recovery step must not jump straight to a distant
 			# authored stride sample. Carry the actual foot through that handoff.
 			goal=toe_world[i].move_toward(goal,delta*8.0)
+		if actor.held.owns(actor):
+			goal=actor.held.toes[i]
+			locked[i]=i==actor.held.support and actor.held.entry_time>=.12
+			anchors[i]=goal
+			visual_swing[i]=false
+			desired_basis=(global_basis*foot_rest_basis[i]).orthonormalized()
 		goals.append(goal)
 		foot_bases.append(desired_basis)
 		var toe_offset = foot.affine_inverse()*bone_world(chain[3]).origin
@@ -1087,6 +1102,13 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			var fingers=(Vector3.UP*.55+global_basis.z*.83).normalized()
 			frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
 			guide=bone_world(chain[0]).origin+anatomical_chest*Vector3(side*.13,-.30,-.05)
+		if actor.held.owns(actor):
+			var held_pose=actor.held.pose(actor)
+			target=held_pose.center+actor.global_basis.x*side*.125
+			var normal=actor.global_basis.x*-side
+			var fingers=(Vector3.UP*.55+actor.global_basis.z*.83).normalized()
+			frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+			guide=bone_world(chain[0]).origin+anatomical_chest*Vector3(side*.16,-.29,.08)
 		elif stationary_guard and side!=actor.dribble_hand:
 			var shoulder=bone_world(chain[0]).origin
 			target=shoulder+global_basis*Vector3(side*.04,-.32,.18)

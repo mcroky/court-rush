@@ -144,6 +144,13 @@ function fixture(raw=null,failWrite=false){
  console.log('TEAM_SWITCH_UI: dedicated control, current role, loose-ball switching, capture cleanup and fullscreen aspect/pixel budget passed');
 }
 {
+ const f=fixture();f.playing();const next={started:true,paused:false,phase:'live',mode:'practice',score:[0,0],seconds:90,owner:0,action:'idle',charge:0,finish:'shot',makes:0,attempts:0};
+ f.window.ufUpdate({...next,held:true});assert.ok(f.document.body.classList.contains('held-ball'));
+ for(const [id,label] of [['cross','피벗'],['spin','턴 페이크'],['twostep','업앤언더'],['behind','다리 사이'],['hesi','펌프']])assert.equal(f.node(`touch-${id}-label`).textContent,label);
+ f.window.ufUpdate({...next,held:false});assert.equal(f.node('touch-cross-label').textContent,'돌파');assert.equal(f.document.body.classList.contains('held-ball'),false);
+ console.log('HELD_BALL_UI: contextual fake labels and restoration to dribble controls passed');
+}
+{
  const f=fixture();f.playing();
  f.key('keydown','KeyE');f.key('keyup','KeyE');
  assert.equal(f.window.ufInput.switchPlayer,false);

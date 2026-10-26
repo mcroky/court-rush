@@ -692,7 +692,8 @@ func set_paused(value: bool,reason: String = "잠시 쉬었다가 직접 이어�
 		if not paused:
 			# Releasing D outside the game must not release an interrupted shot.
 			var player = controlled_player()
-			if player.action == "gather" and not player.finish_running:
+			if player.action=="square" or player.action=="held_fake" or player.action == "gather" and not player.finish_running:
+				player.held.freeze(player,ball.position)
 				player.action = "idle"
 				player.action_time = 0
 				shot_hold = 0
@@ -831,6 +832,7 @@ func _physics_process(delta: float) -> void:
 	var right = Vector3(camera.global_basis.x.x, 0, camera.global_basis.x.z).normalized()
 	var down = Vector3(camera.global_basis.z.x, 0, camera.global_basis.z.z).normalized()
 	var desired = right * direction.x + down * direction.y
+	held_ball_controls(0,input,desired,delta)
 	if players[0].action=="shot":players[0].shot_exit_intent=Vector2(desired.x,desired.z)*players[0].athletic_profile().speed
 	var speed: float = players[0].athletic_profile().speed if not input.guard else 2.7
 	if input.guard and players[0].boxing_out: speed = 1.7
@@ -876,23 +878,14 @@ func _physics_process(delta: float) -> void:
 		if needs_clear and Rules.is_clear(players[0].position):
 			needs_clear = false
 			announce("CLEARED", "이제 공격할 수 있어요.", 1.2)
-		var can_finish = players[0].action == "idle" or (players[0].crossing() and players[0].cross_received) or (players[0].action in DRIBBLE_DURATIONS and players[0].action != "cross" and players[0].action_time >= DRIBBLE_DURATIONS[players[0].action] * .55)
+		var can_finish = players[0].action == "idle" or (players[0].action=="held_fake" and players[0].action_time>=players[0].held.duration*.60) or (players[0].crossing() and players[0].cross_received) or (players[0].action in DRIBBLE_DURATIONS and players[0].action != "cross" and players[0].action_time >= DRIBBLE_DURATIONS[players[0].action] * .55)
 		if input.shoot and not last_shoot and can_finish:
 			if needs_clear:
 				announce("CLEAR THE BALL", "외곽선 밖으로 공을 가져가세요.")
 			else:
 				begin_gather(0)
 		if players[0].action == "gather":
-			shot_hold += delta
-			if players[0].finish_running:
-				if shot_hold >= .20: launch_shot(0)
-			elif not input.shoot:
-				if shot_hold < 0.18:
-					fake_shot(0)
-				else:
-					launch_shot(0)
-			elif shot_hold >= 0.62:
-				launch_shot(0)
+			gather_input(0,input.shoot,delta)
 		if input.cross and not last_cross and crossover_cooldown <= 0 and players[0].action == "idle":
 			crossover(direction)
 		elif input.spin and not last_spin:
@@ -986,6 +979,9 @@ func start_defensive_jump(index: int,kind: String) -> void:
 
 func update_actions(delta: float) -> void:
 	for player in players:
+		if player.action in ["square","held_fake"] and not player.has_ball:
+			player.action="idle";player.action_time=0;player.dribble_ended=false;player.held.reset()
+		if player.action=="square":player.held.yaw_target=atan2(HOOP.x-player.position.x,HOOP.z-player.position.z)
 		if player.action in ["spin", "twostep", "behind", "hesi"]:
 			for beat in ([.16, .48] if player.action == "twostep" else [DRIBBLE_DURATIONS[player.action] * .5]):
 				if player.action_time < beat and player.action_time + delta >= beat: play_sound("bounce", -11)
@@ -993,7 +989,11 @@ func update_actions(delta: float) -> void:
 		if player.action == "cross" and player.action_time < cross_bounce and player.action_time + delta >= cross_bounce:
 			play_sound("bounce", -10)
 		player.action_time += delta
-		if player.crossing():
+		if player.action=="square" and player!=controlled_player() and player.held.square_ready(player):
+			begin_gather(players.find(player),true)
+		elif player.action=="held_fake" and player.action_time>=player.held.duration:
+			player.action="idle";player.action_time=0
+		elif player.crossing():
 			if player.action_time >= player.cross_duration() and player.cross_received: player.finish_cross()
 		elif player.stealing():
 			if player.action_time >= player.STEAL_DURATION:
@@ -1125,12 +1125,60 @@ func separate_players() -> void:
 		players[0].position = Rules.clamp_to_court(players[0].position)
 		players[1].position = Rules.clamp_to_court(players[1].position)
 
-func begin_gather(index: int) -> void:
+func held_ball_controls(index: int,input: Dictionary,desired: Vector3,delta: float) -> void:
+	var p=players[index]
+	var h=p.held
+	if p.action=="square":
+		if input.shoot:h.press_time+=delta
+		elif not h.queued_release:
+			h.queued_release=true;h.pump_release=h.press_time<.18
+		if h.square_ready(p):begin_gather(index,true)
+	if phase=="live" and ball_owner==index and p.has_ball and p.dribble_ended and p.action=="idle" and not input.shoot:
+		h.capture(p,ball.position)
+		var requested=""
+		for key in ["cross","spin","twostep","behind","hesi"]:
+			if input.get(key,false) and not h.input_edges.get(key,false):requested={"cross":"pivot","spin":"turn","twostep":"upunder","behind":"through","hesi":"pump"}[key];break
+		if desired.length()<.2:h.direction_latched=false
+		elif (not h.direction_latched or h.last_direction.dot(desired.normalized())<.5) and requested=="":
+			h.direction_latched=true
+			h.last_direction=desired.normalized()
+			requested="jab" if desired.normalized().dot(p.global_basis.z)>.65 else "pivot"
+		if requested!="":
+			if desired.length()>.2:h.direction_latched=true;h.last_direction=desired.normalized()
+			h.begin(p,requested,desired,ball.position)
+			play_sound("squeak",-20)
+			announce({"pivot":"PIVOT FAKE","jab":"JAB STEP","pump":"PUMP FAKE","upunder":"UP AND UNDER","through":"THROUGH THE LEGS","turn":"TURN FAKE"}[requested],"축발 유지 · 방향 피벗 / A 피벗 · Z 턴 · C 업앤언더 · V 다리 사이 · X 펌프",1.8)
+			if requested in ["jab","pivot","turn"]:defender_feint(desired if desired.length()>.1 else p.global_basis.x*p.dribble_hand)
+	for key in ["cross","spin","twostep","behind","hesi"]:h.input_edges[key]=input.get(key,false)
+
+func gather_input(index: int,shoot: bool,delta: float) -> void:
+	var p=players[index]
+	shot_hold+=delta
+	if p.held.queued_release and not shoot:
+		if p.held.pump_release:
+			if shot_hold>=.10:fake_shot(index)
+		elif shot_hold>=.22:launch_shot(index)
+	elif p.finish_running:
+		if shot_hold>=.20:launch_shot(index)
+	elif not shoot:
+		if shot_hold+p.held.press_time<.18:fake_shot(index)
+		else:launch_shot(index)
+	elif shot_hold>=.62:launch_shot(index)
+
+func begin_gather(index: int,aligned: bool=false) -> void:
+	var p=players[index]
+	var aim=atan2(HOOP.x-p.position.x,HOOP.z-p.position.z)
+	if not aligned:
+		p.held.queued_release=false;p.held.pump_release=false;p.held.press_time=0
+		if Rules.finish_type(p.position,p.motion)=="shot" and absf(angle_difference(p.rotation.y,aim))>.65:
+			p.held.begin(p,"square",Vector3.ZERO,ball.position,aim)
+			p.finish_kind="shot";p.finish_running=false
+			return
 	players[index].gather_ball_from=players[index].to_local(ball.position)
 	players[index].gather_ball_valid=true
 	players[index].approach_velocity = players[index].motion
 	players[index].finish_kind = Rules.finish_type(players[index].position, players[index].motion)
-	players[index].shot_gather_turn = players[index].finish_kind=="shot" and players[index].motion.length()>1.2
+	players[index].shot_gather_turn = players[index].finish_kind=="shot" and (players[index].motion.length()>1.2 or aligned)
 	players[index].shot_gather_yaw = players[index].rotation.y
 	players[index].finish_running = not players[index].dribble_ended and players[index].finish_kind != "shot" and players[index].motion.length() > 1.2
 	players[index].gather_step_start = players[index].step_serial
@@ -1144,9 +1192,9 @@ func begin_gather(index: int) -> void:
 	face_target(index, HOOP)
 
 func fake_shot(index: int) -> void:
-	players[index].action = "fake"
-	players[index].action_time = 0.1
-	announce("PUMP FAKE", "드리블 종료 · 피벗으로 방향을 잡고 D로 슛하세요.", 2.2)
+	players[index].held.queued_release=false
+	players[index].held.begin(players[index],"pump",Vector3.ZERO,ball.position)
+	announce("PUMP FAKE", "드리블 종료 · 방향 피벗 / A·Z·C·V·X 페이크 / D 슛", 2.2)
 	if mode == "duel" and index == 0 and players[0].position.distance_to(players[1].position) < 2.4 and rng.randf() < 0.65:
 		start_defensive_jump(1,"block")
 		ai_freeze = 0.9
@@ -1210,6 +1258,7 @@ func launch_shot(index: int) -> void:
 	if phase != "live" or ball_owner != index:
 		return
 	var player = players[index]
+	player.held.queued_release=false
 	player.finish_ball_from=player.to_local(ball.position)
 	player.finish_ball_valid=true
 	shooter = index
