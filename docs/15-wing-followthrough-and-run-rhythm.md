@@ -1,4 +1,4 @@
-# 45도 슛 양팔 회수와 달리기 발 교대 — 2026-10-26 로컬
+# v0.8.8 · 45도 슛 양팔 회수와 달리기 발 교대 — 2026-10-26
 
 ## 문제와 적용
 
@@ -18,8 +18,17 @@
 - 슛 회복48조건 실패0: 릴리즈 방향 내적0.9965 이상, 첫 회복 신발 이동5.34cm 이하, 손11m/s/무릎17.01m/s 이하. 팔 정렬108조건 실패0, 얼굴 앞 가이드 팔2,250샘플·뼈 길이 유지. artifacts/wing-run-final-shot_recovery_test.txt, wing-run-final-shot_arm_line_test.txt.
 - 기존 run_rhythm1,344프레임/84디딤, leg_stability10,372샘플, stop_cut24조건, planted_cut108조건, cross_handoff36조건, rig_gameplay, defense_shuffle4,428프레임, cut_response72조건, 빠른 페이크62조건·기존 훅/페이드24조건·팀 경기27항목 모두 실패0. artifacts/wing-run-*.txt에 결과 보존.
 - 실제 로컬 브라우저에서 일반 속도 이동으로 왼쪽 윙3점선 밖에 진입한 뒤 펌프·방향 피벗·슛/OPEN LOOK와 실제 공 비행 확인. artifacts/wing-follow-gameplay.png. 확대 스튜디오에서 반대 팔을 먼저 내리는 후속 회수를 느린 보기로 확인: artifacts/wing-follow-close.png. 각 세션 console warning/error0. 자체 탭을 닫고 사용자 경기는 초기화하지 않았다.
-- 엔진 재수출·로컬 웹 셸 생성 완료. 수치 검증과 확대 확인은 미적 완성도/실제 Android 기기/전체화면60fps의 검증을 의미하지 않는다. 이번 변경은 로컬 반영이며 현재 공개판은0.8.7이다. 배포하지 않았다.
+- 엔진 재수출·로컬 웹 셸 생성 완료. 수치 검증과 확대 확인은 미적 완성도/실제 Android 기기/전체화면60fps의 검증을 의미하지 않는다. 초기 로컬 확인 당시에는 공개0.8.7을 유지했으며, 이후 사용자 확정에 따라 아래와 같이0.8.8을 공개했다.
 
 ## v0.8.8 배포 준비
 
 사용자가 앞으로 수정·검증 후 항상 배포하도록 확정했다. 프로젝트 AGENTS.md에 기록하고 위 로컬 변경 전체를0.8.8로 공개한다. 통합된 PROJECT_BASELINE.md의1~2·10·12~13·18절을 확인했으며 삭제된 분리 문서 참조는 프로젝트 지침에서 통합문서로 갱신했다. 기존 엔진·DB는 유지한다. 실제 공개 성공·파일 일치·브라우저 확인은 완료 후 아래에 기록한다.
+
+## v0.8.8 공개 완료
+
+- 소스39aba9f를 main에, 공개 파일4ab0dbdeb97fabd5f98151c1de3793fae0e367ab를 gh-pages에 반영했다. GitHub Pages 실행40296266302는 success로 완료했다. 주소는 https://mcroky.github.io/court-rush/ 를 유지한다.
+- Godot 웹 재수출과 셸 생성, 다국어678개 원문/3개 번역·입력/수명주기·의상 패키징 검사 통과. verify_web_release의20개 셸 파일이 커밋한 소스와 일치한다.
+- verify_public_release 0.8.8 성공: 공개10개 핵심 파일 일치,138항목/12컬렉션, 익명 선수 요청401, CORS·WASM MIME 확인. game.pck SHA256: fab925063dc322b118a3e38ebdf1cc791c59dee9c2a67bd9f9b2be195ac3f738. artifacts/v088-public-release.json.
+- 실제 공개 브라우저의 별도 연습 세션에서 일반 속도 달리기→왼쪽 윙 슛→OPEN LOOK/실제1회 슛 시도를 확인했다. 업데이트 창은0.8.8이며 한국어·영어·일본어·간체 중국어의 새 제목을 각각 확인했다. console warning/error0. artifacts/v088-public-updates.png.
+- Roky Studio의 최신 소식에0.8.8 카드·변경 요약과 기존 게임 주소가 표시된다. artifacts/v088-studio-update.png. 확인용 탭만 닫으며 사용자 경기에는 입력하거나 초기화하지 않았다.
+- 이번 공개 확인은 데스크톱 브라우저 기준이다. 실제 Android 기기·Play 출시·전체화면60fps·모션의 미적 완성도를 검증했다고 주장하지 않는다. DB·공유 인증 설정은 변경하지 않았다.
