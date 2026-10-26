@@ -2,7 +2,7 @@ extends RefCounted
 
 # One planted forefoot owns a held-ball possession. Direction changes move the
 # other foot and the hips around that contact; they never restart a dribble.
-const DURATIONS={"pivot":.68,"jab":.62,"pump":.70,"upunder":.95,"through":.85,"turn":.84}
+const DURATIONS={"pivot":.36,"jab":.30,"pump":.36,"upunder":.50,"through":.44,"turn":.44}
 var valid=false
 var support=0
 var anchor=Vector3.ZERO
@@ -25,6 +25,17 @@ var pump_release=false
 var press_time=0.0
 var input_edges={}
 var free_goal=Vector3.ZERO
+var pending_kind=""
+var pending_direction=Vector3.ZERO
+var pending_left=0.0
+var pending_shot_left=0.0
+
+func can_chain(actor) -> bool:
+	return actor.action=="idle" or (actor.action=="held_fake" and actor.action_time>=duration*.48)
+
+func clear_pending() -> void:
+	pending_kind="";pending_left=0.0;pending_shot_left=0.0
+
 
 func square_ready(actor) -> bool:
 	return actor.action_time>=duration and absf(angle_difference(actor.rotation.y,yaw_target))<.003 and toes[1-support].distance_to(free_goal)<.004
@@ -36,6 +47,7 @@ func freeze(actor,ball: Vector3) -> void:
 	root_offset=Basis(Vector3.UP,-actor.rotation.y)*(actor.global_position-anchor);root_offset.y=0
 	yaw_target=actor.rotation.y;kind=""
 	queued_release=false;pump_release=false;press_time=0
+	clear_pending()
 	entry_ball=ball;entry_time=0
 
 func reset() -> void:
@@ -43,6 +55,7 @@ func reset() -> void:
 	last_direction=Vector3.ZERO
 	queued_release=false;pump_release=false;press_time=0.0
 	input_edges.clear()
+	clear_pending()
 
 func capture(actor,ball: Vector3) -> void:
 	if valid:return
@@ -66,6 +79,9 @@ func owns(actor) -> bool:
 
 func begin(actor,next_kind: String,desired: Vector3,ball: Vector3,target_yaw: float=INF) -> void:
 	capture(actor,ball)
+	clear_pending()
+	for i in 2:
+		if actor.skinned!=null:foot_bases[i]=actor.skinned.bone_world(actor.skinned.feet[i][2]).basis.orthonormalized()
 	support_from=toes[support]
 	root_offset=Basis(Vector3.UP,-actor.rotation.y)*(actor.global_position-anchor)
 	root_offset.y=0
@@ -98,8 +114,12 @@ func tick(actor,delta: float) -> void:
 	entry_time+=delta
 	var t=clampf(actor.action_time/maxf(.01,duration),0,1) if actor.action!="idle" else 1.0
 	var yaw=yaw_target
-	if actor.action!="idle":yaw=lerp_angle(yaw_from,yaw_target,smoothstep(.08 if kind=="turnshot" else .12,duration,actor.action_time))
-	actor.rotation.y+=clampf(angle_difference(actor.rotation.y,yaw),-delta*6.5,delta*6.5)
+	if actor.action!="idle":
+		var start=.025 if actor.action=="held_fake" else .08 if kind=="turnshot" else .12
+		var end=duration*.84 if actor.action=="held_fake" else duration
+		yaw=lerp_angle(yaw_from,yaw_target,smoothstep(start,end,actor.action_time))
+	var yaw_rate=11.0 if actor.action=="held_fake" else 6.5
+	actor.rotation.y+=clampf(angle_difference(actor.rotation.y,yaw),-delta*yaw_rate,delta*yaw_rate)
 	if kind!="turnshot":actor.facing=actor.rotation.y
 	# A sprint contact can trail far behind the hips. Load the planted leg
 	# before rotating, rather than rotating an overextended leg in place.
@@ -112,7 +132,7 @@ func tick(actor,delta: float) -> void:
 	var width=.28 if kind!="through" else .40
 	var goal=actor.to_global(Vector3(side*width*actor.height_ratio,0,.10))
 	if actor.action=="held_fake" and kind in ["jab","upunder"]:
-		var step=smoothstep(0,.22,t)*(1-smoothstep(.48,.90,t)) if kind=="jab" else smoothstep(.25,.50,t)*(1-smoothstep(.75,1,t))
+		var step=smoothstep(0,.32,t)*(1-smoothstep(.36,.90,t)) if kind=="jab" else smoothstep(.32,.62,t)*(1-smoothstep(.68,1,t))
 		goal+=direction*(.42 if kind=="jab" else .32)*step
 	goal.y=.026
 	free_goal=goal
@@ -131,9 +151,9 @@ func pose(actor) -> Dictionary:
 	var t=clampf(actor.action_time/maxf(.01,duration),0,1) if actor.action=="held_fake" else 0.0
 	# Readable game poses: preload, show a committed threat, then counter and
 	# recover. A sine-only wiggle has no moment for an opponent to read.
-	var load=sin(clampf(t/.22,0,1)*PI)
-	var show=smoothstep(0,.22,t)*(1-smoothstep(.48,.86,t))
-	var counter=smoothstep(.22,.48,t)*(1-smoothstep(.72,1,t))
+	var load=sin(clampf(t/.24,0,1)*PI)
+	var show=smoothstep(0,.32,t)*(1-smoothstep(.36,.88,t))
+	var counter=smoothstep(.32,.64,t)*(1-smoothstep(.68,1,t))
 	var center=Vector3(0,1.19,.34)
 	var twist=0.0;var pitch=.10;var drop=.10;var roll=0.0
 	match kind if actor.action=="held_fake" else "":
@@ -151,11 +171,11 @@ func pose(actor) -> Dictionary:
 			center+=Vector3(-sign_side*.30*show,-.08*show,-.18*show)
 			twist=sign_side*.55*show;drop+=.10*load;roll=-sign_side*.13*show
 		"jab":
-			center+=Vector3(sign_side*.26*show,-.16*show,.24*show)
+			center+=Vector3(sign_side*.29*show,-.16*show,.26*show)
 			pitch+=.28*show;twist=sign_side*.36*show;roll=-sign_side*.14*show;drop+=.08*show
 		"pivot":
 			center.x+=sign_side*(.30*show-.18*counter)
 			twist=sign_side*.42*show;drop+=.08*show;roll=sign_side*.10*show
 	var world=actor.to_global(Vector3(center.x*actor.height_ratio,center.y*actor.height_ratio,center.z*actor.height_ratio))
-	world=entry_ball.lerp(world,smoothstep(0,.18,entry_time))
+	world=entry_ball.lerp(world,smoothstep(0,.085 if actor.action=="held_fake" else .18,entry_time))
 	return {"center":world,"twist":twist,"pitch":pitch,"drop":drop,"roll":roll,"gaze":twist*.55}

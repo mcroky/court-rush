@@ -67,7 +67,7 @@ func run():
 				check(game.ball.position.distance_to((p.palm_position(0)+p.palm_position(1))*.5)<.001,"Fake ball disconnected from both hands")
 				check(game.ball.position.y>.48,"Through-the-legs fake became an illegal bounce")
 				max_ball_motion=maxf(max_ball_motion,game.ball.position.distance_to(old_ball)/dt);old_ball=game.ball.position
-			check(max_ball_motion<10,"Held fake handoff teleported the ball")
+			check(max_ball_motion<10,"Held fake handoff teleported the ball kind="+str(binding[1])+" fps="+str(fps)+" speed="+str(max_ball_motion))
 			check(p.action=="idle" and game.attempts==0,"Fake committed a shot without D")
 			key(KEY_D,true)
 			for f in int(fps*2.1):game._physics_process(dt)

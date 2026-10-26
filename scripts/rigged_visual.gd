@@ -1143,6 +1143,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		if actor.held.owns(actor):
 			var held_pose=actor.held.pose(actor)
 			target=held_pose.center+actor.global_basis.x*side*.125
+			if initialized:target=palm_world[i].move_toward(target,delta*9.0)
 			var normal=actor.global_basis.x*-side
 			var fingers=(Vector3.UP*.55+actor.global_basis.z*.83).normalized()
 			frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()

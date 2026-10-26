@@ -189,10 +189,10 @@ func tick(delta: float, input: Dictionary) -> void:
 		if game.needs_clear and Rules.is_clear(p.position):
 			game.needs_clear = false
 			game.announce("CLEARED", "이제 공격할 수 있어요.",1)
-		if pressed(input,"pass") and (p.action in ["idle","fake"] or p.action=="held_fake" and p.action_time>=p.held.duration*.6): begin_pass(selected,choose_receiver(selected,desired))
-		elif pressed(input,"shoot") and ((input.cross and p.action_time<.12 and (p.action=="cross" or p.action=="held_fake" and p.held.kind=="pivot")) or p.action == "idle" or p.action=="held_fake" and p.action_time>=p.held.duration*.60 or p.crossing() and p.cross_received):
+		if pressed(input,"pass") and (p.action in ["idle","fake"] or p.action=="held_fake" and p.held.can_chain(p)): begin_pass(selected,choose_receiver(selected,desired))
+		elif (pressed(input,"shoot") or p.held.pending_shot_left>0) and ((input.cross and p.action_time<.12 and (p.action=="cross" or p.action=="held_fake" and p.held.kind=="pivot")) or p.action == "idle" or p.action=="held_fake" and p.held.can_chain(p) or p.crossing() and p.cross_received):
 			if game.needs_clear: game.announce("CLEAR THE BALL", "외곽선 밖으로 공을 가져가세요.")
-			else: game.begin_gather(selected,false,game.combo_shot(selected,input,desired))
+			else: game.begin_gather(selected,false,game.combo_shot(selected,input,desired),desired)
 		if p.action == "gather":
 			game.gather_input(selected,input.shoot,delta)
 		if p.action == "idle" and not p.dribble_ended and game.crossover_cooldown <= 0:
@@ -689,6 +689,7 @@ func decorate_state(state: Dictionary) -> void:
 	state.player = [p.position.x,p.position.z]
 	state.charge = game.shot_hold/.62 if p.action == "gather" else 0
 	state.finish = (p.shot_style if p.shot_style!="jumper" else p.finish_kind) if p.action in ["gather","shot"] else Rules.finish_type(p.position,p.motion)
+	if p.has_ball and p.dribble_ended and p.action not in ["gather","shot"]:state.finish="shot"
 	state.sweet = Rules.release_bonus(game.shot_hold) > 0 and p.action == "gather"
 	state.held = p.has_ball and p.dribble_ended
 	state.boxout = p.boxing_out

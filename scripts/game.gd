@@ -880,12 +880,12 @@ func _physics_process(delta: float) -> void:
 			needs_clear = false
 			announce("CLEARED", "이제 공격할 수 있어요.", 1.2)
 		var combo_entry=input.cross and ((players[0].action=="cross" and players[0].action_time<.12) or (players[0].action=="held_fake" and players[0].held.kind=="pivot" and players[0].action_time<.12))
-		var can_finish = combo_entry or players[0].action == "idle" or (players[0].action=="held_fake" and players[0].action_time>=players[0].held.duration*.60) or (players[0].crossing() and players[0].cross_received) or (players[0].action in DRIBBLE_DURATIONS and players[0].action != "cross" and players[0].action_time >= DRIBBLE_DURATIONS[players[0].action] * .55)
-		if input.shoot and not last_shoot and can_finish:
+		var can_finish = combo_entry or players[0].action == "idle" or (players[0].action=="held_fake" and players[0].held.can_chain(players[0])) or (players[0].crossing() and players[0].cross_received) or (players[0].action in DRIBBLE_DURATIONS and players[0].action != "cross" and players[0].action_time >= DRIBBLE_DURATIONS[players[0].action] * .55)
+		if ((input.shoot and not last_shoot) or players[0].held.pending_shot_left>0) and can_finish:
 			if needs_clear:
 				announce("CLEAR THE BALL", "외곽선 밖으로 공을 가져가세요.")
 			else:
-				begin_gather(0,false,combo_shot(0,input,desired))
+				begin_gather(0,false,combo_shot(0,input,desired),desired)
 		if players[0].action == "gather":
 			gather_input(0,input.shoot,delta)
 		if input.cross and not last_cross and crossover_cooldown <= 0 and players[0].action == "idle":
@@ -985,7 +985,7 @@ func update_actions(delta: float) -> void:
 			player.action="idle";player.action_time=0;player.dribble_ended=false;player.held.reset()
 		if player.action=="square":player.held.yaw_target=atan2(HOOP.x-player.position.x,HOOP.z-player.position.z)
 		if player.action=="held_fake" and player.held.kind in ["pivot","jab","turn","upunder","through"]:
-			var beats=[.12,.54] if player.held.kind=="upunder" else [.12,.36] if player.held.kind=="turn" else [.12]
+			var beats=[player.held.duration*.22,player.held.duration*.64] if player.held.kind in ["upunder","turn"] else [player.held.duration*.22]
 			for beat in beats:
 				if player.action_time<beat and player.action_time+delta>=beat:play_sound("squeak",-12 if beat==.12 else -16)
 		if player.action in ["spin", "twostep", "behind", "hesi"]:
@@ -1137,13 +1137,18 @@ func separate_players() -> void:
 func held_ball_controls(index: int,input: Dictionary,desired: Vector3,delta: float) -> void:
 	var p=players[index]
 	var h=p.held
+	h.pending_shot_left=maxf(0,h.pending_shot_left-delta)
+	if phase=="live" and ball_owner==index and p.action=="held_fake" and not h.can_chain(p) and input.shoot:
+		h.pending_shot_left=.14;h.pending_kind=""
 	if p.action=="square":
 		if input.shoot:h.press_time+=delta
 		elif not h.queued_release:
 			h.queued_release=true;h.pump_release=h.press_time<.18
 		if h.square_ready(p):begin_gather(index,true)
-	if phase=="live" and ball_owner==index and p.has_ball and p.dribble_ended and p.action=="idle" and not input.shoot:
+	if phase=="live" and ball_owner==index and p.has_ball and p.dribble_ended and p.action in ["idle","held_fake"] and not input.shoot:
 		h.capture(p,ball.position)
+		h.pending_left=maxf(0,h.pending_left-delta)
+		if h.pending_left<=0:h.pending_kind=""
 		var requested=""
 		for key in ["cross","spin","twostep","behind","hesi"]:
 			if input.get(key,false) and not h.input_edges.get(key,false):requested={"cross":"pivot","spin":"turn","twostep":"upunder","behind":"through","hesi":"pump"}[key];break
@@ -1154,10 +1159,14 @@ func held_ball_controls(index: int,input: Dictionary,desired: Vector3,delta: flo
 			requested="jab" if desired.normalized().dot(p.global_basis.z)>.65 else "pivot"
 		if requested!="":
 			if desired.length()>.2:h.direction_latched=true;h.last_direction=desired.normalized()
-			h.begin(p,requested,desired,ball.position)
+			h.pending_kind=requested;h.pending_direction=desired;h.pending_left=.14
+		if h.pending_kind!="" and h.can_chain(p):
+			requested=h.pending_kind
+			var feint_direction=h.pending_direction
+			h.begin(p,requested,feint_direction,ball.position)
 			announce({"pivot":"PIVOT FAKE","jab":"JAB STEP","pump":"PUMP FAKE","upunder":"UP AND UNDER","through":"THROUGH THE LEGS","turn":"TURN FAKE"}[requested],"축발 유지 · 방향 피벗 / A 피벗 · Z 턴 · C 업앤언더 · V 다리 사이 · X 펌프",1.8)
-			if requested in ["jab","pivot","turn"]:defender_feint(desired if desired.length()>.1 else p.global_basis.x*p.dribble_hand)
-	for key in ["cross","spin","twostep","behind","hesi"]:h.input_edges[key]=input.get(key,false)
+			if requested in ["jab","pivot","turn"]:defender_feint(feint_direction if feint_direction.length()>.1 else p.global_basis.x*p.dribble_hand)
+	for key in ["cross","spin","twostep","behind","hesi","shoot"]:h.input_edges[key]=input.get(key,false)
 
 func gather_input(index: int,shoot: bool,delta: float) -> void:
 	var p=players[index]
@@ -1179,8 +1188,11 @@ func combo_shot(index: int,input: Dictionary,desired: Vector3) -> String:
 	if desired.length()>.2 and desired.normalized().dot(toward.normalized())<-.35:return "fadeaway"
 	return "hook" if toward.length()<3.5 else "fadeaway"
 
-func begin_gather(index: int,aligned: bool=false,style: String="jumper") -> void:
+func begin_gather(index: int,aligned: bool=false,style: String="jumper",finish_input: Vector3=Vector3.ZERO) -> void:
 	var p=players[index]
+	var after_fake=p.has_ball and p.dribble_ended and not aligned
+	var toward=(HOOP-p.position)*Vector3(1,0,1)
+	var step_through=(aligned and p.finish_kind=="layup") or (after_fake and style=="jumper" and toward.length()<=3.0 and p.position.z>=HOOP.z-.1 and finish_input.length()>.2 and finish_input.normalized().dot(toward.normalized())>.35)
 	if aligned:style=p.shot_style
 	p.shot_style=style
 	p.shot_rim_yaw=atan2(HOOP.x-p.position.x,HOOP.z-p.position.z)
@@ -1189,17 +1201,19 @@ func begin_gather(index: int,aligned: bool=false,style: String="jumper") -> void
 	p.turnaround_shot=moving_turn;p.shot_release_time=.34 if moving_turn else .22
 	if not aligned:
 		p.held.queued_release=false;p.held.pump_release=false;p.held.press_time=0
-		if not moving_turn and Rules.finish_type(p.position,p.motion)=="shot" and absf(angle_difference(p.rotation.y,aim))>.65:
+		p.held.clear_pending()
+		if not moving_turn and (after_fake or Rules.finish_type(p.position,p.motion)=="shot") and absf(angle_difference(p.rotation.y,aim))>.65:
 			p.held.begin(p,"square",Vector3.ZERO,ball.position,aim)
-			p.finish_kind="shot";p.finish_running=false
+			p.finish_kind="layup" if step_through else "shot";p.finish_running=false
+			p.approach_velocity=Vector2(finish_input.x,finish_input.z).normalized()*2.4 if step_through else Vector2.ZERO
 			return
 	players[index].gather_ball_from=players[index].to_local(ball.position)
 	players[index].gather_ball_valid=true
-	players[index].approach_velocity = players[index].motion
-	players[index].finish_kind = "shot" if style!="jumper" else Rules.finish_type(players[index].position, players[index].motion)
+	players[index].approach_velocity = (p.approach_velocity if aligned else Vector2(finish_input.x,finish_input.z).normalized()*2.4) if step_through else players[index].motion
+	players[index].finish_kind = "layup" if step_through else p.finish_kind if aligned else "shot" if after_fake or style!="jumper" else Rules.finish_type(players[index].position, players[index].motion)
 	players[index].shot_gather_turn = players[index].finish_kind=="shot" and (players[index].motion.length()>1.2 or aligned)
 	players[index].shot_gather_yaw = players[index].rotation.y
-	players[index].finish_running = not players[index].dribble_ended and players[index].finish_kind != "shot" and players[index].motion.length() > 1.2
+	players[index].finish_running = step_through or (not players[index].dribble_ended and players[index].finish_kind != "shot" and players[index].motion.length() > 1.2)
 	players[index].gather_step_start = players[index].step_serial
 	players[index].shot_exit_intent=Vector2.ZERO
 	players[index].shot_recovery_left=0.0
@@ -1680,6 +1694,7 @@ func send_state() -> void:
 	if frame_probe:
 		state["profile"]={"processMs":Performance.get_monitor(Performance.TIME_PROCESS)*1000,"physicsMs":Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)*1000,"drawCalls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"primitives":Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),"objects":Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),"adapter":RenderingServer.get_video_adapter_name()}
 	state["finish"] = (players[0].shot_style if players[0].shot_style!="jumper" else players[0].finish_kind) if players[0].action in ["gather","shot"] else Rules.finish_type(players[0].position, players[0].motion)
+	if players[0].has_ball and players[0].dribble_ended and players[0].action not in ["gather","shot"]:state["finish"]="shot"
 	state["sweet"] = Rules.release_bonus(shot_hold) > 0 and players[0].action == "gather"
 	state["drill"] = practice_drill
 	state["slowPractice"] = practice_slow

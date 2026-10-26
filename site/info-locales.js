@@ -6,7 +6,7 @@
   'Arrow keys / left stick: move in screen directions. D / Shoot: hold to gather, jump and release. Tap under 0.18 seconds for a pump fake.',
   'Release D during the green window (0.36–0.50 seconds) for a timing bonus. Distance and defensive pressure still affect the result.',
   'Drive within 3 m and press D for a layup. Nearer the rim (1.85 m) you can dunk; within 1.05 m, a standing dunk is possible. Check the D · DUNK cue. Behind the basket, you take a normal shot.',
-  'After gathering with both hands, your dribble is over. Use the arrows to pivot and D to shoot. Use direction inputs for a planted pivot or jab step. After the dribble ends, A is a pivot fake, Z a turn fake, C an up-and-under, V a held-ball through-the-legs fake and X a pump fake. D still shoots; a short tap pump-fakes. These moves never restart the dribble.',
+  'After gathering with both hands, your dribble is over. Use the arrows to pivot and D to shoot. Use direction inputs for a planted pivot or jab step. After the dribble ends, A is a pivot fake, Z a turn fake, C an up-and-under, V a held-ball through-the-legs fake and X a pump fake. D still shoots; a short tap pump-fakes. Within 3 m after a fake, hold a direction toward the hoop plus Shoot for a step-through layup; neutral, sideways or away plus Shoot takes a standing shot. These moves never restart the dribble.',
   'A: crossover. Z: spin. C: two-step drive while dribbling. V: behind-the-back change. X: hesitation. Combine each with a direction; let it finish before chaining the next move.',
   'On defense, D jumps for a block or rebound. Time the palm swat to the shot; chase the deflected ball. Approach a low loose ball to pick it up.',
   'S: step toward the ball and reach for a steal. Your hand must contact the ball; success is not guaranteed. Recover your arm if the attempt fails.',
@@ -21,7 +21,7 @@
   '矢印キー／左スティック：画面基準で移動。D／シュート長押し：ボールを集めて跳び、リリース。0.18秒未満の短押しでシュートフェイク。',
   '緑の区間（0.36〜0.50秒）でDを離すとタイミングボーナス。距離と守備の圧力により失敗することもあります。',
   '走って3m以内に入りDでレイアップ。さらに近い1.85m以内ではダンク、正面1.05m以内ならその場ダンクも可能です。D · DUNK表示を確認。ゴール裏では通常シュートです。',
-  '両手で持つとドリブル終了。方向入力で軸足を保つピボット・ジャブステップ。Aピボット、Zターン、Cアップアンドアンダー、V股下の持球フェイク、Xポンプフェイク。Dシュート、短押しはフェイクです。ドリブルは再開しません。',
+  '両手で持つとドリブル終了。方向入力で軸足を保つピボット・ジャブステップ。Aピボット、Zターン、Cアップアンドアンダー、V股下の持球フェイク、Xポンプフェイク。Dシュート、短押しはフェイクです。フェイク後3m以内でゴール方向＋シュートは一歩踏み込むレイアップ、方向なし・横・逆方向＋シュートはその場シュートです。ドリブルは再開しません。',
   'A：クロスオーバー、Z：スピン、C：ドリブル中のツーステップ、V：ビハインド、X：ヘジテーション。方向キーと組み合わせ、動作が終わってから次へつなぎます。',
   '守備中のD：ブロックまたはリバウンド。シュートに合わせて手のひらで叩き、弾いたボールを追います。低いルーズボールは近づくと拾えます。',
   'S：ボールに向かって短く踏み込み、手を伸ばしてスティール。実際の手の接触が必要で、必ず成功するわけではありません。失敗したら手を戻して守備へ。',
@@ -32,6 +32,7 @@
   'スマートフォンは横向き推奨。左スティックと右のアクションボタンで操作。シュート準備中だけ、ボタン脇の小さなゲージを表示します。'
  ]],
  'zh-CN':['找到你的节奏。',[
+  "假动作后3米内，朝篮筐方向＋投篮为跨步上篮；不按方向、侧向或背离方向＋投篮为原地投篮，不会重新运球。",
   '同时按W+D或A+投篮：3.5米内为勾手；加上背离篮筐的方向，或在更远处使用，则为后仰跳投。投篮键按住至少0.18秒。触屏使用现有突破与投篮按钮同时按住。',
   '方向键／左侧摇杆：按屏幕方向移动。按住 D／投篮：收球、起跳并出手；轻点不足 0.18 秒可做投篮假动作。',
   '在绿色区间（0.36–0.50 秒）松开 D 可获得时机加成，距离和防守压力仍会影响命中。',
@@ -48,7 +49,9 @@
  ]]
  };
  const news={
- en:['Sell the fake. Own the space.','v0.8.6 · Readable fakes and shot combinations',[
+ en:['Quick fake. Immediate finish.','v0.8.7 · Faster fakes and directional finishes',[
+  "Held-ball fakes now take 0.30–0.50 seconds, with quicker recovery into the next fake, shot or pass and a short input buffer. Within 3 m after a fake, direction toward the hoop plus Shoot gives a step-through layup; neutral, sideways or away plus Shoot takes a standing shot. No new dribble; hook and fadeaway combinations remain.",
+  "v0.8.6",
   "Larger ball and shoulder threats with readable holds and counters; shoe squeaks follow planted pivot and jab contacts. W+D or Drive+Shoot adds a close hook, or a fadeaway with input away from the hoop. Moving turnaround shots continue rotating in the air. Loose balls can be secured on body/hand contact from their first bounce.",
   "v0.8.5",
   'Removed the panel covering the court with defender-switch instructions, a duplicate switch button and current-player details. E, the contextual bottom touch switch and the selected-player ring remain. Controls are still available in Help.',
@@ -77,7 +80,9 @@
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. AI 3v3 is a separate mode without rewards. Online competition and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['見せて、揺さぶるバスケ。','v0.8.6・大きく読めるフェイクとシュートの組合せ',[
+ ja:['素早く揺さぶり、すぐ決める。','v0.8.7・速いフェイクと方向別フィニッシュ',[
+  "持球フェイクを0.30〜0.50秒に短縮。回収中から次のフェイク・シュート・パスへつながり、短い先行入力も受け付けます。フェイク後3m以内でゴール方向＋シュートは踏み込むレイアップ、方向なし・横・逆方向＋シュートはその場シュート。再ドリブルせず、フックとフェイダウェイの組合せも維持します。",
+  "v0.8.6",
   "ボールと肩を大きく動かすフェイク、見せる間と切り返し、軸足の接地に合わせた靴の摩擦音。W+Dまたはドライブ＋シュートでゴール下フック、逆方向入力でフェイダウェイ。移動中のターンシュートは空中まで回転が続き、最初のバウンドから体や手に触れたルーズボールを確保します。",
   "v0.8.5",
   'コートを覆っていた守備切替ボタン・操作説明・選手情報のパネルを削除しました。Eキー、画面下の状況別タッチ切替、操作選手の足元リングは維持。操作方法はヘルプで確認できます。',
@@ -106,7 +111,9 @@
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。AI3対3は報酬なしの別モードです。オンライン対戦・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['让假动作看得见。','v0.8.6 · 清晰假动作与组合投篮',[
+ 'zh-CN':['快速假动作，接着终结。','v0.8.7 · 快速假动作与方向终结',[
+  "持球假动作缩短为0.30—0.50秒，回收阶段即可衔接下一次假动作、投篮或传球，并保留短暂提前输入。假动作后3米内，朝篮筐方向＋投篮为跨步上篮；不按方向、侧向或背离方向＋投篮为原地投篮。不重新运球，勾手及后仰组合保持不变。",
+  "v0.8.6",
   "加大球和肩部的假动作，加入展示停顿及反向回收，并按轴心脚和试探步落地时机播放鞋底摩擦声。W+D或突破+投篮为近距离勾手，加背离篮筐方向为后仰。移动转身投篮继续在空中旋转；活球从第一次弹起就可在身体或手接触时拿到。",
   "v0.8.5",
   '移除了遮挡球场的防守切换按钮、操作说明和当前球员信息面板。保留E键、底部情境触屏切换按钮以及脚下选中光圈，操作方法仍可在帮助中查看。',

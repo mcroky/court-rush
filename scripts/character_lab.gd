@@ -96,7 +96,7 @@ func _physics_process(delta):
 		if mode in HELD_PREVIEWS:
 			actor.dribble_ended=true
 			if not actor.held.valid:actor.held.capture(actor,balls[i].position)
-			if actor.action=="idle" and fposmod(elapsed,2.1)<.08:
+			if actor.action=="idle" and fposmod(elapsed,float(actor.held.DURATIONS[mode])+.32)<.08:
 				actor.held.begin(actor,mode,actor.global_basis.x*(1 if i==0 else -1),balls[i].position)
 			if actor.action=="held_fake":
 				actor.action_time+=delta
