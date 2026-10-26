@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<script>(()=>{const assets=new URL('./',location.href);const entry=new URL("../",location.href);entry.search=location.search;entry.hash=location.hash;const base=document.createElement('base');base.href=assets.href;document.head.append(base);history.replaceState(history.state,'',entry.href);})();</script>
+<link rel="canonical" href="../">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>코트러시 — COURT RUSH · Court 01</title>
+  <meta name="description" content="나만의 리듬으로 코트를 지배하세요. 가드·포워드·센터 중 내 선수를 만들고, AI 1대1 코트를 깨며 성장하는 스트리트 농구.">
+  <meta name="theme-color" content="#172b30"><link rel="icon" href="icon.svg"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="career.css"><link rel="stylesheet" href="wardrobe.css">
+
+<style data-roky-support-footer>
+/* Web support stays in document flow, after the page's other content. */
+.roky-support-footer{box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;flex:0 0 auto;clear:both;position:static;width:100%;max-width:100%;min-width:0;margin:0;padding:16px max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));border-top:1px solid #dedfd5;background:#f7f7ef;color:#34483e;text-align:center}
+.roky-support-footer>a{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;max-width:100%;margin:0;padding:10px 16px;border:1px solid #a28a12;border-radius:9px;background:#ffe14c;color:#242000;font:600 13px/1.5 system-ui,sans-serif;text-decoration:none;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+.roky-support-footer>a:hover{background:#ffed91;color:#242000;text-decoration:none}
+.roky-support-footer>a:focus-visible{outline:3px solid #2676c4;outline-offset:3px}
+.roky-support-footer>p{margin:0;color:#596c5d;font:13px/1.7 system-ui,sans-serif}
+.roky-support-footer[hidden]{display:none}
+</style>
+</head>
+<body>
+<header class="studio-bar">
+  <a href="https://mcroky.github.io/roky-studio/" target="_blank" rel="noopener noreferrer">← Roky Studio로 돌아가기 <span class="sr-only">새 탭</span></a>
+  <span class="studio-note">INDEPENDENT GAMES. GOOD TIMES.</span>
+  <nav aria-label="프로젝트 메뉴"><a class="roky-social-link roky-ebook-link" data-web-only-commerce href="https://litt.ly/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="로키스튜디오 전자책 새 탭에서 열기">전자책 <span aria-hidden="true">↗</span></a>
+    <button id="career-menu">내 선수 · 로그인</button>
+    <button id="wardrobe-menu">의상 상점</button>
+
+    <button id="updates-button">업데이트 <span class="version">v0.8.4</span></button>
+    <a href="https://mcroky.github.io/roky-studio/#feedback" target="_blank" rel="noopener noreferrer">의견 보내기 ↗</a>
+    <a href="https://x.com/loki60542" target="_blank" rel="me noopener noreferrer" aria-label="X 새 탭에서 열기">X ↗</a>
+    <a href="https://www.threads.com/@loki60542" target="_blank" rel="me noopener noreferrer" aria-label="Threads 새 탭에서 열기">Threads ↗</a>
+    <label class="language-picker"><span aria-hidden="true">🌐</span><select data-language aria-label="언어" translate="no"></select></label>
+  </nav>
+</header>
+<main>
+  <section class="title-row">
+    <div class="brand-group"><div class="wordmark">COURT<span>/</span>RUSH<span class="brand-dot">●</span></div><div class="brand-caption"><strong>코트러시</strong><span>STREET BASKETBALL CLUB</span></div></div>
+    <div class="edition"><span class="live-dot"></span> COURT 01 <span class="edition-separator">/</span> PLAYABLE PROTOTYPE</div>
+  </section>
+  <div class="play-layout">
+    <section class="arena" id="arena" aria-label="농구 게임">
+      <canvas id="canvas" tabindex="0" aria-label="농구 코트. 방향키 이동, D 슛과 점프, A 크로스오버, Z 턴, C 투스텝, V 비하인드 백, X 헤지테이션, S 스틸, W 수비와 박스아웃. Escape 일시정지.">WebGL 2를 지원하는 브라우저가 필요합니다.</canvas>
+      <div class="arena-top">
+        <div class="court-tag"><span class="tag-line"></span><div><strong>NEIGHBORHOOD</strong><span>해 질 녘, 우리 동네 코트</span></div></div>
+        <div class="scoreboard" id="scoreboard"><div class="team you"><span>YOU</span><strong id="score-you">00</strong></div><div class="clock"><span id="mode-badge">FREE COURT</span><strong id="clock">∞</strong><span id="shot-clock">나만의 리듬으로</span></div><div class="team rival"><span>RIVAL</span><strong id="score-rival">00</strong></div></div>
+        <div class="arena-tools"><button id="pause-button" title="일시정지" aria-label="일시정지">Ⅱ</button><button id="fullscreen-button" title="전체 화면" aria-label="전체 화면">⛶</button></div>
+      </div>
+      <div class="possession" id="possession"><i></i><span>YOUR COURT. YOUR RHYTHM.</span></div>
+      <div class="feedback" id="feedback" aria-live="polite"><strong id="feedback-title"></strong><span id="feedback-detail"></span></div>
+      <div id="shot-cue" class="shot-cue" aria-label="슛 타이밍"><span id="finish-label">D · JUMP SHOT</span><div class="release-track"><i id="release-fill"></i><b></b></div><small id="release-hint">초록 구간에서 D 놓기 · 유지하면 자동 슛</small></div>
+      <div class="showroom-ui"><span class="eyebrow">CHARACTER STUDY / 07 &amp; 23</span><strong>MOVE AS ONE.</strong><p>사람형 스킨 메시 · 농구복 · 같은 전신 리그</p><button id="showroom-detail">상체 확대</button><button id="showroom-back">← 코트로 돌아가기</button></div>
+      <button id="showroom-motion" class="showroom-motion">동작: 대기 → 달리기</button>
+      <div class="arena-bottom"><span><b>07</b> THE PLAYMAKER</span><span>MOVE WITH PURPOSE. <i>PLAY WITH STYLE.</i></span></div>
+      <nav class="compact-links" aria-label="전체 화면 공통 메뉴"><a class="roky-social-link roky-ebook-link" data-web-only-commerce href="https://litt.ly/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="로키스튜디오 전자책 새 탭에서 열기">전자책 <span aria-hidden="true">↗</span></a><a href="https://mcroky.github.io/roky-studio/" target="_blank" rel="noopener noreferrer">← Roky Studio</a><a href="https://mcroky.github.io/roky-studio/#feedback" target="_blank" rel="noopener noreferrer">의견 ↗</a><a href="https://x.com/loki60542" target="_blank" rel="me noopener noreferrer" aria-label="X 새 탭">X ↗</a><a href="https://www.threads.com/@loki60542" target="_blank" rel="me noopener noreferrer" aria-label="Threads 새 탭">Threads ↗</a><button id="compact-updates">소식</button><label class="language-picker"><span aria-hidden="true">🌐</span><select data-language aria-label="언어" translate="no"></select></label></nav>
+      <div class="touch-controls" id="touch-controls">
+        <div class="joystick" id="joystick" aria-label="이동 조이스틱"><span id="stick"></span><i>MOVE</i></div>
+        <div class="touch-actions"><button id="team-control" data-control="team" class="minor team-control" hidden><span id="team-control-label">패스</span><small id="team-control-key">Q</small></button><button data-control="guard" class="minor">견제 / 박스</button><button data-control="steal" class="minor">스틸</button><button data-control="spin" class="minor"><span id="touch-spin-label">턴</span><small>Z</small></button><button data-control="twostep" class="minor"><span id="touch-twostep-label">투스텝</span><small>C</small></button><button data-control="behind" class="minor"><span id="touch-behind-label">비하인드</span><small>V</small></button><button data-control="hesi" class="minor"><span id="touch-hesi-label">헤지</span><small>X</small></button><button data-control="cross"><span id="touch-cross-label">돌파</span> <small>A</small></button><button data-control="shoot" class="shoot"><span id="touch-shot-label">슛 / 점프</span> <small>D</small></button></div>
+      </div>
+      <div id="team-readout" class="team-readout" hidden><strong>AI 3대3 · 보상 없음</strong><span>Q 패스 · E 수비 전환 · 패스 받으면 자동 전환</span><button id="team-switch" type="button">수비 선수 전환 <kbd>E</kbd></button><span class="team-selected" aria-live="polite"><span>조작 선수</span> · <b id="team-selected-role">가드</b> <span id="team-selected-slot" data-no-i18n>1/3</span></span></div><div class="entry-overlay" id="entry-overlay">
+        <div class="entry-content"><span class="eyebrow">NO TICKETS. NO TRYOUTS. JUST BALL.</span><h1>THIS IS<br>YOUR <em>COURT.</em></h1><p>바운스에 리듬을. 슛에 자신감을.<br>오늘의 한 판을 시작하세요.</p><div class="entry-buttons"><button data-start="practice" class="primary" disabled>혼자 연습하기 <span>↗</span></button><button data-start="duel" class="secondary" disabled>1대1 도전 <span>→</span></button><button data-start="team" class="secondary" disabled>AI 3대3 팀전 <span>→</span></button></div><button id="entry-career" class="primary career-entry">내 선수 키우기 · 1대1 코트 도전 →</button><span class="entry-small">키보드 · 터치 지원 / 설치 없이 바로 플레이</span></div>
+        <div class="load-status"><span id="load-label">코트를 준비하고 있어요…</span><div class="load-track"><i id="load-progress"></i></div></div>
+      </div>
+      <div class="pause-overlay hidden" id="pause-overlay"><div><span class="eyebrow">TAKE A BREATHER</span><h2>잠깐, 타임아웃.</h2><p id="pause-reason">경기는 여기에서 기다릴게요. 계속 플레이를 눌러 이어가세요.</p><button class="primary" id="resume-button">계속 플레이 →</button><button class="text-button" id="home-button">모드 다시 선택</button></div></div>
+      <div class="result-overlay hidden" id="result-overlay"><div><span class="eyebrow">THAT'S GAME.</span><h2 id="result-title">YOU WIN.</h2><div id="result-score"></div><p id="result-detail"></p><p id="career-reward" role="status"></p><button id="career-retry" hidden>보상 다시 받기</button><button id="career-result-open">내 선수 · 훈련하기</button><button id="result-rematch" data-start="duel" class="primary">한 판 더 →</button><button data-start="practice" class="text-button">연습장에서 다시 준비하기</button></div></div>
+      <div id="rotate-note">가로로 돌리면 코트가 더 넓게 보여요 ↻</div>
+    </section>
+    <aside class="sidebar">
+      <section class="career-panel"><span class="eyebrow">MY PLAYER / ROAD TO THE COURT</span><h2>나만의 선수를 키우세요.</h2><p id="career-status">아이디로 시작하는 나만의 선수</p><button id="career-open" class="primary">내 선수 키우기 →</button><button id="wardrobe-open" class="primary">의상 상점</button><p>가드 · 포워드 · 센터<br>1대1 코트를 깨고 스탯과 기술을 훈련하세요.</p></section>
+      <section class="mode-panel"><div class="section-label"><span>01 / PICK YOUR GAME</span><span>↘</span></div><h2>오늘은 어떤 경기?</h2><div class="mode-options"><button id="practice-option" class="mode-option selected" data-select="practice"><span class="option-icon">◎</span><span><strong>자유 연습</strong><small>공 하나, 코트 하나, 나만의 리듬</small></span><i></i></button><button id="duel-option" class="mode-option" data-select="duel"><span class="option-icon">⚡</span><span><strong>1대1 스트리트</strong><small>AI 라이벌과 90초 · 11점 승부</small></span><i></i></button><button id="team-option" class="mode-option" data-select="team"><span class="option-icon">Ⅲ</span><span><strong>AI 3대3 팀전</strong><small>패스 · 수비 전환 · 팀 리바운드</small></span><i></i></button></div><p id="team-mode-note" hidden>내 선수 + AI 2명 대 AI 3명. 11점 또는 3분, 18초 공격. 육성 보상은 없는 팀전입니다.</p><button id="sidebar-play" class="primary" disabled>코트 들어가기 <span>→</span></button></section>
+      <section class="player-card"><div class="player-number">07</div><div><span class="eyebrow">YOUR PLAYER</span><strong id="player-role-title">THE PLAYMAKER</strong><span id="player-role-tagline">빠른 발. 대담한 첫걸음.</span></div><i>↗</i></section>
+      <section class="role-panel" aria-label="포지션 선택"><div class="role-buttons"><button data-position="guard" aria-pressed="true">G 가드</button><button data-position="forward" aria-pressed="false">F 포워드</button><button data-position="center" aria-pressed="false">C 센터</button></div><p id="role-description">가드 · 빠른 이동과 볼 핸들링</p><small>시험용 밸런스 · 경기 시작 전 또는 자유 연습에서 변경</small></section><button id="showroom-button" class="showroom-button">캐릭터 가까이 보기 ↗</button><a class="showroom-button" style="display:block;text-decoration:none;text-align:center" href="../character-lab.html" target="_blank" rel="noopener">새 캐릭터 스튜디오 ↗</a><a class="showroom-button" style="display:block;text-decoration:none;text-align:center" href="../motion-lab.html" target="_blank" rel="noopener">새 모션 방식 비교 ↗</a>
+      <section class="controls-panel"><div class="section-label"><span>02 / KNOW YOUR MOVES</span><button id="help-button" aria-label="자세한 조작법">?</button></div><div class="control-row"><span class="key-group"><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd></span><span>이동</span></div><div class="control-row"><kbd>D</kbd><span>슛 · 레이업 · 덩크 / 블록</span></div><div class="control-row"><kbd>A</kbd><span>크로스오버</span></div><div class="control-row"><kbd>Z</kbd><span>턴 드리블</span></div><div class="control-row"><kbd>C</kbd><span>투스텝 돌파</span></div><div class="control-row"><kbd>V</kbd><span>비하인드 백</span></div><div class="control-row"><kbd>X</kbd><span>헤지테이션</span></div><div class="control-row"><kbd>Q / E</kbd><span>3대3 패스 / 수비 전환</span></div><div class="control-row"><kbd>S</kbd><span>스틸</span></div><div class="control-row"><kbd>W</kbd><span>낮은 수비 · 박스아웃</span></div><p class="tip"><b>작은 팁</b> D를 짧게 톡 누르면 슛 페이크.<br>달리며 골밑 D는 레이업, 더 가까우면 덩크.</p></section>
+      <section class="finish-panel"><div class="section-label"><span>03 / FINISH LAB</span><span>연습 전용</span></div><p>달리기·컷·크로스오버·골밑 동작을 연습하세요.</p><div class="drill-buttons"><button data-drill="cut">디딤·방향 전환</button><button data-drill="recovery">돌파·수비 회복</button><button data-drill="cross">크로스오버 연출</button><button data-drill="layup">레이업 위치</button><button data-drill="dunk">덩크 도움닫기</button><button data-drill="boxout">박스아웃 위치</button><button data-drill="rim">림·박스아웃 경합</button><button data-drill="rebound">리바운드 캐치</button><button data-drill="block">블록 타이밍</button><button data-drill="steal">스틸 파고들기</button><button data-drill="free">자유 위치</button><button id="drill-slow" aria-pressed="false">느리게 연습</button></div></section>
+      <section class="session-panel"><div class="section-label"><span>THIS SESSION</span><span id="accuracy">—</span></div><div class="stat-row"><span>슛 성공 / 시도</span><strong id="shot-stat">0 / 0</strong></div><div class="settings-row"><button id="sound-button" aria-pressed="true">소리 켬 ♪</button><button id="motion-button" aria-pressed="false">효과 줄이기</button></div><p id="settings-notice" class="settings-notice" role="status" hidden></p></section>
+      <section class="audio-panel" aria-labelledby="audio-title"><div class="section-label"><span>04 / COURT SOUND</span><span>♪</span></div><h2 id="audio-title">코트의 리듬</h2><div class="settings-row"><button id="music-button" aria-pressed="true">음악 켬</button><button id="voice-button" aria-pressed="true">영어 해설 켬</button></div><label class="audio-track"><span>배경음악</span><select id="music-track"><option value="-1">3곡 순환 재생</option><option value="0">ASPHALT GROOVE · BOOM BAP</option><option value="1">FAST BREAK · FUNK</option><option value="2">NEON COURT · ELECTRO</option></select></label><div class="music-now"><span id="music-now">경기 시작 후 재생</span><button id="music-next">다음 곡 →</button></div><label class="audio-level"><span>음악 음량</span><input id="musicDb" type="range" min="-36" max="0" value="-12"><output id="musicDb-value" for="musicDb">25%</output></label><label class="audio-level"><span>해설 음량</span><input id="voiceDb" type="range" min="-36" max="0" value="-1"><output id="voiceDb-value" for="voiceDb">89%</output></label><label class="audio-level"><span>효과음 음량</span><input id="sfxDb" type="range" min="-36" max="0" value="0"><output id="sfxDb-value" for="sfxDb">100%</output></label><p id="commentary-caption" class="commentary-caption" translate="no"></p><p>득점·기술에 반응하는 영어 해설. 해설 중에는 음악이 잠시 작아집니다.</p></section>
+    </aside>
+  </div>
+  <footer class="footer"><span><i>●</i> MADE FOR THE LOVE OF THE GAME.</span><p>v0.8.4 · AI 1대1 육성 · 계정과 선수 기록은 서버에 저장됩니다. <a href="../privacy.html">계정·저장 안내</a></p><button id="reset-button">공 다시 받기 ↺</button></footer>
+</main>
+<dialog id="info-dialog"><button id="close-dialog" class="dialog-close" aria-label="닫기">×</button><label class="language-picker"><span aria-hidden="true">🌐</span><select data-language aria-label="언어" translate="no"></select></label><div id="dialog-content"></div></dialog>
+<dialog id="career-dialog" aria-label="선수 육성과 계정"><button id="career-close" aria-label="선수 화면 닫기">×</button><label class="language-picker"><span aria-hidden="true">🌐</span><select data-language aria-label="언어" translate="no"></select></label><div id="career-content"></div></dialog>
+<script src="engine-config.js"></script><script src="game.js"></script><script src="locales.js"></script><script src="wardrobe-locales.js"></script><script src="i18n.js"></script><script src="info-locales.js"></script><script src="app.js"></script><script src="career-config.js"></script><script type="module" src="career.js"></script>
+
+<script data-roky-bank-copy>
+/* One web support button, two optional methods. No payments or data collection. */
+(() => {
+  'use strict';
+  if (window.rokyBankCopyInstalled) return;
+  window.rokyBankCopyInstalled = true;
+  const account = '3333071025774';
+  const url = 'https://buymeacoffee.com/roky.studio';
+  const translations = {
+    ko:['후원 방법 선택','더 좋은 앱을 만들기 위한 자율 후원입니다.','Buy Me a Coffee ↗','카카오뱅크 계좌 복사','계좌번호를 복사했어요. 은행 앱에서 이체해 주세요.','복사할 수 없어요. 아래 번호를 직접 선택해 복사해 주세요.','닫기'],
+    en:['Choose how to support','Optional support for building better apps.','Buy Me a Coffee ↗','Copy KakaoBank account','Account number copied. You can transfer from your bank app.','Copy unavailable. Select and copy the number below.','Close'],
+    ja:['応援方法を選択','より良いアプリづくりへの任意のご支援です。','Buy Me a Coffee ↗','カカオバンク口座をコピー','口座番号をコピーしました。銀行アプリで振り込めます。','コピーできません。下の番号を選択してコピーしてください。','閉じる'],
+    zh:['选择赞助方式','自愿支持开发更好的应用。','Buy Me a Coffee ↗','复制KakaoBank账号','账号已复制，可在银行应用中转账。','无法复制，请手动选择并复制下方账号。','关闭'],
+  };
+  const words = () => translations[(window.RokyI18n?.language || document.documentElement.lang || 'ko').slice(0,2)] || translations.ko;
+  const style = document.createElement('style');
+  style.textContent = '.roky-support-dialog{width:min(390px,calc(100% - 32px));box-sizing:border-box;max-height:85dvh;overflow:auto;border:1px solid #dedfd5;border-radius:16px;padding:24px;background:#fffef9;color:#263c30;font:14px/1.7 system-ui,sans-serif;text-align:left;box-shadow:0 12px 60px #0003}.roky-support-dialog::backdrop{background:#14271e88}.roky-support-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.roky-support-head h2{font-size:18px;margin:0}.roky-support-close{background:transparent!important;color:#263c30!important;border:0!important;font:24px/1 system-ui!important;min-width:44px;min-height:44px;cursor:pointer}.roky-support-dialog p{font:13px/1.7 system-ui,sans-serif;color:#596c5d;margin:12px 0 18px}.roky-support-choices{display:grid;gap:10px}.roky-support-choices a,.roky-support-choices button{display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;width:100%;max-width:100%;min-height:48px;padding:12px!important;border:1px solid #b09d45!important;border-radius:9px;background:#ffe569!important;color:#302b0d!important;font:600 14px/1.5 system-ui,sans-serif!important;text-align:center;white-space:normal;text-decoration:none;cursor:pointer}.roky-support-choices .roky-bank-copy{background:#fffbed!important}.roky-support-dialog :focus-visible{outline:3px solid #2676c4;outline-offset:3px}.roky-support-dialog .roky-bank-status{margin-bottom:0;color:#355b39}.roky-support-dialog input{display:block;box-sizing:border-box;width:100%;padding:12px;border:1px solid #bbb;border-radius:7px;font:600 19px/1.5 ui-monospace,monospace;color:#222;background:#fff}.roky-support-dialog [hidden]{display:none!important}';
+  document.head.append(style);
+  const registered = new WeakSet();
+  let dialog, trigger;
+  async function copy(button, status, number) {
+    let copied = false;
+    try { await navigator.clipboard.writeText(account); copied = true; } catch {
+      const field = document.createElement('textarea'); field.value = account; field.readOnly = true;
+      field.style.cssText='position:fixed;left:-9999px;top:0;font-size:16px'; dialog.append(field); field.select();
+      try { copied = document.execCommand('copy'); } catch {}
+      field.remove(); button.focus({preventScroll:true});
+    }
+    status.textContent = words()[copied ? 4 : 5];
+    number.hidden = copied;
+    if(!copied){number.focus();number.select();}
+  }
+  function open(anchor) {
+    if(dialog?.open) return;
+    trigger = anchor;
+    if(!dialog){
+      dialog=document.createElement('dialog');dialog.className='roky-support-dialog';dialog.setAttribute('aria-labelledby','roky-support-title');
+      dialog.addEventListener('close',()=>{window.dispatchEvent(new CustomEvent('roky:support',{detail:false}));if(trigger?.isConnected)trigger.focus({preventScroll:true});});
+      dialog.addEventListener('keydown',e=>e.stopPropagation());document.body.append(dialog);
+    }
+    dialog.replaceChildren();
+    const w=words(),head=document.createElement('div');head.className='roky-support-head';
+    const title=document.createElement('h2');title.id='roky-support-title';title.textContent=w[0];
+    const close=document.createElement('button');close.type='button';close.className='roky-support-close';close.textContent='×';close.setAttribute('aria-label',w[6]);close.onclick=()=>dialog.close();
+    head.append(title,close);
+    const purpose=document.createElement('p');purpose.textContent=w[1];
+    const choices=document.createElement('div');choices.className='roky-support-choices';
+    const coffee=document.createElement('a');coffee.href=url;coffee.target='_blank';coffee.rel='noopener noreferrer';coffee.textContent=w[2];coffee.onclick=()=>dialog.close();
+    const button=document.createElement('button');button.type='button';button.className='roky-bank-copy';button.textContent=w[3];
+    const status=document.createElement('p');status.className='roky-bank-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    const number=document.createElement('input');number.className='roky-bank-manual';number.readOnly=true;number.value=account;number.hidden=true;number.setAttribute('aria-label','KakaoBank');
+    button.onclick=()=>copy(button,status,number);choices.append(coffee,button);dialog.append(head,purpose,choices,status,number);window.dispatchEvent(new CustomEvent('roky:support',{detail:true}));dialog.showModal();coffee.focus();
+  }
+  function install() {
+    for(const anchor of document.querySelectorAll('a[href="'+url+'"]')){
+      if(anchor.closest('.roky-support-dialog'))continue;
+      if(anchor.closest('#bank-transfer'))for(const selector of ['#bank-account-copy','.bank-support-account','#bank-copy-status']){
+        const old=document.querySelector(selector);if(old){old.hidden=true;old.style.setProperty('display','none','important');}
+      }
+      if(anchor.nextElementSibling?.classList.contains('roky-bank-copy-wrap'))anchor.nextElementSibling.remove();
+      anchor.setAttribute('role','button');anchor.setAttribute('aria-haspopup','dialog');anchor.setAttribute('aria-label',words()[0]);
+      if(registered.has(anchor))continue;
+      registered.add(anchor);
+      anchor.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();open(anchor);});
+      anchor.addEventListener('keydown',event=>{if(event.key===' '){event.preventDefault();event.stopPropagation();open(anchor);}});
+    }
+  }
+  function start(){install();new MutationObserver(install).observe(document.body,{childList:true,subtree:true});new MutationObserver(install).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});window.addEventListener('roky:language',install);}
+  function ready(){
+    if(window.__next_f&&!Object.keys(document.body).some(key=>key.startsWith('__reactProps$'))){requestAnimationFrame(ready);return;}
+    start();
+  }
+  if(document.readyState==='complete')ready();else window.addEventListener('load',ready,{once:true});
+})();
+
+</script>
+
+<div class="roky-support-footer" data-web-only-support><a class="roky-social-link roky-transfer-link" data-web-only-support href="https://buymeacoffee.com/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="후원 방법 선택">더 좋은 앱을 위한 후원 <span aria-hidden="true">↗</span></a></div>
+</body></html>
