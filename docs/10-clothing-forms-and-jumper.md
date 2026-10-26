@@ -26,7 +26,7 @@
 
 기존 `wardrobe.version=1`을 유지하며 defaults/owned/equipped에 hat/hair를 추가한다. 기존3부위 기록은 코인과 보유ID를 보존하며 모자 없음/기본 헤어만 기본 지급한다. 현재 게임의 명시적 Supabase 선택과 기존 사용자 보존을 우선하며, 공통 문서의 Neon 전환 검토는 별도 환경/인증 이관 과제다. 이번 에셋 추가를 이유로 운영 인증과 DB를 이관하지 않는다.
 
-공유 Supabase의 court-rush 함수v5에서 카탈로그만 확장했다. 서버 index.ts/rules.mjs의 내용이 직전v4와 동일함을 비교했고 DDL·ttk_*·공유 Auth 설정을 변경하지 않았다. 기존 공개v0.8.0 클라이언트의 구매/장착 API와 호환된다. 새 웹 게임 배포는 요청받지 않아 로컬 미리보기만 갱신한다.
+공유 Supabase의 court-rush 함수v5에서 카탈로그만 확장했다. 서버 index.ts/rules.mjs의 내용이 직전v4와 동일함을 비교했고 DDL·ttk_*·공유 Auth 설정을 변경하지 않았다. 기존 공개v0.8.0 클라이언트의 구매/장착 API와 호환된다. 구현 당시 로컬 미리보기로 검증한 뒤, 후속 사용자 요청으로 아래v0.8.1 공개 배포를 진행했다.
 
 ## 검증
 
@@ -38,3 +38,11 @@
 - 실제 브라우저에서 복원된 후드·조거·캡·버즈, 버킷햇/포니테일 미리보기와 측면 슛을 확인했다. 관절 수치 통과만으로 모든 모션·의상 자연스러움이 완성됐다고 주장하지 않는다.
 
 최종 웹 새로 내보내기와656개 문구/패키징 검사 완료. QA 계정과 임시 인증 파일을 삭제했고 사용자 메인 탭은 초기화하지 않았다. 화면 근거는 `artifacts/jumper-side.png`, `artifacts/wardrobe-forms.png`, 실제390×844의 `artifacts/wardrobe-forms-mobile.png`.
+
+## v0.8.1 공개 배포 확인 — 2026-10-26
+
+- 고정 주소: https://mcroky.github.io/court-rush/ . 루트의 base만 v0.8.1 자산으로 전환하며 사용자 주소에 버전/쿼리를 붙이지 않는다. 기존v0.8.0 자산은 복구를 위해 보존했다.
+- 소스81a0d29, Pages0107a3af981638598d0109c6e913aa02e6c8a2ab. [GitHub Pages 작업40259900067](https://github.com/mcroky/court-rush/actions/runs/40259900067) completed/success. 배포 진행 중 첫 공개 검사는 이전 base를 감지해 실패했으며, 완료 뒤 다시 실행해 통과했다.
+- tools/verify_public_release.mjs 0.8.1: 공개 루트·최신 피드, 웹10파일의 빌드 일치/JS MIME,138항목·12컬렉션, wasm MIME, 비인증 profile401과 공개 origin CORS 확인. 실제 공개game.pck SHA256은64e0997781c0738b8ec5b25771979ff001726d0e2d3a826e28c983a034597689로 로컬과 같다.
+- 실제 공개 브라우저에서 Godot 부팅과 후드티·조거·캡·포니테일 미리보기/5부위·형태 필터를 확인했다.390×844에서 한국어/영어/일본어/중국어를 전환했고 패널 scrollWidth=clientWidth375로 수평 넘침이 없었다. 콘솔error/warn0. 언어와 뷰포트를 복원하고 임시 탭을 닫았으며 사용자 메인 경기 탭은 초기화하지 않았다.
+- Roky Studio 공개 홈페이지에 ‘앞꿈치로 밀고, 내 스타일로 v0.8.1’ 카드가 자동 반영됨을 확인했다. 화면 근거: artifacts/v081-public-store.png, artifacts/v081-public-mobile.png. 서버v5의 합성 QA 저장/구매 검증은 위 기록을 재사용하며 이번 공개 확인에서 실제 사용자 기록이나 공유 Auth를 수정하지 않았다. Android 실기기 검증은 별도다.
