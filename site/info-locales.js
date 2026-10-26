@@ -49,7 +49,9 @@
  ]]
  };
  const news={
- en:['Keep the stride. Finish smoothly.','v0.8.8 · Running rhythm and shooting-arm recovery',[
+ en:['Stride out. Settle into your stance.','v0.8.9 · Running and recovery after dribble moves',[
+  "A longer reaching stride and higher heel recovery preserve more of the original running clip. Fixed crossed legs on the entry screen. After a dribble move, stopping now returns each foot to a standing stance; continuing to move keeps the run flowing.",
+  "v0.8.8 · Running rhythm and shooting-arm recovery",
   "Matched the running clip to alternating foot contacts, removed the extra launch step and improved the first strides. After a wing three, the guide hand lowers first while the shooting arm holds its wrist follow-through, then recovers. Running shot gathers also bring the trailing foot in more smoothly.",
   "v0.8.7",
   "Held-ball fakes now take 0.30–0.50 seconds, with quicker recovery into the next fake, shot or pass and a short input buffer. Within 3 m after a fake, direction toward the hoop plus Shoot gives a step-through layup; neutral, sideways or away plus Shoot takes a standing shot. No new dribble; hook and fadeaway combinations remain.",
@@ -82,7 +84,9 @@
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. AI 3v3 is a separate mode without rewards. Online competition and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['同じリズムで走り、滑らかに放つ。','v0.8.8・走る足運びとシュート後の腕の回収',[
+ ja:['大きく走り、構えに戻る。','v0.8.9・走りとドリブル技の後の立ち姿',[
+  "前足を伸ばし、後ろのかかとを高く回収する元クリップの走りを活かしました。開始画面で脚が交差する問題を修正。ドリブル技の後に止まると片足ずつ立ち姿へ戻り、移動を続ければそのまま走ります。",
+  "v0.8.8・走る足運びとシュート後の腕の回収",
   "走りのクリップと左右の接地を同じリズムにし、出だしで同じ足が再び浮く動作を修正。45度のスリー後はガイドの手を先に下げ、シュート側は手首のフォロースルーを保ってから回収します。走りからシュートへ後ろ足を寄せる動作も調整しました。",
   "v0.8.7",
   "持球フェイクを0.30〜0.50秒に短縮。回収中から次のフェイク・シュート・パスへつながり、短い先行入力も受け付けます。フェイク後3m以内でゴール方向＋シュートは踏み込むレイアップ、方向なし・横・逆方向＋シュートはその場シュート。再ドリブルせず、フックとフェイダウェイの組合せも維持します。",
@@ -115,7 +119,9 @@
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。AI3対3は報酬なしの別モードです。オンライン対戦・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['步伐一致，收势顺畅。','v0.8.8 · 跑动节奏与投篮手臂回收',[
+ 'zh-CN':['迈开步幅，收回站姿。','v0.8.9 · 跑动与运球技能后的站姿恢复',[
+  "保留原始跑步动作中前脚伸出、后脚跟抬起回收的幅度。修复开始画面双腿交叉的问题。运球技能后停下时会逐脚恢复站姿；继续移动时则流畅衔接跑步。",
+  "v0.8.8 · 跑动节奏与投篮手臂回收",
   "将跑步动画与左右脚落地节奏统一，修复起步时同一只脚再次抬起的问题。45度三分出手后，辅助手先下落，投篮手保持压腕随挥后再收回，同时改善跑动收球时后脚跟进的衔接。",
   "v0.8.7",
   "持球假动作缩短为0.30—0.50秒，回收阶段即可衔接下一次假动作、投篮或传球，并保留短暂提前输入。假动作后3米内，朝篮筐方向＋投篮为跨步上篮；不按方向、侧向或背离方向＋投篮为原地投篮。不重新运球，勾手及后仰组合保持不变。",

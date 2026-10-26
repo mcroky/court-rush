@@ -119,7 +119,12 @@ func tick(actor,delta: float) -> void:
 		var end=duration*.84 if actor.action=="held_fake" else duration
 		yaw=lerp_angle(yaw_from,yaw_target,smoothstep(start,end,actor.action_time))
 	var yaw_rate=11.0 if actor.action=="held_fake" else 6.5
+	var previous_yaw=actor.rotation.y
 	actor.rotation.y+=clampf(angle_difference(actor.rotation.y,yaw),-delta*yaw_rate,delta*yaw_rate)
+	if kind=="turnshot":
+		# The lifted trailing shoe follows the pivot arc before closing in. A
+		# world-space chase alone cuts across the support as the hips turn.
+		toes[1-support]=anchor+Basis(Vector3.UP,angle_difference(previous_yaw,actor.rotation.y))*(toes[1-support]-anchor)
 	if kind!="turnshot":actor.facing=actor.rotation.y
 	# A sprint contact can trail far behind the hips. Load the planted leg
 	# before rotating, rather than rotating an overextended leg in place.
@@ -168,7 +173,7 @@ func pose(actor) -> Dictionary:
 			center+=Vector3(sign_side*.32*sin(t*TAU),-.62*show,-.28*show)
 			drop+=.16*show;pitch+=.20*show;twist=sign_side*.40*sin(t*TAU);roll=-sign_side*.08*sin(t*TAU)
 		"turn":
-			center+=Vector3(-sign_side*.30*show,-.08*show,-.18*show)
+			center+=Vector3(-sign_side*.42*show,-.08*show,-.18*show)
 			twist=sign_side*.55*show;drop+=.10*load;roll=-sign_side*.13*show
 		"jab":
 			center+=Vector3(sign_side*.29*show,-.16*show,.26*show)

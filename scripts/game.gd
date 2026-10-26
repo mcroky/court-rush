@@ -437,6 +437,10 @@ func reset_positions(next_owner: int) -> void:
 		players[i].finish_kind = "shot"
 		players[i].finish_running = false
 		players[i].finish_target_valid = false
+		# Reset feet only after placing the hips in their initial heading. Turning
+		# a fresh idle rig over its locked old-facing soles crosses both legs.
+		players[i].facing = PI
+		players[i].rotation.y = PI
 		players[i].reset_stance()
 		players[i].has_ball = i == ball_owner
 		players[i].dribble_ended = false

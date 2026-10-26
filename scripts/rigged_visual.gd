@@ -14,6 +14,8 @@ var phase = .28
 var clip = ""
 var locomotion = 0.0
 var run_start_serial=-1
+var idle_step=-1
+var idle_step_basis=Basis.IDENTITY
 var initialized = false
 var feet: Array = []
 var arms: Array = []
@@ -415,6 +417,7 @@ func sample_visual_swing(side: int, delta: float) -> Vector3:
 func reset_contacts() -> void:
 	locked = [false,false]
 	run_start_serial=-1
+	idle_step=-1
 	initialized = false
 	arm_weight = [0.0,0.0]
 	previous_contact_mode = false
@@ -469,6 +472,34 @@ func sync_cut_contacts(_actor) -> void:
 			locked[i] = true
 			anchors[i] = toe_world[i]
 			anchors[i].y = .026
+
+func prepare_idle_stance(actor, speed: float) -> void:
+	# Skills may finish on a long or crossed plant. Finish the transfer one
+	# shoe at a time instead of locking that last skill frame forever.
+	var resting=initialized and clip=="idle" and not contact_mode and actor.action=="idle" and speed<.15 and actor.motion.length()<.15 and not actor.dribble_ended
+	if not resting:
+		idle_step=-1
+		return
+	if idle_step>=0 or visual_swing[0] or visual_swing[1]:return
+	var worst=.075*actor.height_ratio
+	var selected=-1
+	var target=Vector3.ZERO
+	for i in 2:
+		var side=-1.0 if i==0 else 1.0
+		var rest=actor.to_global(Vector3(side*.21*actor.height_ratio,.026,0.06))
+		rest.y=.026
+		var distance=toe_world[i].distance_to(rest)
+		if distance>worst:
+			worst=distance;selected=i;target=rest
+	if selected<0:return
+	idle_step=selected
+	idle_step_basis=bone_world(feet[selected][2]).basis.orthonormalized()
+	visual_swing_from[selected]=toe_world[selected]
+	visual_swing_to[selected]=target
+	visual_swing_time[selected]=0
+	visual_swing_duration[selected]=maxf(.20,worst/3.5)
+	visual_swing[selected]=true
+	locked[selected]=false
 
 func sample_base(delta: float, speed: float, airborne: bool, contact_phase: float=-1.0) -> void:
 	for index in range(base_local.size()): skeleton.set_bone_pose(index,base_local[index])
@@ -748,7 +779,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	var was_run_clip=clip=="run"
 	sample_base(delta,speed,(action_pose and not actor.moving_gather()) or actor.brake_state in ["load","settle"] or guard_active or actor.held.owns(actor),actor.stride/TAU+.21)
 	if clip=="run" and not was_run_clip:run_start_serial=actor.step_serial
-	var first_run_step=clip=="run" and not contact_mode and actor.step_serial==run_start_serial and actor.last_step>=0
+	var first_run_step=clip=="run" and not contact_mode and actor.step_serial==run_start_serial and actor.last_step>=0 and actor.swing_progress[actor.last_step]<.55
 	if previous_contact_mode and not contact_mode and clip=="run":
 		# The authored clip already follows the same alternating contact phase.
 		# Do not seek to a second guessed foot at the first free running frame.
@@ -877,6 +908,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	var ankle_goals: Array = []
 	var free_foot_ik: Array = []
 	var support_drop = 0.0
+	prepare_idle_stance(actor,speed)
 	for i in range(2):
 		var chain: Array = feet[i]
 		var foot = bone_world(chain[2])
@@ -914,8 +946,10 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		if free_grounded:free_goal.y=maxf(.026,free_goal.y)
 		if athletic:
 			var step_local=actor.to_local(free_goal)
-			step_local.z*=lerpf(1,.72,basketball_weight)
-			step_local.y=lerpf(step_local.y,.026+maxf(0,step_local.y-.026)*.48,basketball_weight)
+			# Keep the source runner's reaching stride and heel recovery. Crushing
+			# these arcs into short, low steps reads as shuffling at running speed.
+			step_local.z*=lerpf(1,.98,basketball_weight)
+			step_local.y=lerpf(step_local.y,.026+maxf(0,step_local.y-.026)*.92,basketball_weight)
 			step_local.y=maxf(.026,step_local.y)
 			free_goal=actor.to_global(step_local)
 		var goal = anchors[i] if locked[i] else free_goal
@@ -927,6 +961,11 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		if not contact_mode and visual_swing[i]:
 			goal=sample_visual_swing(i,delta)
 			free_foot_ik[i]=true
+			if idle_step==i:
+				var progress=clampf(visual_swing_time[i]/visual_swing_duration[i],0,1)
+				desired_basis=idle_step_basis.slerp((global_basis*foot_rest_basis[i]).orthonormalized(),smoothstep(0,1,progress))
+				if not visual_swing[i]:
+					anchors[i]=goal;locked[i]=true;idle_step=-1
 		if contact_mode:
 			goal = actor.shoes[i].to_global(actor.LAYUP_TOE)
 			goal.y -= .105
