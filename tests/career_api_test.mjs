@@ -28,7 +28,7 @@ try{
  }
  const p=(await expect('create',{role:'guard',nickname:'검증선수'},a.session)).player;
  ok(p.role==='guard'&&p.statPoints===3,'server creates a guarded progression profile');
- ok(p.wardrobe.coins===300&&p.wardrobe.owned.length===3,'new player receives starter coins and three default items');
+ ok(p.wardrobe.coins===300&&p.wardrobe.owned.length===5,'new player receives starter coins and five default items');
  const purchase=await expect('buy',{itemId:'sunset_jersey',price:0,coins:999999,user_id:'forged'},a.session);
  ok(purchase.player.wardrobe.coins===180&&purchase.receipt.spent===120,'server ignores forged price, currency and owner');
  const duplicateBuy=await expect('buy',{itemId:'sunset_jersey'},a.session);
@@ -42,7 +42,7 @@ try{
  await expect('buy',{itemId:'slate_shorts'},a.session);
  await expect('equip',{itemId:'sunset_jersey'},a.session);await expect('equip',{itemId:'slate_shorts'},a.session);
  const outfit=(await expect('profile',{},a.session)).player;
- ok(outfit.wardrobe.coins===90&&outfit.wardrobe.owned.length===5&&outfit.wardrobe.equipped.jersey==='sunset_jersey','inventory and wallet persisted without duplicate charges');
+ ok(outfit.wardrobe.coins===90&&outfit.wardrobe.owned.length===7&&outfit.wardrobe.equipped.jersey==='sunset_jersey','inventory and wallet persisted without duplicate charges');
  await expect('create',{role:'center',nickname:'두번째선수'},a.session,409);
  for(let i=0;i<3;i++)await expect('train',{kind:'stat',key:'speed'},a.session);
  await expect('train',{kind:'stat',key:'speed'},a.session,400);

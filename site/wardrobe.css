@@ -11,3 +11,25 @@
 @media(max-width:700px) and (orientation:portrait){.wardrobe-dialog .eyebrow,.wardrobe-dialog .shop-intro{display:none}.shop-heading{gap:6px;flex-wrap:nowrap;align-items:center}.shop-heading h2{font-size:18px!important;white-space:nowrap;margin:8px 0!important}.coin-wallet{font-size:14px;padding:6px 8px}.coin-wallet span:last-child{font-size:9px}.shop-preview-controls{margin-top:6px;gap:4px}.shop-preview-controls>span{font-size:9px}.shop-preview-controls #shop-restore{font-size:11px!important;padding:6px 8px!important}.shop-filters{margin:10px 0 4px}.shop-tabs{margin-top:4px;padding:6px 0}.shop-selection b{font-size:12px}.shop-selection{padding:10px 0}.shop-grid{margin-top:4px}.wardrobe-dialog>.language-picker{margin-bottom:4px}}
 
 #wardrobe-menu{min-height:44px}
+
+/* Authored form previews are silhouettes, alongside the live skinned player. */
+.garment-thumb.jersey i{clip-path:polygon(8% 0,32% 0,36% 9%,64% 9%,68% 0,92% 0,100% 20%,91% 100%,9% 100%,0 20%)}
+.garment-thumb.form-tee i{width:108px;height:88px;clip-path:polygon(28% 0,40% 0,43% 6%,57% 6%,60% 0,72% 0,100% 22%,86% 45%,73% 34%,73% 100%,27% 100%,27% 34%,14% 45%,0 22%)}
+.garment-thumb.form-hoodie i,.garment-thumb.form-varsity i{width:106px;height:98px;clip-path:polygon(34% 0,66% 0,76% 9%,100% 85%,81% 90%,71% 42%,72% 100%,28% 100%,29% 42%,19% 90%,0 85%,24% 9%)}
+.garment-thumb.form-hoodie:before{content:'';position:absolute;width:33px;height:27px;background:var(--panel);border-radius:50% 50% 20% 20%;top:0;left:50%;transform:translateX(-50%);z-index:1}
+.garment-thumb.form-varsity i{box-shadow:inset 22px 0 var(--panel),inset -22px 0 var(--panel)}
+.garment-thumb.form-varsity i:after{border-left:2px solid var(--trim);padding-left:8px}
+.garment-thumb.shorts.form-joggers i,.garment-thumb.shorts.form-cargo i{top:3px;height:102px;width:76px;clip-path:polygon(10% 0,90% 0,92% 20%,82% 100%,57% 100%,50% 39%,43% 100%,18% 100%,8% 20%)}
+.garment-thumb.shorts.form-cargo i{width:90px;clip-path:polygon(14% 0,86% 0,95% 33%,95% 61%,88% 63%,88% 100%,55% 100%,50% 38%,45% 100%,12% 100%,12% 63%,5% 61%,5% 33%)}
+.garment-thumb.hat i{top:24px;width:88px;height:52px;border-radius:60% 60% 4% 4%;border:0;clip-path:none;box-shadow:inset 0 -9px var(--trim)}
+.garment-thumb.hat.form-cap i:after,.garment-thumb.hat.form-cap_back i:after{content:'';position:absolute;bottom:0;left:50px;width:56px;height:11px;background:var(--panel);border-radius:0 90% 40% 0}
+.garment-thumb.hat.form-cap_back i:after{left:-20px}
+.garment-thumb.hat.form-beanie i{height:70px;top:12px;border-radius:65% 65% 14% 14%;box-shadow:inset 0 -18px var(--trim)}
+.garment-thumb.hat.form-bucket i{height:64px;top:17px;width:105px;clip-path:polygon(25% 0,75% 0,85% 70%,100% 100%,0 100%,15% 70%);border-radius:25% 25% 0 0}
+.garment-thumb.hat.form-none i{display:none}.garment-thumb.hat.form-none:after{content:'—';position:absolute;left:50%;top:35px;transform:translateX(-50%);font-size:30px;color:#68766d}
+.garment-thumb.hair i{width:76px;height:78px;top:7px;clip-path:polygon(10% 15%,30% 0,80% 8%,100% 38%,83% 91%,73% 65%,67% 48%,30% 36%,15% 88%,0 42%);border:0;box-shadow:none;background:var(--garment)}
+.garment-thumb.hair.form-buzz i{height:49px;top:26px;border-radius:60% 60% 18% 18%;clip-path:polygon(10% 5%,90% 5%,100% 45%,87% 100%,77% 54%,23% 54%,13% 100%,0 45%)}
+.garment-thumb.hair.form-curly i{border-radius:45%;clip-path:none;box-shadow:5px 0 var(--garment),-5px 0 var(--garment);background:radial-gradient(circle at 35% 35%,var(--panel) 0 22%,var(--garment) 25%);background-size:15px 15px}
+.garment-thumb.hair.form-locs i{height:92px;clip-path:polygon(12% 10%,40% 0,80% 8%,100% 22%,95% 98%,82% 98%,80% 44%,70% 37%,65% 99%,53% 99%,50% 38%,40% 38%,35% 99%,23% 99%,20% 40%,12% 99%,0 99%,0 25%)}
+.garment-thumb.hair.form-ponytail i{border-radius:55% 55% 35% 35%;clip-path:polygon(0 10%,75% 0,100% 55%,90% 100%,70% 100%,67% 58%,30% 35%,7% 80%)}
+#career-content .shop-tabs{gap:5px}#career-content .shop-tabs button{min-width:0;padding:10px 8px}

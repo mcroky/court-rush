@@ -5,7 +5,9 @@ export const WARDROBE_CATALOG = {
   "defaults": {
     "jersey": "court_teal",
     "shorts": "court_navy",
-    "shoes": "court_cream"
+    "shoes": "court_cream",
+    "hat": "hat_none",
+    "hair": "hair_original"
   },
   "items": [
     {
@@ -19,7 +21,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 0,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "jersey"
     },
     {
       "id": "sunset_jersey",
@@ -32,7 +35,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 1,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "jersey"
     },
     {
       "id": "midnight_jersey",
@@ -45,7 +49,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 2,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "jersey"
     },
     {
       "id": "cream_jersey",
@@ -58,7 +63,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 1,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "jersey"
     },
     {
       "id": "volt_jersey",
@@ -71,7 +77,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 3,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "jersey"
     },
     {
       "id": "court_navy",
@@ -84,7 +91,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 0,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "shorts"
     },
     {
       "id": "slate_shorts",
@@ -97,7 +105,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 0,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "shorts"
     },
     {
       "id": "wine_shorts",
@@ -110,7 +119,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 1,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "shorts"
     },
     {
       "id": "night_shorts",
@@ -123,7 +133,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 1,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "shorts"
     },
     {
       "id": "court_cream",
@@ -136,7 +147,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 0,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "hightop"
     },
     {
       "id": "ember_shoes",
@@ -149,7 +161,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 0,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "hightop"
     },
     {
       "id": "ice_shoes",
@@ -162,7 +175,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 0,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "hightop"
     },
     {
       "id": "volt_shoes",
@@ -175,7 +189,8 @@ export const WARDROBE_CATALOG = {
       "pattern": 0,
       "collection": "original",
       "unlock": 0,
-      "tier": 1
+      "tier": 1,
+      "form": "hightop"
     },
     {
       "id": "local_1_jersey",
@@ -195,7 +210,8 @@ export const WARDROBE_CATALOG = {
       "base": "2c7055",
       "panel": "f2dfb4",
       "accent": "d99853",
-      "pattern": 4
+      "pattern": 4,
+      "form": "jersey"
     },
     {
       "id": "local_1_shorts",
@@ -215,7 +231,8 @@ export const WARDROBE_CATALOG = {
       "base": "f2dfb4",
       "panel": "2c7055",
       "accent": "d99853",
-      "pattern": 1
+      "pattern": 1,
+      "form": "shorts"
     },
     {
       "id": "local_1_shoes",
@@ -235,7 +252,8 @@ export const WARDROBE_CATALOG = {
       "base": "2c7055",
       "panel": "f2dfb4",
       "accent": "d99853",
-      "pattern": 1
+      "pattern": 1,
+      "form": "hightop"
     },
     {
       "id": "local_2_jersey",
@@ -255,7 +273,8 @@ export const WARDROBE_CATALOG = {
       "base": "823e55",
       "panel": "ead8b4",
       "accent": "d8ac6a",
-      "pattern": 4
+      "pattern": 4,
+      "form": "jersey"
     },
     {
       "id": "local_2_shorts",
@@ -275,7 +294,8 @@ export const WARDROBE_CATALOG = {
       "base": "ead8b4",
       "panel": "823e55",
       "accent": "d8ac6a",
-      "pattern": 1
+      "pattern": 1,
+      "form": "shorts"
     },
     {
       "id": "local_2_shoes",
@@ -295,7 +315,8 @@ export const WARDROBE_CATALOG = {
       "base": "823e55",
       "panel": "ead8b4",
       "accent": "d8ac6a",
-      "pattern": 1
+      "pattern": 1,
+      "form": "hightop"
     },
     {
       "id": "local_3_jersey",
@@ -315,7 +336,8 @@ export const WARDROBE_CATALOG = {
       "base": "3859a1",
       "panel": "ece1bd",
       "accent": "d9aa51",
-      "pattern": 4
+      "pattern": 4,
+      "form": "jersey"
     },
     {
       "id": "local_3_shorts",
@@ -335,7 +357,8 @@ export const WARDROBE_CATALOG = {
       "base": "ece1bd",
       "panel": "3859a1",
       "accent": "d9aa51",
-      "pattern": 1
+      "pattern": 1,
+      "form": "shorts"
     },
     {
       "id": "local_3_shoes",
@@ -355,7 +378,8 @@ export const WARDROBE_CATALOG = {
       "base": "3859a1",
       "panel": "ece1bd",
       "accent": "d9aa51",
-      "pattern": 1
+      "pattern": 1,
+      "form": "hightop"
     },
     {
       "id": "asphalt_1_jersey",
@@ -375,7 +399,8 @@ export const WARDROBE_CATALOG = {
       "base": "343b48",
       "panel": "d6c7ae",
       "accent": "ee8751",
-      "pattern": 5
+      "pattern": 5,
+      "form": "jersey"
     },
     {
       "id": "asphalt_1_shorts",
@@ -395,7 +420,8 @@ export const WARDROBE_CATALOG = {
       "base": "d6c7ae",
       "panel": "343b48",
       "accent": "ee8751",
-      "pattern": 2
+      "pattern": 2,
+      "form": "shorts"
     },
     {
       "id": "asphalt_1_shoes",
@@ -415,7 +441,8 @@ export const WARDROBE_CATALOG = {
       "base": "343b48",
       "panel": "d6c7ae",
       "accent": "ee8751",
-      "pattern": 2
+      "pattern": 2,
+      "form": "hightop"
     },
     {
       "id": "asphalt_2_jersey",
@@ -435,7 +462,8 @@ export const WARDROBE_CATALOG = {
       "base": "b89f7e",
       "panel": "49473e",
       "accent": "f5e5bb",
-      "pattern": 5
+      "pattern": 5,
+      "form": "jersey"
     },
     {
       "id": "asphalt_2_shorts",
@@ -455,7 +483,8 @@ export const WARDROBE_CATALOG = {
       "base": "49473e",
       "panel": "b89f7e",
       "accent": "f5e5bb",
-      "pattern": 2
+      "pattern": 2,
+      "form": "shorts"
     },
     {
       "id": "asphalt_2_shoes",
@@ -475,7 +504,8 @@ export const WARDROBE_CATALOG = {
       "base": "b89f7e",
       "panel": "49473e",
       "accent": "f5e5bb",
-      "pattern": 2
+      "pattern": 2,
+      "form": "hightop"
     },
     {
       "id": "asphalt_3_jersey",
@@ -495,7 +525,8 @@ export const WARDROBE_CATALOG = {
       "base": "ac583e",
       "panel": "403b43",
       "accent": "ecd5af",
-      "pattern": 5
+      "pattern": 5,
+      "form": "jersey"
     },
     {
       "id": "asphalt_3_shorts",
@@ -515,7 +546,8 @@ export const WARDROBE_CATALOG = {
       "base": "403b43",
       "panel": "ac583e",
       "accent": "ecd5af",
-      "pattern": 2
+      "pattern": 2,
+      "form": "shorts"
     },
     {
       "id": "asphalt_3_shoes",
@@ -535,7 +567,8 @@ export const WARDROBE_CATALOG = {
       "base": "ac583e",
       "panel": "403b43",
       "accent": "ecd5af",
-      "pattern": 2
+      "pattern": 2,
+      "form": "hightop"
     },
     {
       "id": "metro_1_jersey",
@@ -555,7 +588,8 @@ export const WARDROBE_CATALOG = {
       "base": "244a9b",
       "panel": "192d53",
       "accent": "85d7ea",
-      "pattern": 2
+      "pattern": 2,
+      "form": "jersey"
     },
     {
       "id": "metro_1_shorts",
@@ -575,7 +609,8 @@ export const WARDROBE_CATALOG = {
       "base": "192d53",
       "panel": "244a9b",
       "accent": "85d7ea",
-      "pattern": 3
+      "pattern": 3,
+      "form": "shorts"
     },
     {
       "id": "metro_1_shoes",
@@ -595,7 +630,8 @@ export const WARDROBE_CATALOG = {
       "base": "244a9b",
       "panel": "192d53",
       "accent": "85d7ea",
-      "pattern": 3
+      "pattern": 3,
+      "form": "hightop"
     },
     {
       "id": "metro_2_jersey",
@@ -615,7 +651,8 @@ export const WARDROBE_CATALOG = {
       "base": "63778a",
       "panel": "273d50",
       "accent": "f1d280",
-      "pattern": 2
+      "pattern": 2,
+      "form": "jersey"
     },
     {
       "id": "metro_2_shorts",
@@ -635,7 +672,8 @@ export const WARDROBE_CATALOG = {
       "base": "273d50",
       "panel": "63778a",
       "accent": "f1d280",
-      "pattern": 3
+      "pattern": 3,
+      "form": "shorts"
     },
     {
       "id": "metro_2_shoes",
@@ -655,7 +693,8 @@ export const WARDROBE_CATALOG = {
       "base": "63778a",
       "panel": "273d50",
       "accent": "f1d280",
-      "pattern": 3
+      "pattern": 3,
+      "form": "hightop"
     },
     {
       "id": "metro_3_jersey",
@@ -675,7 +714,8 @@ export const WARDROBE_CATALOG = {
       "base": "b64668",
       "panel": "542d58",
       "accent": "f7d9c1",
-      "pattern": 2
+      "pattern": 2,
+      "form": "jersey"
     },
     {
       "id": "metro_3_shorts",
@@ -695,7 +735,8 @@ export const WARDROBE_CATALOG = {
       "base": "542d58",
       "panel": "b64668",
       "accent": "f7d9c1",
-      "pattern": 3
+      "pattern": 3,
+      "form": "shorts"
     },
     {
       "id": "metro_3_shoes",
@@ -715,7 +756,8 @@ export const WARDROBE_CATALOG = {
       "base": "b64668",
       "panel": "542d58",
       "accent": "f7d9c1",
-      "pattern": 3
+      "pattern": 3,
+      "form": "hightop"
     },
     {
       "id": "coast_1_jersey",
@@ -735,7 +777,8 @@ export const WARDROBE_CATALOG = {
       "base": "43b3ac",
       "panel": "246977",
       "accent": "f7e5b7",
-      "pattern": 3
+      "pattern": 3,
+      "form": "jersey"
     },
     {
       "id": "coast_1_shorts",
@@ -755,7 +798,8 @@ export const WARDROBE_CATALOG = {
       "base": "246977",
       "panel": "43b3ac",
       "accent": "f7e5b7",
-      "pattern": 4
+      "pattern": 4,
+      "form": "shorts"
     },
     {
       "id": "coast_1_shoes",
@@ -775,7 +819,8 @@ export const WARDROBE_CATALOG = {
       "base": "43b3ac",
       "panel": "246977",
       "accent": "f7e5b7",
-      "pattern": 4
+      "pattern": 4,
+      "form": "hightop"
     },
     {
       "id": "coast_2_jersey",
@@ -795,7 +840,8 @@ export const WARDROBE_CATALOG = {
       "base": "e9856a",
       "panel": "a5507b",
       "accent": "fff0c8",
-      "pattern": 3
+      "pattern": 3,
+      "form": "jersey"
     },
     {
       "id": "coast_2_shorts",
@@ -815,7 +861,8 @@ export const WARDROBE_CATALOG = {
       "base": "a5507b",
       "panel": "e9856a",
       "accent": "fff0c8",
-      "pattern": 4
+      "pattern": 4,
+      "form": "shorts"
     },
     {
       "id": "coast_2_shoes",
@@ -835,7 +882,8 @@ export const WARDROBE_CATALOG = {
       "base": "e9856a",
       "panel": "a5507b",
       "accent": "fff0c8",
-      "pattern": 4
+      "pattern": 4,
+      "form": "hightop"
     },
     {
       "id": "coast_3_jersey",
@@ -855,7 +903,8 @@ export const WARDROBE_CATALOG = {
       "base": "437cb6",
       "panel": "84cdd0",
       "accent": "f5e5b2",
-      "pattern": 3
+      "pattern": 3,
+      "form": "jersey"
     },
     {
       "id": "coast_3_shorts",
@@ -875,7 +924,8 @@ export const WARDROBE_CATALOG = {
       "base": "84cdd0",
       "panel": "437cb6",
       "accent": "f5e5b2",
-      "pattern": 4
+      "pattern": 4,
+      "form": "shorts"
     },
     {
       "id": "coast_3_shoes",
@@ -895,7 +945,8 @@ export const WARDROBE_CATALOG = {
       "base": "437cb6",
       "panel": "84cdd0",
       "accent": "f5e5b2",
-      "pattern": 4
+      "pattern": 4,
+      "form": "hightop"
     },
     {
       "id": "retro_1_jersey",
@@ -915,7 +966,8 @@ export const WARDROBE_CATALOG = {
       "base": "c99b44",
       "panel": "4b3d42",
       "accent": "f5dfaa",
-      "pattern": 6
+      "pattern": 6,
+      "form": "jersey"
     },
     {
       "id": "retro_1_shorts",
@@ -935,7 +987,8 @@ export const WARDROBE_CATALOG = {
       "base": "4b3d42",
       "panel": "c99b44",
       "accent": "f5dfaa",
-      "pattern": 5
+      "pattern": 5,
+      "form": "shorts"
     },
     {
       "id": "retro_1_shoes",
@@ -955,7 +1008,8 @@ export const WARDROBE_CATALOG = {
       "base": "c99b44",
       "panel": "4b3d42",
       "accent": "f5dfaa",
-      "pattern": 5
+      "pattern": 5,
+      "form": "hightop"
     },
     {
       "id": "retro_2_jersey",
@@ -975,7 +1029,8 @@ export const WARDROBE_CATALOG = {
       "base": "795178",
       "panel": "d3a789",
       "accent": "f8e1b5",
-      "pattern": 6
+      "pattern": 6,
+      "form": "jersey"
     },
     {
       "id": "retro_2_shorts",
@@ -995,7 +1050,8 @@ export const WARDROBE_CATALOG = {
       "base": "d3a789",
       "panel": "795178",
       "accent": "f8e1b5",
-      "pattern": 5
+      "pattern": 5,
+      "form": "shorts"
     },
     {
       "id": "retro_2_shoes",
@@ -1015,7 +1071,8 @@ export const WARDROBE_CATALOG = {
       "base": "795178",
       "panel": "d3a789",
       "accent": "f8e1b5",
-      "pattern": 5
+      "pattern": 5,
+      "form": "hightop"
     },
     {
       "id": "retro_3_jersey",
@@ -1035,7 +1092,8 @@ export const WARDROBE_CATALOG = {
       "base": "75b49c",
       "panel": "315961",
       "accent": "f1e4bd",
-      "pattern": 6
+      "pattern": 6,
+      "form": "jersey"
     },
     {
       "id": "retro_3_shorts",
@@ -1055,7 +1113,8 @@ export const WARDROBE_CATALOG = {
       "base": "315961",
       "panel": "75b49c",
       "accent": "f1e4bd",
-      "pattern": 5
+      "pattern": 5,
+      "form": "shorts"
     },
     {
       "id": "retro_3_shoes",
@@ -1075,7 +1134,8 @@ export const WARDROBE_CATALOG = {
       "base": "75b49c",
       "panel": "315961",
       "accent": "f1e4bd",
-      "pattern": 5
+      "pattern": 5,
+      "form": "hightop"
     },
     {
       "id": "neon_1_jersey",
@@ -1095,7 +1155,8 @@ export const WARDROBE_CATALOG = {
       "base": "263343",
       "panel": "a7df58",
       "accent": "d5f58d",
-      "pattern": 7
+      "pattern": 7,
+      "form": "jersey"
     },
     {
       "id": "neon_1_shorts",
@@ -1115,7 +1176,8 @@ export const WARDROBE_CATALOG = {
       "base": "a7df58",
       "panel": "263343",
       "accent": "d5f58d",
-      "pattern": 6
+      "pattern": 6,
+      "form": "shorts"
     },
     {
       "id": "neon_1_shoes",
@@ -1135,7 +1197,8 @@ export const WARDROBE_CATALOG = {
       "base": "263343",
       "panel": "a7df58",
       "accent": "d5f58d",
-      "pattern": 6
+      "pattern": 6,
+      "form": "hightop"
     },
     {
       "id": "neon_2_jersey",
@@ -1155,7 +1218,8 @@ export const WARDROBE_CATALOG = {
       "base": "433761",
       "panel": "bc86dc",
       "accent": "e4c9ed",
-      "pattern": 7
+      "pattern": 7,
+      "form": "jersey"
     },
     {
       "id": "neon_2_shorts",
@@ -1175,7 +1239,8 @@ export const WARDROBE_CATALOG = {
       "base": "bc86dc",
       "panel": "433761",
       "accent": "e4c9ed",
-      "pattern": 6
+      "pattern": 6,
+      "form": "shorts"
     },
     {
       "id": "neon_2_shoes",
@@ -1195,7 +1260,8 @@ export const WARDROBE_CATALOG = {
       "base": "433761",
       "panel": "bc86dc",
       "accent": "e4c9ed",
-      "pattern": 6
+      "pattern": 6,
+      "form": "hightop"
     },
     {
       "id": "neon_3_jersey",
@@ -1215,7 +1281,8 @@ export const WARDROBE_CATALOG = {
       "base": "283b51",
       "panel": "49c8d9",
       "accent": "dbefec",
-      "pattern": 7
+      "pattern": 7,
+      "form": "jersey"
     },
     {
       "id": "neon_3_shorts",
@@ -1235,7 +1302,8 @@ export const WARDROBE_CATALOG = {
       "base": "49c8d9",
       "panel": "283b51",
       "accent": "dbefec",
-      "pattern": 6
+      "pattern": 6,
+      "form": "shorts"
     },
     {
       "id": "neon_3_shoes",
@@ -1255,7 +1323,8 @@ export const WARDROBE_CATALOG = {
       "base": "283b51",
       "panel": "49c8d9",
       "accent": "dbefec",
-      "pattern": 6
+      "pattern": 6,
+      "form": "hightop"
     },
     {
       "id": "circuit_1_jersey",
@@ -1275,7 +1344,8 @@ export const WARDROBE_CATALOG = {
       "base": "b7463a",
       "panel": "f0d5ad",
       "accent": "2b4250",
-      "pattern": 5
+      "pattern": 5,
+      "form": "jersey"
     },
     {
       "id": "circuit_1_shorts",
@@ -1295,7 +1365,8 @@ export const WARDROBE_CATALOG = {
       "base": "f0d5ad",
       "panel": "b7463a",
       "accent": "2b4250",
-      "pattern": 7
+      "pattern": 7,
+      "form": "shorts"
     },
     {
       "id": "circuit_1_shoes",
@@ -1315,7 +1386,8 @@ export const WARDROBE_CATALOG = {
       "base": "b7463a",
       "panel": "f0d5ad",
       "accent": "2b4250",
-      "pattern": 7
+      "pattern": 7,
+      "form": "hightop"
     },
     {
       "id": "circuit_2_jersey",
@@ -1335,7 +1407,8 @@ export const WARDROBE_CATALOG = {
       "base": "e89c42",
       "panel": "33434d",
       "accent": "f3deb1",
-      "pattern": 5
+      "pattern": 5,
+      "form": "jersey"
     },
     {
       "id": "circuit_2_shorts",
@@ -1355,7 +1428,8 @@ export const WARDROBE_CATALOG = {
       "base": "33434d",
       "panel": "e89c42",
       "accent": "f3deb1",
-      "pattern": 7
+      "pattern": 7,
+      "form": "shorts"
     },
     {
       "id": "circuit_2_shoes",
@@ -1375,7 +1449,8 @@ export const WARDROBE_CATALOG = {
       "base": "e89c42",
       "panel": "33434d",
       "accent": "f3deb1",
-      "pattern": 7
+      "pattern": 7,
+      "form": "hightop"
     },
     {
       "id": "circuit_3_jersey",
@@ -1395,7 +1470,8 @@ export const WARDROBE_CATALOG = {
       "base": "d4e6e5",
       "panel": "3d7186",
       "accent": "d95e4c",
-      "pattern": 5
+      "pattern": 5,
+      "form": "jersey"
     },
     {
       "id": "circuit_3_shorts",
@@ -1415,7 +1491,8 @@ export const WARDROBE_CATALOG = {
       "base": "3d7186",
       "panel": "d4e6e5",
       "accent": "d95e4c",
-      "pattern": 7
+      "pattern": 7,
+      "form": "shorts"
     },
     {
       "id": "circuit_3_shoes",
@@ -1435,7 +1512,8 @@ export const WARDROBE_CATALOG = {
       "base": "d4e6e5",
       "panel": "3d7186",
       "accent": "d95e4c",
-      "pattern": 7
+      "pattern": 7,
+      "form": "hightop"
     },
     {
       "id": "skyline_1_jersey",
@@ -1455,7 +1533,8 @@ export const WARDROBE_CATALOG = {
       "base": "4b548b",
       "panel": "b983b1",
       "accent": "f6c797",
-      "pattern": 8
+      "pattern": 8,
+      "form": "jersey"
     },
     {
       "id": "skyline_1_shorts",
@@ -1475,7 +1554,8 @@ export const WARDROBE_CATALOG = {
       "base": "b983b1",
       "panel": "4b548b",
       "accent": "f6c797",
-      "pattern": 8
+      "pattern": 8,
+      "form": "shorts"
     },
     {
       "id": "skyline_1_shoes",
@@ -1495,7 +1575,8 @@ export const WARDROBE_CATALOG = {
       "base": "4b548b",
       "panel": "b983b1",
       "accent": "f6c797",
-      "pattern": 8
+      "pattern": 8,
+      "form": "hightop"
     },
     {
       "id": "skyline_2_jersey",
@@ -1515,7 +1596,8 @@ export const WARDROBE_CATALOG = {
       "base": "db8359",
       "panel": "b84e67",
       "accent": "f3d9a9",
-      "pattern": 8
+      "pattern": 8,
+      "form": "jersey"
     },
     {
       "id": "skyline_2_shorts",
@@ -1535,7 +1617,8 @@ export const WARDROBE_CATALOG = {
       "base": "b84e67",
       "panel": "db8359",
       "accent": "f3d9a9",
-      "pattern": 8
+      "pattern": 8,
+      "form": "shorts"
     },
     {
       "id": "skyline_2_shoes",
@@ -1555,7 +1638,8 @@ export const WARDROBE_CATALOG = {
       "base": "db8359",
       "panel": "b84e67",
       "accent": "f3d9a9",
-      "pattern": 8
+      "pattern": 8,
+      "form": "hightop"
     },
     {
       "id": "skyline_3_jersey",
@@ -1575,7 +1659,8 @@ export const WARDROBE_CATALOG = {
       "base": "526276",
       "panel": "89a8b5",
       "accent": "e6dcb8",
-      "pattern": 8
+      "pattern": 8,
+      "form": "jersey"
     },
     {
       "id": "skyline_3_shorts",
@@ -1595,7 +1680,8 @@ export const WARDROBE_CATALOG = {
       "base": "89a8b5",
       "panel": "526276",
       "accent": "e6dcb8",
-      "pattern": 8
+      "pattern": 8,
+      "form": "shorts"
     },
     {
       "id": "skyline_3_shoes",
@@ -1615,7 +1701,8 @@ export const WARDROBE_CATALOG = {
       "base": "526276",
       "panel": "89a8b5",
       "accent": "e6dcb8",
-      "pattern": 8
+      "pattern": 8,
+      "form": "hightop"
     },
     {
       "id": "crown_1_jersey",
@@ -1635,7 +1722,8 @@ export const WARDROBE_CATALOG = {
       "base": "273139",
       "panel": "a6824f",
       "accent": "f5d188",
-      "pattern": 1
+      "pattern": 1,
+      "form": "jersey"
     },
     {
       "id": "crown_1_shorts",
@@ -1655,7 +1743,8 @@ export const WARDROBE_CATALOG = {
       "base": "a6824f",
       "panel": "273139",
       "accent": "f5d188",
-      "pattern": 2
+      "pattern": 2,
+      "form": "shorts"
     },
     {
       "id": "crown_1_shoes",
@@ -1675,7 +1764,8 @@ export const WARDROBE_CATALOG = {
       "base": "273139",
       "panel": "a6824f",
       "accent": "f5d188",
-      "pattern": 4
+      "pattern": 4,
+      "form": "hightop"
     },
     {
       "id": "crown_2_jersey",
@@ -1695,7 +1785,8 @@ export const WARDROBE_CATALOG = {
       "base": "e9dfbf",
       "panel": "947044",
       "accent": "4a3b39",
-      "pattern": 1
+      "pattern": 1,
+      "form": "jersey"
     },
     {
       "id": "crown_2_shorts",
@@ -1715,7 +1806,8 @@ export const WARDROBE_CATALOG = {
       "base": "947044",
       "panel": "e9dfbf",
       "accent": "4a3b39",
-      "pattern": 2
+      "pattern": 2,
+      "form": "shorts"
     },
     {
       "id": "crown_2_shoes",
@@ -1735,7 +1827,8 @@ export const WARDROBE_CATALOG = {
       "base": "e9dfbf",
       "panel": "947044",
       "accent": "4a3b39",
-      "pattern": 4
+      "pattern": 4,
+      "form": "hightop"
     },
     {
       "id": "crown_3_jersey",
@@ -1755,7 +1848,8 @@ export const WARDROBE_CATALOG = {
       "base": "8d3546",
       "panel": "c59a55",
       "accent": "f2db9c",
-      "pattern": 1
+      "pattern": 1,
+      "form": "jersey"
     },
     {
       "id": "crown_3_shorts",
@@ -1775,7 +1869,8 @@ export const WARDROBE_CATALOG = {
       "base": "c59a55",
       "panel": "8d3546",
       "accent": "f2db9c",
-      "pattern": 2
+      "pattern": 2,
+      "form": "shorts"
     },
     {
       "id": "crown_3_shoes",
@@ -1795,7 +1890,888 @@ export const WARDROBE_CATALOG = {
       "base": "8d3546",
       "panel": "c59a55",
       "accent": "f2db9c",
-      "pattern": 4
+      "pattern": 4,
+      "form": "hightop"
+    },
+    {
+      "id": "form_tee_1",
+      "slot": "jersey",
+      "name": "크루넥 반팔 · 블랙",
+      "names": [
+        "크루넥 반팔 · 블랙",
+        "Crewneck Tee · Black",
+        "クルーネックTシャツ · ブラック",
+        "圆领短袖 · 黑色"
+      ],
+      "collection": "street_forms",
+      "form": "tee",
+      "unlock": 0,
+      "tier": 2,
+      "price": 130,
+      "base": "303b44",
+      "panel": "586779",
+      "accent": "e9ddbd",
+      "pattern": 0
+    },
+    {
+      "id": "form_tee_2",
+      "slot": "jersey",
+      "name": "크루넥 반팔 · 애시",
+      "names": [
+        "크루넥 반팔 · 애시",
+        "Crewneck Tee · Ash",
+        "クルーネックTシャツ · アッシュ",
+        "圆领短袖 · 灰色"
+      ],
+      "collection": "street_forms",
+      "form": "tee",
+      "unlock": 1,
+      "tier": 2,
+      "price": 180,
+      "base": "9ba4a4",
+      "panel": "273f44",
+      "accent": "eee9d4",
+      "pattern": 0
+    },
+    {
+      "id": "form_tee_3",
+      "slot": "jersey",
+      "name": "크루넥 반팔 · 포레스트",
+      "names": [
+        "크루넥 반팔 · 포레스트",
+        "Crewneck Tee · Forest",
+        "クルーネックTシャツ · フォレスト",
+        "圆领短袖 · 森林"
+      ],
+      "collection": "street_forms",
+      "form": "tee",
+      "unlock": 2,
+      "tier": 3,
+      "price": 230,
+      "base": "2b6859",
+      "panel": "1c3435",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "form_tee_4",
+      "slot": "jersey",
+      "name": "크루넥 반팔 · 버건디",
+      "names": [
+        "크루넥 반팔 · 버건디",
+        "Crewneck Tee · Burgundy",
+        "クルーネックTシャツ · バーガンディ",
+        "圆领短袖 · 酒红"
+      ],
+      "collection": "street_forms",
+      "form": "tee",
+      "unlock": 3,
+      "tier": 3,
+      "price": 280,
+      "base": "783c53",
+      "panel": "3d2e42",
+      "accent": "dec39c",
+      "pattern": 0
+    },
+    {
+      "id": "form_hoodie_1",
+      "slot": "jersey",
+      "name": "코트 후드티 · 블랙",
+      "names": [
+        "코트 후드티 · 블랙",
+        "Court Hoodie · Black",
+        "コートパーカー · ブラック",
+        "球场连帽衫 · 黑色"
+      ],
+      "collection": "street_forms",
+      "form": "hoodie",
+      "unlock": 0,
+      "tier": 2,
+      "price": 260,
+      "base": "303b44",
+      "panel": "586779",
+      "accent": "e9ddbd",
+      "pattern": 0
+    },
+    {
+      "id": "form_hoodie_2",
+      "slot": "jersey",
+      "name": "코트 후드티 · 애시",
+      "names": [
+        "코트 후드티 · 애시",
+        "Court Hoodie · Ash",
+        "コートパーカー · アッシュ",
+        "球场连帽衫 · 灰色"
+      ],
+      "collection": "street_forms",
+      "form": "hoodie",
+      "unlock": 1,
+      "tier": 2,
+      "price": 310,
+      "base": "9ba4a4",
+      "panel": "273f44",
+      "accent": "eee9d4",
+      "pattern": 0
+    },
+    {
+      "id": "form_hoodie_3",
+      "slot": "jersey",
+      "name": "코트 후드티 · 포레스트",
+      "names": [
+        "코트 후드티 · 포레스트",
+        "Court Hoodie · Forest",
+        "コートパーカー · フォレスト",
+        "球场连帽衫 · 森林"
+      ],
+      "collection": "street_forms",
+      "form": "hoodie",
+      "unlock": 2,
+      "tier": 3,
+      "price": 360,
+      "base": "2b6859",
+      "panel": "1c3435",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "form_hoodie_4",
+      "slot": "jersey",
+      "name": "코트 후드티 · 버건디",
+      "names": [
+        "코트 후드티 · 버건디",
+        "Court Hoodie · Burgundy",
+        "コートパーカー · バーガンディ",
+        "球场连帽衫 · 酒红"
+      ],
+      "collection": "street_forms",
+      "form": "hoodie",
+      "unlock": 3,
+      "tier": 3,
+      "price": 410,
+      "base": "783c53",
+      "panel": "3d2e42",
+      "accent": "dec39c",
+      "pattern": 0
+    },
+    {
+      "id": "form_varsity_1",
+      "slot": "jersey",
+      "name": "바시티 재킷 · 블랙",
+      "names": [
+        "바시티 재킷 · 블랙",
+        "Varsity Jacket · Black",
+        "バーシティジャケット · ブラック",
+        "棒球夹克 · 黑色"
+      ],
+      "collection": "street_forms",
+      "form": "varsity",
+      "unlock": 1,
+      "tier": 2,
+      "price": 380,
+      "base": "303b44",
+      "panel": "586779",
+      "accent": "e9ddbd",
+      "pattern": 0
+    },
+    {
+      "id": "form_varsity_2",
+      "slot": "jersey",
+      "name": "바시티 재킷 · 애시",
+      "names": [
+        "바시티 재킷 · 애시",
+        "Varsity Jacket · Ash",
+        "バーシティジャケット · アッシュ",
+        "棒球夹克 · 灰色"
+      ],
+      "collection": "street_forms",
+      "form": "varsity",
+      "unlock": 2,
+      "tier": 2,
+      "price": 430,
+      "base": "9ba4a4",
+      "panel": "273f44",
+      "accent": "eee9d4",
+      "pattern": 0
+    },
+    {
+      "id": "form_varsity_3",
+      "slot": "jersey",
+      "name": "바시티 재킷 · 포레스트",
+      "names": [
+        "바시티 재킷 · 포레스트",
+        "Varsity Jacket · Forest",
+        "バーシティジャケット · フォレスト",
+        "棒球夹克 · 森林"
+      ],
+      "collection": "street_forms",
+      "form": "varsity",
+      "unlock": 3,
+      "tier": 3,
+      "price": 480,
+      "base": "2b6859",
+      "panel": "1c3435",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "form_varsity_4",
+      "slot": "jersey",
+      "name": "바시티 재킷 · 버건디",
+      "names": [
+        "바시티 재킷 · 버건디",
+        "Varsity Jacket · Burgundy",
+        "バーシティジャケット · バーガンディ",
+        "棒球夹克 · 酒红"
+      ],
+      "collection": "street_forms",
+      "form": "varsity",
+      "unlock": 4,
+      "tier": 3,
+      "price": 530,
+      "base": "783c53",
+      "panel": "3d2e42",
+      "accent": "dec39c",
+      "pattern": 0
+    },
+    {
+      "id": "form_joggers_1",
+      "slot": "shorts",
+      "name": "테크 조거 · 블랙",
+      "names": [
+        "테크 조거 · 블랙",
+        "Tech Joggers · Black",
+        "テックジョガー · ブラック",
+        "机能束脚裤 · 黑色"
+      ],
+      "collection": "street_forms",
+      "form": "joggers",
+      "unlock": 0,
+      "tier": 2,
+      "price": 180,
+      "base": "303b44",
+      "panel": "586779",
+      "accent": "e9ddbd",
+      "pattern": 0
+    },
+    {
+      "id": "form_joggers_2",
+      "slot": "shorts",
+      "name": "테크 조거 · 애시",
+      "names": [
+        "테크 조거 · 애시",
+        "Tech Joggers · Ash",
+        "テックジョガー · アッシュ",
+        "机能束脚裤 · 灰色"
+      ],
+      "collection": "street_forms",
+      "form": "joggers",
+      "unlock": 1,
+      "tier": 2,
+      "price": 230,
+      "base": "9ba4a4",
+      "panel": "273f44",
+      "accent": "eee9d4",
+      "pattern": 0
+    },
+    {
+      "id": "form_joggers_3",
+      "slot": "shorts",
+      "name": "테크 조거 · 포레스트",
+      "names": [
+        "테크 조거 · 포레스트",
+        "Tech Joggers · Forest",
+        "テックジョガー · フォレスト",
+        "机能束脚裤 · 森林"
+      ],
+      "collection": "street_forms",
+      "form": "joggers",
+      "unlock": 2,
+      "tier": 3,
+      "price": 280,
+      "base": "2b6859",
+      "panel": "1c3435",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "form_joggers_4",
+      "slot": "shorts",
+      "name": "테크 조거 · 버건디",
+      "names": [
+        "테크 조거 · 버건디",
+        "Tech Joggers · Burgundy",
+        "テックジョガー · バーガンディ",
+        "机能束脚裤 · 酒红"
+      ],
+      "collection": "street_forms",
+      "form": "joggers",
+      "unlock": 3,
+      "tier": 3,
+      "price": 330,
+      "base": "783c53",
+      "panel": "3d2e42",
+      "accent": "dec39c",
+      "pattern": 0
+    },
+    {
+      "id": "form_cargo_1",
+      "slot": "shorts",
+      "name": "카고 팬츠 · 블랙",
+      "names": [
+        "카고 팬츠 · 블랙",
+        "Cargo Pants · Black",
+        "カーゴパンツ · ブラック",
+        "工装长裤 · 黑色"
+      ],
+      "collection": "street_forms",
+      "form": "cargo",
+      "unlock": 0,
+      "tier": 2,
+      "price": 240,
+      "base": "303b44",
+      "panel": "586779",
+      "accent": "e9ddbd",
+      "pattern": 0
+    },
+    {
+      "id": "form_cargo_2",
+      "slot": "shorts",
+      "name": "카고 팬츠 · 애시",
+      "names": [
+        "카고 팬츠 · 애시",
+        "Cargo Pants · Ash",
+        "カーゴパンツ · アッシュ",
+        "工装长裤 · 灰色"
+      ],
+      "collection": "street_forms",
+      "form": "cargo",
+      "unlock": 1,
+      "tier": 2,
+      "price": 290,
+      "base": "9ba4a4",
+      "panel": "273f44",
+      "accent": "eee9d4",
+      "pattern": 0
+    },
+    {
+      "id": "form_cargo_3",
+      "slot": "shorts",
+      "name": "카고 팬츠 · 포레스트",
+      "names": [
+        "카고 팬츠 · 포레스트",
+        "Cargo Pants · Forest",
+        "カーゴパンツ · フォレスト",
+        "工装长裤 · 森林"
+      ],
+      "collection": "street_forms",
+      "form": "cargo",
+      "unlock": 2,
+      "tier": 3,
+      "price": 340,
+      "base": "2b6859",
+      "panel": "1c3435",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "form_cargo_4",
+      "slot": "shorts",
+      "name": "카고 팬츠 · 버건디",
+      "names": [
+        "카고 팬츠 · 버건디",
+        "Cargo Pants · Burgundy",
+        "カーゴパンツ · バーガンディ",
+        "工装长裤 · 酒红"
+      ],
+      "collection": "street_forms",
+      "form": "cargo",
+      "unlock": 3,
+      "tier": 3,
+      "price": 390,
+      "base": "783c53",
+      "panel": "3d2e42",
+      "accent": "dec39c",
+      "pattern": 0
+    },
+    {
+      "id": "hat_none",
+      "slot": "hat",
+      "name": "모자 없음",
+      "names": [
+        "모자 없음",
+        "No Hat",
+        "帽子なし",
+        "不戴帽子"
+      ],
+      "collection": "headwear",
+      "form": "none",
+      "unlock": 0,
+      "tier": 1,
+      "price": 0,
+      "base": "303b44",
+      "panel": "303b44",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "hair_original",
+      "slot": "hair",
+      "name": "기본 스윕 헤어",
+      "names": [
+        "기본 스윕 헤어",
+        "Original Sweep",
+        "オリジナルスイープ",
+        "经典侧扫发型"
+      ],
+      "collection": "barber",
+      "form": "original",
+      "unlock": 0,
+      "tier": 1,
+      "price": 0,
+      "base": "20282b",
+      "panel": "20282b",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "hat_cap_1",
+      "slot": "hat",
+      "name": "플랫 캡 · 블랙",
+      "names": [
+        "플랫 캡 · 블랙",
+        "Flat Cap · Black",
+        "フラットキャップ · ブラック",
+        "平檐棒球帽 · 黑色"
+      ],
+      "collection": "headwear",
+      "form": "cap",
+      "unlock": 0,
+      "tier": 2,
+      "price": 110,
+      "base": "303b44",
+      "panel": "586779",
+      "accent": "e9ddbd",
+      "pattern": 0
+    },
+    {
+      "id": "hat_cap_2",
+      "slot": "hat",
+      "name": "플랫 캡 · 애시",
+      "names": [
+        "플랫 캡 · 애시",
+        "Flat Cap · Ash",
+        "フラットキャップ · アッシュ",
+        "平檐棒球帽 · 灰色"
+      ],
+      "collection": "headwear",
+      "form": "cap",
+      "unlock": 1,
+      "tier": 2,
+      "price": 150,
+      "base": "9ba4a4",
+      "panel": "273f44",
+      "accent": "eee9d4",
+      "pattern": 0
+    },
+    {
+      "id": "hat_cap_3",
+      "slot": "hat",
+      "name": "플랫 캡 · 포레스트",
+      "names": [
+        "플랫 캡 · 포레스트",
+        "Flat Cap · Forest",
+        "フラットキャップ · フォレスト",
+        "平檐棒球帽 · 森林"
+      ],
+      "collection": "headwear",
+      "form": "cap",
+      "unlock": 2,
+      "tier": 2,
+      "price": 190,
+      "base": "2b6859",
+      "panel": "1c3435",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "hat_cap_back_1",
+      "slot": "hat",
+      "name": "백워드 캡 · 블랙",
+      "names": [
+        "백워드 캡 · 블랙",
+        "Backward Cap · Black",
+        "バックワードキャップ · ブラック",
+        "反戴棒球帽 · 黑色"
+      ],
+      "collection": "headwear",
+      "form": "cap_back",
+      "unlock": 0,
+      "tier": 2,
+      "price": 150,
+      "base": "303b44",
+      "panel": "586779",
+      "accent": "e9ddbd",
+      "pattern": 0
+    },
+    {
+      "id": "hat_cap_back_2",
+      "slot": "hat",
+      "name": "백워드 캡 · 애시",
+      "names": [
+        "백워드 캡 · 애시",
+        "Backward Cap · Ash",
+        "バックワードキャップ · アッシュ",
+        "反戴棒球帽 · 灰色"
+      ],
+      "collection": "headwear",
+      "form": "cap_back",
+      "unlock": 1,
+      "tier": 2,
+      "price": 190,
+      "base": "9ba4a4",
+      "panel": "273f44",
+      "accent": "eee9d4",
+      "pattern": 0
+    },
+    {
+      "id": "hat_cap_back_3",
+      "slot": "hat",
+      "name": "백워드 캡 · 포레스트",
+      "names": [
+        "백워드 캡 · 포레스트",
+        "Backward Cap · Forest",
+        "バックワードキャップ · フォレスト",
+        "反戴棒球帽 · 森林"
+      ],
+      "collection": "headwear",
+      "form": "cap_back",
+      "unlock": 2,
+      "tier": 2,
+      "price": 230,
+      "base": "2b6859",
+      "panel": "1c3435",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "hat_beanie_1",
+      "slot": "hat",
+      "name": "리브 비니 · 블랙",
+      "names": [
+        "리브 비니 · 블랙",
+        "Ribbed Beanie · Black",
+        "リブビーニー · ブラック",
+        "罗纹针织帽 · 黑色"
+      ],
+      "collection": "headwear",
+      "form": "beanie",
+      "unlock": 0,
+      "tier": 2,
+      "price": 140,
+      "base": "303b44",
+      "panel": "586779",
+      "accent": "e9ddbd",
+      "pattern": 0
+    },
+    {
+      "id": "hat_beanie_2",
+      "slot": "hat",
+      "name": "리브 비니 · 애시",
+      "names": [
+        "리브 비니 · 애시",
+        "Ribbed Beanie · Ash",
+        "リブビーニー · アッシュ",
+        "罗纹针织帽 · 灰色"
+      ],
+      "collection": "headwear",
+      "form": "beanie",
+      "unlock": 1,
+      "tier": 2,
+      "price": 180,
+      "base": "9ba4a4",
+      "panel": "273f44",
+      "accent": "eee9d4",
+      "pattern": 0
+    },
+    {
+      "id": "hat_beanie_3",
+      "slot": "hat",
+      "name": "리브 비니 · 포레스트",
+      "names": [
+        "리브 비니 · 포레스트",
+        "Ribbed Beanie · Forest",
+        "リブビーニー · フォレスト",
+        "罗纹针织帽 · 森林"
+      ],
+      "collection": "headwear",
+      "form": "beanie",
+      "unlock": 2,
+      "tier": 2,
+      "price": 220,
+      "base": "2b6859",
+      "panel": "1c3435",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "hat_bucket_1",
+      "slot": "hat",
+      "name": "버킷햇 · 블랙",
+      "names": [
+        "버킷햇 · 블랙",
+        "Bucket Hat · Black",
+        "バケットハット · ブラック",
+        "渔夫帽 · 黑色"
+      ],
+      "collection": "headwear",
+      "form": "bucket",
+      "unlock": 0,
+      "tier": 2,
+      "price": 180,
+      "base": "303b44",
+      "panel": "586779",
+      "accent": "e9ddbd",
+      "pattern": 0
+    },
+    {
+      "id": "hat_bucket_2",
+      "slot": "hat",
+      "name": "버킷햇 · 애시",
+      "names": [
+        "버킷햇 · 애시",
+        "Bucket Hat · Ash",
+        "バケットハット · アッシュ",
+        "渔夫帽 · 灰色"
+      ],
+      "collection": "headwear",
+      "form": "bucket",
+      "unlock": 1,
+      "tier": 2,
+      "price": 220,
+      "base": "9ba4a4",
+      "panel": "273f44",
+      "accent": "eee9d4",
+      "pattern": 0
+    },
+    {
+      "id": "hat_bucket_3",
+      "slot": "hat",
+      "name": "버킷햇 · 포레스트",
+      "names": [
+        "버킷햇 · 포레스트",
+        "Bucket Hat · Forest",
+        "バケットハット · フォレスト",
+        "渔夫帽 · 森林"
+      ],
+      "collection": "headwear",
+      "form": "bucket",
+      "unlock": 2,
+      "tier": 2,
+      "price": 260,
+      "base": "2b6859",
+      "panel": "1c3435",
+      "accent": "dec7a1",
+      "pattern": 0
+    },
+    {
+      "id": "hair_buzz_1",
+      "slot": "hair",
+      "name": "페이드 버즈컷 · 블랙",
+      "names": [
+        "페이드 버즈컷 · 블랙",
+        "Fade Buzz Cut · Black",
+        "フェードバズカット · ブラック",
+        "渐层寸头 · 黑色"
+      ],
+      "collection": "barber",
+      "form": "buzz",
+      "unlock": 0,
+      "tier": 2,
+      "price": 160,
+      "base": "24282f",
+      "panel": "24282f",
+      "accent": "d0a361",
+      "pattern": 0
+    },
+    {
+      "id": "hair_buzz_2",
+      "slot": "hair",
+      "name": "페이드 버즈컷 · 브라운",
+      "names": [
+        "페이드 버즈컷 · 브라운",
+        "Fade Buzz Cut · Brown",
+        "フェードバズカット · ブラウン",
+        "渐层寸头 · 棕色"
+      ],
+      "collection": "barber",
+      "form": "buzz",
+      "unlock": 0,
+      "tier": 2,
+      "price": 190,
+      "base": "604333",
+      "panel": "604333",
+      "accent": "d0a361",
+      "pattern": 0
+    },
+    {
+      "id": "hair_curly_1",
+      "slot": "hair",
+      "name": "텍스처 컬리 · 블랙",
+      "names": [
+        "텍스처 컬리 · 블랙",
+        "Textured Curls · Black",
+        "テクスチャカール · ブラック",
+        "纹理卷发 · 黑色"
+      ],
+      "collection": "barber",
+      "form": "curly",
+      "unlock": 1,
+      "tier": 2,
+      "price": 220,
+      "base": "24282f",
+      "panel": "24282f",
+      "accent": "d0a361",
+      "pattern": 0
+    },
+    {
+      "id": "hair_curly_2",
+      "slot": "hair",
+      "name": "텍스처 컬리 · 브라운",
+      "names": [
+        "텍스처 컬리 · 브라운",
+        "Textured Curls · Brown",
+        "テクスチャカール · ブラウン",
+        "纹理卷发 · 棕色"
+      ],
+      "collection": "barber",
+      "form": "curly",
+      "unlock": 1,
+      "tier": 2,
+      "price": 250,
+      "base": "604333",
+      "panel": "604333",
+      "accent": "d0a361",
+      "pattern": 0
+    },
+    {
+      "id": "hair_locs_1",
+      "slot": "hair",
+      "name": "미디엄 드레드 · 블랙",
+      "names": [
+        "미디엄 드레드 · 블랙",
+        "Medium Locs · Black",
+        "ミディアムドレッド · ブラック",
+        "中长脏辫 · 黑色"
+      ],
+      "collection": "barber",
+      "form": "locs",
+      "unlock": 2,
+      "tier": 2,
+      "price": 300,
+      "base": "24282f",
+      "panel": "24282f",
+      "accent": "d0a361",
+      "pattern": 0
+    },
+    {
+      "id": "hair_locs_2",
+      "slot": "hair",
+      "name": "미디엄 드레드 · 브라운",
+      "names": [
+        "미디엄 드레드 · 브라운",
+        "Medium Locs · Brown",
+        "ミディアムドレッド · ブラウン",
+        "中长脏辫 · 棕色"
+      ],
+      "collection": "barber",
+      "form": "locs",
+      "unlock": 2,
+      "tier": 2,
+      "price": 330,
+      "base": "604333",
+      "panel": "604333",
+      "accent": "d0a361",
+      "pattern": 0
+    },
+    {
+      "id": "hair_sidepart_1",
+      "slot": "hair",
+      "name": "클래식 사이드파트 · 블랙",
+      "names": [
+        "클래식 사이드파트 · 블랙",
+        "Classic Side Part · Black",
+        "クラシックサイドパート · ブラック",
+        "经典侧分 · 黑色"
+      ],
+      "collection": "barber",
+      "form": "sidepart",
+      "unlock": 0,
+      "tier": 2,
+      "price": 180,
+      "base": "24282f",
+      "panel": "24282f",
+      "accent": "d0a361",
+      "pattern": 0
+    },
+    {
+      "id": "hair_sidepart_2",
+      "slot": "hair",
+      "name": "클래식 사이드파트 · 브라운",
+      "names": [
+        "클래식 사이드파트 · 브라운",
+        "Classic Side Part · Brown",
+        "クラシックサイドパート · ブラウン",
+        "经典侧分 · 棕色"
+      ],
+      "collection": "barber",
+      "form": "sidepart",
+      "unlock": 0,
+      "tier": 2,
+      "price": 210,
+      "base": "604333",
+      "panel": "604333",
+      "accent": "d0a361",
+      "pattern": 0
+    },
+    {
+      "id": "hair_ponytail_1",
+      "slot": "hair",
+      "name": "로우 포니테일 · 블랙",
+      "names": [
+        "로우 포니테일 · 블랙",
+        "Low Ponytail · Black",
+        "ローポニーテール · ブラック",
+        "低马尾 · 黑色"
+      ],
+      "collection": "barber",
+      "form": "ponytail",
+      "unlock": 1,
+      "tier": 2,
+      "price": 240,
+      "base": "24282f",
+      "panel": "24282f",
+      "accent": "d0a361",
+      "pattern": 0
+    },
+    {
+      "id": "hair_ponytail_2",
+      "slot": "hair",
+      "name": "로우 포니테일 · 브라운",
+      "names": [
+        "로우 포니테일 · 브라운",
+        "Low Ponytail · Brown",
+        "ローポニーテール · ブラウン",
+        "低马尾 · 棕色"
+      ],
+      "collection": "barber",
+      "form": "ponytail",
+      "unlock": 1,
+      "tier": 2,
+      "price": 270,
+      "base": "604333",
+      "panel": "604333",
+      "accent": "d0a361",
+      "pattern": 0
     }
   ],
   "collections": [
@@ -1897,6 +2873,39 @@ export const WARDROBE_CATALOG = {
         "王冠俱乐部"
       ],
       "unlock": 8
+    },
+    {
+      "id": "street_forms",
+      "name": "스트리트 실루엣",
+      "names": [
+        "스트리트 실루엣",
+        "Street Silhouettes",
+        "ストリートシルエット",
+        "街头剪影"
+      ],
+      "unlock": 0
+    },
+    {
+      "id": "headwear",
+      "name": "헤드웨어 클럽",
+      "names": [
+        "헤드웨어 클럽",
+        "Headwear Club",
+        "ヘッドウェアクラブ",
+        "帽饰俱乐部"
+      ],
+      "unlock": 0
+    },
+    {
+      "id": "barber",
+      "name": "코트 바버숍",
+      "names": [
+        "코트 바버숍",
+        "Court Barbershop",
+        "コートバーバーショップ",
+        "球场理发店"
+      ],
+      "unlock": 0
     }
   ]
 };

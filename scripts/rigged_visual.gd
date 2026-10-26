@@ -111,9 +111,11 @@ func finish_root(actor) -> float:
 	# Contact first, compression second. The downward speed continues into a
 	# damped knee load instead of stopping dead or crouching before touchdown.
 	var elapsed=t-times.y
-	return base-push_speed*elapsed*exp(-elapsed/.055)
+	var knee_load=.045*pow(sin(clampf(elapsed/.16,0,1)*PI),2.0) if actor.action=="shot" else 0.0
+	return base-push_speed*elapsed*exp(-elapsed/.055)-knee_load
 
 func finish_toe(actor, index: int) -> Vector3:
+	if actor.action=="shot":return jumper_toe(actor,index)
 	var times=finish_times(actor)
 	var t: float=actor.action_time
 	var side=-1.0 if index==0 else 1.0
@@ -133,6 +135,36 @@ func finish_toe(actor, index: int) -> Vector3:
 	var landing=actor.to_global(Vector3(start.x,.026,start.z)) if actor.action=="shot" else actor.air_end+actor.global_basis*Vector3(side*.17,.026,.12 if raised else -.06)
 	goal=goal.lerp(landing,smoothstep(times.y-.22,times.y,t))
 	return goal
+
+func jumper_times(actor,index: int) -> Vector2:
+	var shooting_side=1 if actor.dribble_hand>0 else 0
+	# A tiny left/right support exchange keeps the two legs from behaving as
+	# one rigid elevator. Ball release and the gameplay jump clock are unchanged.
+	return Vector2(actor.SHOT_PLANT_TIME+(.008 if index!=shooting_side else 0.0),actor.SHOT_LAND_TIME+(.018 if index!=shooting_side else 0.0))
+
+func jumper_pitch(actor,index: int) -> float:
+	var times=jumper_times(actor,index)
+	var t: float=actor.action_time
+	if t<=times.x:return .58*smoothstep(.008,times.x,t)
+	if t>=times.y:return .203*(1-smoothstep(0,.065,t-times.y))
+	var u=clampf((t-times.x)/(times.y-times.x),0,1)
+	return (.58+.12*sin(u*PI))*(1-.65*smoothstep(.25,.94,u))
+
+func jumper_toe(actor,index: int) -> Vector3:
+	var times=jumper_times(actor,index)
+	var t: float=actor.action_time
+	var plant: Vector3=finish_entry_world[index]
+	plant.y=.026
+	if t<=times.x:return plant
+	var start: Vector3=finish_entry_toes[index]
+	var landing=actor.to_global(Vector3(start.x,.026,start.z+.045))
+	if t>=times.y:return landing
+	var u=clampf((t-times.x)/(times.y-times.x),0,1)
+	var fold=pow(sin(u*PI),2.0)
+	var local=Vector3(start.x+(-1 if index==0 else 1)*.012*fold,.026+4*actor.SHOT_JUMP_HEIGHT*u*(1-u)+(.105 if index==0 else .125)*fold,start.z-.09*sin(u*PI)+.045*smoothstep(.4,.95,u))
+	# Continue the takeoff speed at toe-off. The former smoothstep from a
+	# stationary shoe delayed the feet while the pelvis was already airborne.
+	return actor.to_global(local)
 
 func setup(opponent: bool) -> void:
 	model = Source.instantiate()
@@ -588,7 +620,9 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		if actor.action in ["gather","fake"]:height_target-=.08*sin(clampf(actor.action_time/.60,0,1)*PI)
 		else:height_target-=.04*(1-smoothstep(0,.12,actor.action_time))+.045*sin(smoothstep(.62,.86,actor.action_time)*PI)
 	if actor.action=="gather" and actor.finish_kind in ["shot","layup"]:
-		height_target=lerpf(gather_entry_height,-.15 if actor.finish_kind=="shot" else -.16,smoothstep(0,.18,actor.action_time))
+		height_target=lerpf(gather_entry_height,-.21 if actor.finish_kind=="shot" else -.16,smoothstep(0,.18,actor.action_time))
+	if actor.action=="fake" and actor.finish_kind=="shot":
+		height_target=lerpf(action_entry_height,height_target,smoothstep(0,.12,actor.action_time))
 	if actor.action in ["shot","layup"]:height_target=finish_root(actor)
 	if actor.defensive_jump():height_target=lerpf(action_entry_height,height_target,smoothstep(0,actor.DEFENSE_PLANT_TIME,action_entry_time))
 	root_height = move_toward(root_height,height_target,delta*1.8) if initialized and not action_pose else height_target
@@ -762,13 +796,15 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		physics_swing[i]=actor.swinging[i]
 		if actor.action in ["shot","layup"]:
 			var times=finish_times(actor)
+			if actor.action=="shot":times=jumper_times(actor,i)
 			var planted=(actor.action=="shot" or i==actor.layup_plant_index) and actor.action_time<=times.x
 			goal=finish_toe(actor,i)
 			locked[i]=planted or actor.action_time>=times.y
 			visual_swing[i]=false
 			if locked[i]:anchors[i]=goal
 			var heel=.34*smoothstep(.02,times.x,actor.action_time)*(1-smoothstep(times.x,times.x+.14,actor.action_time))
-			desired_basis=global_basis*Basis(Vector3.RIGHT,heel if planted or actor.action_time<times.x+.14 else 0.0)*foot_rest_basis[i]
+			var pitch=jumper_pitch(actor,i) if actor.action=="shot" else heel if planted or actor.action_time<times.x+.14 else 0.0
+			desired_basis=global_basis*Basis(Vector3.RIGHT,pitch)*foot_rest_basis[i]
 		if (athletic or free_grounded) and initialized and not locked[i] and not contact_mode:
 			# Completing a recovery step must not jump straight to a distant
 			# authored stride sample. Carry the actual foot through that handoff.

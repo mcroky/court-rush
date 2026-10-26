@@ -45,8 +45,10 @@
  ]]
  };
  const news={
- en:['Your court. Your style.','v0.8.0 · Clothing store & collections',[
-  '94 clothing items: 32 jerseys, 31 shorts and 31 shoes. Buy and equip individual pieces with court coins. Nine new themes, court-clear unlocks, matching outfit previews, rotation and ownership filters. Clothing is cosmetic and saved with your account.',
+ en:['Push off. Land soft. Play your style.','v0.8.1 · Jump shots & clothing shapes',[
+  'Jump shots now connect knee loading, forefoot push-off, airborne ankle extension and knee movement, then forefoot landing and impact absorption. Pump fakes keep the loaded pose without snapping upright.',
+  '138 cosmetic items across five slots: tops, bottoms, shoes, hats and hair. New T-shirts, hoodies, varsity jackets, joggers and cargo pants use actual skinned shapes. Four hat shapes and six hair shapes including the original, hat-fit hair, shape filters and existing purchase records are supported.',
+  'v0.8.0 · 94 clothing items: 32 jerseys, 31 shorts and 31 shoes. Buy and equip individual pieces with court coins. Nine new themes, court-clear unlocks, matching outfit previews, rotation and ownership filters. Clothing is cosmetic and saved with your account.',
   'Start with 300 coins. Career 1v1 first clears earn 120–260 coins, repeat wins 45–80 and losses 20. Practice, casual 1v1 and AI 3v3 give no rewards. AI 3v3 adds two teammates, Q passing and E defender switching. Refined sideways ball-carrying arm and wrist poses are also included.',
   'v0.7.6 · Fixed downward blocks rejected during upward takeoff, early-shot block selection while holding Guard, and the strike direction after a turn. Touch labels now distinguish Block from Rebound.',
   'v0.7.5 · Defense: short alternating side steps, planted transitions from pursuit into a low stance, and smoother arm and shoulder recovery. Height-aware support fixes foot sliding for shorter guards. Character Studio adds low stance, defensive slides and box-out previews.',
@@ -57,8 +59,10 @@
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. AI 3v3 is a separate mode without rewards. Online competition and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['コートで、自分らしく。','v0.8.0・ウェアショップとコレクション',[
-  'トップス32・ショーツ31・シューズ31、計94点。コートコインで部位別に購入・着用。新規9テーマ、コート進行による解放、一式試着・回転・所持フィルターを追加。能力値には影響せずアカウントに保存されます。',
+ ja:['踏み切って、自分らしく。','v0.8.1・ジャンプシュートと新しいウェア形状',[
+  '膝で荷重を受け、前足部で踏み切り、空中で足首と膝を動かして、前足部から着地し衝撃を吸収するシュートへ調整。短いフェイクでも準備姿勢から急に跳ね上がらないようにしました。',
+  'トップス・ボトムス・シューズ・帽子・ヘアの5部位で計138項目。Tシャツ・パーカー・バーシティジャケット・ジョガー・カーゴを実際のスキンメッシュで追加。帽子4形状、基本を含むヘア6形状、帽子用ヘア・形状フィルターと購入記録の引き継ぎに対応。',
+  'v0.8.0 · トップス32・ショーツ31・シューズ31、計94点。コートコインで部位別に購入・着用。新規9テーマ、コート進行による解放、一式試着・回転・所持フィルターを追加。能力値には影響せずアカウントに保存されます。',
   '初期300コイン。育成1対1の初クリア120〜260、再勝利45〜80、敗北20。練習・通常1対1・AI3対3は報酬なし。AI仲間2人との3対3、Qパス・E守備切替、横から見た持球時の腕と手首の調整も公開します。',
   'v0.7.6 · 上昇中に腕を振り下ろしてもブロックが無効になる不具合、守備を押しながらのシュート直後の選択、方向転換後の打撃方向を修正。タッチ表示もブロックとリバウンドを区別します。',
   'v0.7.5 · 守備：左右の足を交互に運ぶ短いサイドステップ、追走から接地して低く構える動作、腕と肩の回収を調整。身長に合わせた脚の計算で、小柄なガードの足滑りも修正しました。キャラクタースタジオに低い守備・左右のステップ・ボックスアウトを追加しました。',
@@ -69,8 +73,10 @@
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。AI3対3は報酬なしの別モードです。オンライン対戦・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['球场上的专属风格。','v0.8.0 · 服装商店与收集',[
-  '共94件：32件球衣、31条短裤、31双球鞋。使用球场金币分别购买装备。新增9个主题、球场通关解锁、整套试穿、旋转、拥有状态筛选和收集进度。服装不影响属性，记录保存在账号中。',
+ 'zh-CN':['自然起跳，穿出风格。','v0.8.1 · 投篮起跳与新服装款式',[
+  '投篮衔接膝部蓄力、前脚掌蹬地、空中脚踝伸展与屈膝，再以前脚掌落地并吸收冲击。短按假投篮也会延续准备姿态，避免突然弹起。',
+  '上衣、下装、鞋、帽子、发型五部位共138项。短袖、连帽衫、棒球夹克、束脚裤及工装裤使用实际蒙皮模型。新增4种帽型、含默认款的6种发型、戴帽适配发型及款式筛选，保留已有购买记录。',
+  'v0.8.0 · 共94件：32件球衣、31条短裤、31双球鞋。使用球场金币分别购买装备。新增9个主题、球场通关解锁、整套试穿、旋转、拥有状态筛选和收集进度。服装不影响属性，记录保存在账号中。',
   '初始300金币。成长1对1首通120–260、重复胜利45–80、失败20。练习、普通1对1和AI3对3无奖励。同时发布两名AI队友的3对3、Q传球与E切换防守球员，并调整持球时侧面的手臂和手腕姿势。',
   'v0.7.6 · 修复起跳上升时向下挥掌接触球却被判无效、按住防守时投篮初期误选篮板，以及转向后的封盖方向。触屏按钮区分盖帽和篮板。',
   'v0.7.5 · 防守：调整双脚交替的小幅横移、追防后落脚进入低姿防守的衔接，以及手臂与肩部的回收。按身高计算腿部支撑，修复较矮后卫的脚底滑动。角色工作室新增低姿防守、横向滑步和卡位三种预览。',

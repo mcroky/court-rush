@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "engine": "Godot 4.7.2 Standard / Compatibility",
+  "authoring": "tools/build_player_mesh.gd",
+  "provenance": "Original COURT RUSH authored geometry; existing GDQuest/Luciano Munoz rig and base clips retain CC BY 4.0 attribution. Face material inherited from the existing player. No original FreeStyle game assets used.",
+  "coordinateSystem": "+Y up / +Z forward, source-bind coordinates, same Skin resource",
+  "bodyForms": {
+    "tops": [
+      "jersey",
+      "tee",
+      "hoodie",
+      "varsity"
+    ],
+    "bottoms": [
+      "shorts",
+      "joggers",
+      "cargo"
+    ]
+  },
+  "headForms": {
+    "hats": [
+      "none",
+      "cap",
+      "cap_back",
+      "beanie",
+      "bucket"
+    ],
+    "hair": [
+      "original",
+      "buzz",
+      "curly",
+      "locs",
+      "sidepart",
+      "ponytail"
+    ]
+  },
+  "platforms": [
+    "web",
+    "planned-android"
+  ],
+  "validation": {
+    "bodyCombinations": 12,
+    "headCombinations": 30,
+    "animatedFrames": 1200,
+    "actualBrowserPreview": true,
+    "androidDeviceVerified": false
+  },
+  "assets": [
+    {
+      "path": "assets/characters/outfits/hoodie_cargo.res",
+      "bytes": 233912,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/outfits/hoodie_joggers.res",
+      "bytes": 233159,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/outfits/hoodie_shorts.res",
+      "bytes": 243359,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/outfits/jersey_cargo.res",
+      "bytes": 220489,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/outfits/jersey_joggers.res",
+      "bytes": 218496,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/outfits/tee_cargo.res",
+      "bytes": 242024,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/outfits/tee_joggers.res",
+      "bytes": 241172,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/outfits/tee_shorts.res",
+      "bytes": 249690,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/outfits/varsity_cargo.res",
+      "bytes": 247225,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/outfits/varsity_joggers.res",
+      "bytes": 247227,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/outfits/varsity_shorts.res",
+      "bytes": 256989,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_buzz.res",
+      "bytes": 14133,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_buzz_tucked.res",
+      "bytes": 14110,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_curly.res",
+      "bytes": 155804,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_curly_tucked.res",
+      "bytes": 43643,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_locs.res",
+      "bytes": 23799,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_locs_tucked.res",
+      "bytes": 23785,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_original_tucked.res",
+      "bytes": 14109,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_ponytail.res",
+      "bytes": 21396,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_ponytail_tucked.res",
+      "bytes": 21366,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_sidepart.res",
+      "bytes": 16058,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hair_sidepart_tucked.res",
+      "bytes": 14110,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hat_beanie.res",
+      "bytes": 14814,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hat_bucket.res",
+      "bytes": 16434,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hat_cap.res",
+      "bytes": 15300,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    },
+    {
+      "path": "assets/characters/headwear/hat_cap_back.res",
+      "bytes": 15277,
+      "rig": "mannequiny 45 named binds",
+      "status": "local-preview-validated"
+    }
+  ]
+}

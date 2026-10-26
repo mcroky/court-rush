@@ -6,8 +6,8 @@ assert.deepEqual(C,JSON.parse(raw('assets/data/wardrobe.json')));
 assert.equal(raw('site/wardrobe-catalog.mjs'),raw('supabase/functions/court-rush/wardrobe-catalog.mjs'));
 assert.equal(raw('site/career-rules.mjs'),raw('supabase/functions/court-rush/rules.mjs'));
 assert.equal(new Set(C.items.map(i=>i.id)).size,C.items.length);
-assert.equal(C.items.length,94);assert.equal(C.collections.length,9);
-for(const collection of C.collections){const pieces=C.items.filter(i=>i.collection===collection.id);assert.equal(pieces.length,9);assert.equal(new Set(pieces.map(i=>i.pattern)).size>=1,true);for(let variant=1;variant<=3;variant++)assert.equal(pieces.filter(i=>i.variant===variant).length,3);}
+assert.equal(C.items.length,138);assert.equal(C.collections.length,12);
+for(const collection of C.collections.filter(c=>!["street_forms","headwear","barber"].includes(c.id))){const pieces=C.items.filter(i=>i.collection===collection.id);assert.equal(pieces.length,9);assert.equal(new Set(pieces.map(i=>i.pattern)).size>=1,true);for(let variant=1;variant<=3;variant++)assert.equal(pieces.filter(i=>i.variant===variant).length,3);}
 for(const i of C.items){assert.ok(Object.hasOwn(C.defaults,i.slot));assert.ok(Number.isSafeInteger(i.price)&&i.price>=0);for(const channel of ['base','panel','accent'])assert.match(i[channel],/^[0-9a-f]{6}$/);}
 const p=newPlayer('center','옷장선수'),legacy=structuredClone(p);delete legacy.wardrobe;
 const migrated=normalizePlayer(legacy);assert.equal(migrated.version,1);assert.equal(migrated.wardrobe.coins,300);assert.equal(legacy.wardrobe,undefined);
@@ -26,3 +26,9 @@ const poor={...p,wardrobe:{...p.wardrobe,coins:0}};assert.throws(()=>buyClothing
 const corrupt={...p,wardrobe:{...p.wardrobe,owned:['invented'],equipped:{jersey:'sunset_jersey',shorts:'court_teal',shoes:'invented'}}};assert.deepEqual(wardrobeOf(corrupt).equipped,C.defaults);
 assert.match(raw('supabase/functions/court-rush/index.ts'),/eq\('user_id',a.user_id\)\.eq\('revision',row.revision\)/);
 console.log('WARDROBE_RULES: catalog parity, migration, immutable purchases, idempotency, ownership, insufficient funds, slot validation, cosmetics-only, training and career coin rewards passed');
+
+const v080={...p,wardrobe:{version:1,coins:120,owned:['court_teal','court_navy','court_cream','sunset_jersey'],equipped:{jersey:'sunset_jersey',shorts:'court_navy',shoes:'court_cream'}}};
+const v081=normalizePlayer(v080);assert.equal(v081.wardrobe.coins,120);assert.equal(v081.wardrobe.equipped.jersey,'sunset_jersey');assert.equal(v081.wardrobe.equipped.hat,'hat_none');assert.equal(v081.wardrobe.equipped.hair,'hair_original');assert.ok(v081.wardrobe.owned.includes('sunset_jersey'));
+const head=equipClothing(buyClothing(p,'hat_cap_1').player,'hat_cap_1');assert.equal(head.wardrobe.equipped.hat,'hat_cap_1');assert.equal(head.wardrobe.coins,190);assert.equal(equipClothing(head,'hat_none').wardrobe.equipped.hat,'hat_none');assert.throws(()=>equipClothing(p,'hair_buzz_1'));
+const haircut=equipClothing(buyClothing(p,'hair_buzz_1').player,'hair_buzz_1');assert.equal(haircut.wardrobe.equipped.hair,'hair_buzz_1');assert.equal(haircut.wardrobe.equipped.jersey,p.wardrobe.equipped.jersey);
+console.log('WARDROBE_FORMS: 138 items, five slots, old three-slot wallet/ownership migration, hat removal, independent haircut ownership passed');

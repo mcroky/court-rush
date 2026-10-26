@@ -101,7 +101,7 @@ func run():
 						old_palms[i]=v.palm_world[i];old_toes[i]=v.toe_world[i];old_locks[i]=v.locked[i];old_knees[i]=knee
 				check(released and game.attempts==1,"Finish did not release exactly once")
 				check(touchdown and min_landing_height<landed_height-.02,"No knee absorption after actual foot contact fps=%d kind=%s land=%.3f low=%.3f" % [fps,finish,landed_height,min_landing_height])
-				check(max_recover_height>min_landing_height+.02,"Finish did not recover from landing load")
+				check(max_recover_height>min_landing_height+.02,"Finish did not recover from landing load fps=%d case=%s hand=%.0f low=%.4f recover=%.4f" % [fps,finish_case,hand,min_landing_height,max_recover_height])
 				if finish=="shot":
 					check(decelerated and p.position.distance_to(gather_origin)>.12,"Running shot gather lost incoming travel")
 				cases+=1

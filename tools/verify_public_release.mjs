@@ -21,7 +21,8 @@ await Promise.all(names.map(async name=>{
 }));
 const catalogText=await (await get(assetBase+'wardrobe-catalog.js')).text();
 const catalog=JSON.parse(catalogText.match(/export const WARDROBE_CATALOG = ([\s\S]+);\s*$/)[1]);
-assert.equal(catalog.items.length,94);assert.equal(catalog.collections.length,9);
+const localCatalog=JSON.parse(readFileSync(new URL('../assets/data/wardrobe.json',import.meta.url),'utf8'));
+assert.equal(catalog.items.length,localCatalog.items.length);assert.equal(catalog.collections.length,localCatalog.collections.length);
 const digest=buffer=>createHash('sha256').update(buffer).digest('hex');
 const pck=Buffer.from(await (await get(assetBase+'game.pck')).arrayBuffer());
 assert.equal(digest(pck),digest(readFileSync(new URL('../build/web/game.pck',import.meta.url))),'Stale public Godot pack');
