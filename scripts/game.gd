@@ -1,6 +1,8 @@
 extends Node3D
 
 const Actor = preload("res://scripts/actor.gd")
+const TeamMatch = preload("res://scripts/team_match.gd")
+var team_match
 const Art = preload("res://scripts/art.gd")
 const Rules = preload("res://scripts/rules.gd")
 const CourtAudio = preload("res://scripts/court_audio.gd")
@@ -86,6 +88,9 @@ var camera_follow = Vector3.ZERO
 var camera_mobile_zoom = 1.0
 var camera_mobile_follow = Vector3.ZERO
 
+func controlled_player():
+	return players[team_match.selected] if mode == "team" and team_match != null and players.size() == 6 else players[0]
+
 func frame_court(delta: float) -> void:
 	var viewport_size = get_viewport().get_visible_rect().size
 	var aspect = viewport_size.x / maxf(viewport_size.y, 1)
@@ -93,8 +98,8 @@ func frame_court(delta: float) -> void:
 	camera.fov = clampf(rad_to_deg(2 * atan(tan(deg_to_rad(35.0) * .5) * 1.6 / maxf(aspect, .55))), 32, 85)
 	var follow = Vector3.ZERO
 	if started:
-		follow.z = clampf(players[0].position.z - 1.6, 0, 4.7)
-		follow.x = clampf(players[0].position.x * .28, -1.3, 1.3)
+		follow.z = clampf(controlled_player().position.z - 1.6, 0, 4.7)
+		follow.x = clampf(controlled_player().position.x * .28, -1.3, 1.3)
 	camera_follow = camera_follow.lerp(follow, 1 - exp(-delta * 4)) if delta > 0 else follow
 	camera.position = camera_home + camera_follow
 	camera.look_at(camera_focus + camera_follow)
@@ -126,7 +131,7 @@ func frame_court(delta: float) -> void:
 
 func frame_mobile_court(delta: float, aspect: float, viewport_size: Vector2) -> void:
 	# Portrait is a player-follow view, not a wide court squeezed into a phone.
-	var player = players[0]
+	var player = controlled_player()
 	var focus = Vector3(player.position.x * .5, .85, lerpf(player.position.z, HOOP.z, .08))
 	focus += Vector3(player.motion.x, 0, player.motion.y).limit_length(5) * .08
 	var desired = focus - camera_focus
@@ -175,6 +180,49 @@ var showroom_time = 0.0
 var showroom_closeup = false
 var showroom_motion = 0
 var showroom_balls: Array = []
+var wardrobe_preview=false
+var wardrobe_prior_inspecting=false
+var wardrobe_yaw=0.0
+var equipped_appearance: Dictionary={}
+var web_appearance=""
+
+func open_wardrobe(data: Dictionary) -> void:
+	if not wardrobe_preview:
+		wardrobe_prior_inspecting=inspecting
+		if not inspecting:toggle_showroom()
+	wardrobe_preview=true
+	showroom_players[0].marker.visible=false
+	showroom_players[0].shadow.visible=false
+	wardrobe_yaw=float(data.get("yaw",0))
+	showroom_players[0].apply_athlete(data.get("athlete",{}))
+	showroom_players[0].apply_appearance(data.get("appearance",{}))
+	showroom_players[0].reset_stance()
+	showroom_players[0].action="showcase"
+
+func close_wardrobe() -> void:
+	if not wardrobe_preview:return
+	wardrobe_preview=false
+	showroom_players[0].marker.visible=true
+	showroom_players[0].shadow.visible=true
+	showroom_players[0].apply_appearance(equipped_appearance)
+	if not wardrobe_prior_inspecting and inspecting:toggle_showroom()
+
+func tick_wardrobe(delta: float) -> void:
+	showroom_time+=delta
+	for index in range(showroom_players.size()):
+		var model=showroom_players[index]
+		model.visible=index==0
+		showroom_balls[index].visible=false
+		if index==0:
+			model.action="showcase"
+			model.has_ball=false
+			model.facing=wardrobe_yaw
+			model.animate(delta,showroom_time)
+	camera.projection=Camera3D.PROJECTION_ORTHOGONAL
+	camera.keep_aspect=Camera3D.KEEP_HEIGHT
+	camera.size=2.65
+	camera.position=Vector3(99.28,1.65,5)
+	camera.look_at(Vector3(99.28,1.01,0))
 
 func toggle_showroom() -> void:
 	inspecting = not inspecting
@@ -202,6 +250,12 @@ func toggle_showroom() -> void:
 	send_state()
 
 func _ready() -> void:
+	for binding in [["team_pass",KEY_Q],["team_switch",KEY_E]]:
+		if not InputMap.has_action(binding[0]):
+			InputMap.add_action(binding[0])
+			var event = InputEventKey.new()
+			event.physical_keycode = binding[1]
+			InputMap.action_add_event(binding[0],event)
 	if "--character-lab" in OS.get_cmdline_user_args():
 		set_physics_process(false)
 		get_tree().change_scene_to_file.call_deferred("res://scenes/character_lab.tscn")
@@ -301,7 +355,10 @@ func play_sound(name: String, volume: float = -9) -> void:
 	stream.play()
 
 func start_mode(next_mode: String) -> void:
+	close_wardrobe()
 	if inspecting: toggle_showroom()
+	var chosen_role: String = players[0].court_role
+	if team_match != null: team_match.stop()
 	career_match_id=""
 	career_stage=0
 	for p in players:p.apply_athlete({})
@@ -321,6 +378,9 @@ func start_mode(next_mode: String) -> void:
 	reset_positions(0)
 	players[1].visible = mode == "duel"
 	announce("CHECK BALL" if mode == "duel" else "FIND YOUR RHYTHM", "11점 먼저, 또는 90초 승부" if mode == "duel" else "방향키로 이동 · D를 눌러 슛 · 짧게 누르면 페이크", 3)
+	if mode == "team":
+		if team_match == null: team_match = TeamMatch.new(self)
+		team_match.start(chosen_role)
 	play_sound("whistle", -16)
 	send_state()
 
@@ -341,6 +401,9 @@ func opponent_enabled() -> bool:
 	return mode == "duel" or (mode == "practice" and practice_drill in ["boxout","block","steal","rim","recovery"])
 
 func reset_positions(next_owner: int) -> void:
+	if mode == "team" and team_match != null and not team_match.legacy.is_empty():
+		team_match.reset(0)
+		return
 	ball_owner = next_owner
 	phase = "live"
 	needs_clear = false
@@ -507,8 +570,15 @@ func announce(title: String, subtitle: String = "", duration: float = 2.0) -> vo
 	feedback_timer = duration
 
 func read_controls() -> Dictionary:
-	var controls = {"x": 0.0, "z": 0.0, "shoot": false, "cross": false, "spin": false, "twostep": false, "behind": false, "hesi": false, "steal": false, "guard": false, "pause": false}
+	var controls = {"x": 0.0, "z": 0.0, "shoot": false, "cross": false, "spin": false, "twostep": false, "behind": false, "hesi": false, "steal": false, "guard": false, "pause": false,"pass":false,"switch":false}
 	if web_input != null:
+		var appearance_text=str(web_input.appearance)
+		if appearance_text!=web_appearance:
+			web_appearance=appearance_text
+			var ids=JSON.parse_string(appearance_text)
+			if ids is Dictionary:
+				equipped_appearance=CourtWardrobe.appearance(ids)
+				players[0].apply_appearance(equipped_appearance)
 		sound_enabled = bool(web_input.sound)
 		reduced_motion = bool(web_input.reduced)
 		controls.x = float(web_input.x)
@@ -521,11 +591,17 @@ func read_controls() -> Dictionary:
 		controls.hesi = bool(web_input.hesi)
 		controls.steal = bool(web_input.steal)
 		controls.guard = bool(web_input.guard)
+		controls["pass"] = bool(web_input.passBall)
+		controls["switch"] = bool(web_input.switchPlayer)
 		var command = int(web_input.commandId)
 		if command != last_command:
 			last_command = command
 			match str(web_input.command):
-				"practice", "duel": start_mode(str(web_input.command))
+				"wardrobe":
+					var data=JSON.parse_string(str(web_input.wardrobe))
+					if data is Dictionary:open_wardrobe(data)
+				"wardrobe-close":close_wardrobe()
+				"practice", "duel", "team": start_mode(str(web_input.command))
 				"career":
 					var career_data=JSON.parse_string(str(web_input.career))
 					if career_data is Dictionary:start_career(career_data)
@@ -584,6 +660,8 @@ func read_controls() -> Dictionary:
 		controls.hesi = Input.is_physical_key_pressed(KEY_X)
 		controls.steal = Input.is_physical_key_pressed(KEY_S)
 		controls.guard = Input.is_physical_key_pressed(KEY_W)
+		controls["pass"] = Input.is_action_pressed("team_pass")
+		controls["switch"] = Input.is_action_pressed("team_switch")
 		controls.pause = Input.is_physical_key_pressed(KEY_ESCAPE)
 		if Input.is_physical_key_pressed(KEY_1): start_mode("practice")
 		if Input.is_physical_key_pressed(KEY_2): start_mode("duel")
@@ -593,7 +671,7 @@ func set_paused(value: bool,reason: String = "잠시 쉬었다가 직접 이어�
 	if value:
 		if not paused:
 			# Releasing D outside the game must not release an interrupted shot.
-			var player = players[0]
+			var player = controlled_player()
 			if player.action == "gather" and not player.finish_running:
 				player.action = "idle"
 				player.action_time = 0
@@ -609,14 +687,14 @@ func set_paused(value: bool,reason: String = "잠시 쉬었다가 직접 이어�
 func gate_resumed_input(input: Dictionary) -> void:
 	if not resume_input_lock or paused: return
 	var neutral = absf(input.x)+absf(input.z) < .01
-	for action in ["shoot","cross","spin","twostep","behind","hesi","steal","guard"]:
+	for action in ["shoot","cross","spin","twostep","behind","hesi","steal","guard","pass","switch"]:
 		neutral = neutral and not input[action]
 	if neutral:
 		resume_input_lock = false
 	else:
 		input.x = 0.0
 		input.z = 0.0
-		for action in ["shoot","cross","spin","twostep","behind","hesi","steal","guard"]: input[action] = false
+		for action in ["shoot","cross","spin","twostep","behind","hesi","steal","guard","pass","switch"]: input[action] = false
 
 func _physics_process(delta: float) -> void:
 	var input = read_controls()
@@ -628,6 +706,9 @@ func _physics_process(delta: float) -> void:
 		court_audio.configure(sound_enabled,started and not paused and not inspecting and (web_input == null or not bool(web_input.audioSuspended)),audio_settings)
 	if practice_slow and mode == "practice" and not inspecting: delta *= .35
 	if inspecting:
+		if wardrobe_preview:
+			tick_wardrobe(delta)
+			return
 		if input.pause and not last_pause:
 			last_pause = input.pause
 			toggle_showroom()
@@ -701,6 +782,9 @@ func _physics_process(delta: float) -> void:
 			ball.position = players[0].ball_anchor(time)
 		update_ball_visual()
 		last_shoot = input.shoot
+		return
+	if mode == "team":
+		team_match.tick(delta,input)
 		return
 	time += delta
 	feedback_timer = maxf(0, feedback_timer - delta)
@@ -896,7 +980,7 @@ func update_actions(delta: float) -> void:
 					player.rebound_release_from = player.ball_anchor(time)
 					player.rebound_release_left = .20
 					player.dribble_phase = 0
-				elif not player.steal_resolved: announce("REACH MISSED","공이 있는 쪽으로 접근해 손이 닿는 거리를 만드세요.",1.2)
+				elif not player.steal_resolved and player == controlled_player(): announce("REACH MISSED","공이 있는 쪽으로 접근해 손이 닿는 거리를 만드세요.",1.2)
 				player.steal_valid = false
 				player.action = "idle"
 				player.motion = Vector2.ZERO
@@ -1108,7 +1192,7 @@ func launch_shot(index: int) -> void:
 	player.action_time = 0
 	phase = "takeoff"
 	shot_committed = true
-	timing_bonus = Rules.release_bonus(shot_hold) if index == 0 else 0.0
+	timing_bonus = Rules.release_bonus(shot_hold) if index == (team_match.selected if mode == "team" else 0) else 0.0
 	release_at = 0.22 if finish_kind == "shot" else (0.34 if finish_kind == "layup" else 0.38)
 	takeoff_start = player.position
 	takeoff_target = takeoff_start
@@ -1124,7 +1208,7 @@ func launch_shot(index: int) -> void:
 		player.air_release_time = release_at
 		if finish_kind == "layup": player.prepare_layup()
 	flight_points = Rules.shot_points(takeoff_start) if finish_kind == "shot" else 2
-	if index == 0: attempts += 1
+	if (index < 3 if mode == "team" else index == 0): attempts += 1
 	play_sound("squeak", -16)
 	if index == 0:
 		announce("RISING UP" if finish_kind == "shot" else ("FINGER ROLL" if finish_kind == "layup" else "TAKE FLIGHT"), "정점에서 손목을 끝까지." if finish_kind == "shot" else ("한 발 도약, 손끝으로 부드럽게." if finish_kind == "layup" else "속도를 힘으로. 림 위로 올라갑니다."), 1.4)
@@ -1146,11 +1230,12 @@ func release_ball() -> void:
 	elif finish_kind == "dunk":
 		flight_duration = 0.16
 		flight_arc = 0.04
-	var defender = players[1 - shooter]
 	var contest = 0.0
 	if mode == "duel":
+		var defender = players[1 - shooter]
 		contest = clampf(1.0 - player.position.distance_to(defender.position) / 2.15, 0, 1)
 		if defender.action == "block": contest = minf(1, contest + 0.15)
+	elif mode == "team": contest = team_match.contest(shooter)
 	var probability = Rules.shot_probability(distance, contest, player.approach_velocity.length() > 3.0 and finish_kind == "shot")
 	if finish_kind == "dunk": probability = 0.98 - contest * 0.35
 	if finish_kind == "layup": probability = 0.93 - contest * 0.48
@@ -1187,6 +1272,7 @@ func update_flight(delta: float) -> void:
 			announce("OFF THE RIM", "W로 자리 잡고 박스아웃 → 내려오는 공을 D로 리바운드", 2.3)
 
 func try_block() -> bool:
+	if mode == "team": return team_match.try_block()
 	if not opponent_enabled() or phase not in ["takeoff","flight"]: return false
 	var defender = players[1 - shooter]
 	if defender.action != "block" or defender.action_time < .13 or defender.action_time > .52: return false
@@ -1247,6 +1333,9 @@ func hand_ball_distance(hand: Vector3,old_hand: Vector3) -> float:
 	return minf(distance,(a+path*t).length())
 
 func register_score() -> void:
+	if mode == "team":
+		team_match.register_score()
+		return
 	if last_scored_event == event_id:
 		return
 	last_scored_event = event_id
@@ -1483,6 +1572,7 @@ func send_state() -> void:
 	if not career_match_id.is_empty():state["canChangeRole"]=false
 	state["defenseAction"] = defense_kind(0) if not players[0].has_ball and phase in ["live","takeoff","flight","loose"] else ""
 	state["reboundWindow"] = state["defenseAction"] == "rebound"
+	if mode == "team" and team_match != null and players.size() == 6: team_match.decorate_state(state)
 	if court_audio != null:
 		state["musicTrack"] = court_audio.track_index
 		state["audioCalls"] = court_audio.calls_played

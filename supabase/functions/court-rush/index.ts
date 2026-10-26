@@ -1,5 +1,5 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.118.0';
-import {ROLES,STAGES,newPlayer,attributes,opponentAthlete,trainPlayer,rewardPlayer} from './rules.mjs';
+import {ROLES,STAGES,newPlayer,attributes,opponentAthlete,trainPlayer,rewardPlayer,normalizePlayer,buyClothing,equipClothing} from './rules.mjs';
 
 const url=Deno.env.get('SUPABASE_URL')!;
 const service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -72,7 +72,7 @@ Deno.serve(async(req:Request)=>{
    // Nonexistent accounts still take the Auth password-verification path.
    const s=await verifyPassword(a?.login_alias||crypto.randomUUID()+'@accounts.courtrush.invalid',pass);
    if(!a)fail('아이디 또는 비밀번호를 확인하세요.',401);
-   const p=await playerRow(a.user_id);return send({session:sessionData(s),username:id,player:p?.data||null});
+   const p=await playerRow(a.user_id);return send({session:sessionData(s),username:id,player:p?normalizePlayer(p.data):null});
   }
   if(action==='refresh'){
    if(typeof b.refreshToken!=='string'||b.refreshToken.length>2048)fail('다시 로그인하세요.',401);
@@ -92,12 +92,18 @@ Deno.serve(async(req:Request)=>{
    const code=recovery();checked(await admin.from('cr_accounts').update({recovery_hash:await sha(code)}).eq('user_id',a.user_id));return send({recoveryCode:code});
   }
   let row=await playerRow(a.user_id);
-  if(action==='profile')return send({username:a.username,player:row?.data||null});
+  if(action==='profile')return send({username:a.username,player:row?normalizePlayer(row.data):null});
   if(action==='create'){
    if(row)fail('이미 선수가 있습니다.',409);
    const player=newPlayer(b.role,b.nickname);checked(await admin.from('cr_players').insert({user_id:a.user_id,data:player}));return send({player});
   }
   if(!row)fail('먼저 선수를 만들어 주세요.');
+  if(action==='buy'||action==='equip'){
+   const result=action==='buy'?buyClothing(row.data,b.itemId):{player:equipClothing(row.data,b.itemId)};
+   const changed=checked(await admin.from('cr_players').update({data:result.player,revision:row.revision+1,updated_at:new Date().toISOString()}).eq('user_id',a.user_id).eq('revision',row.revision).select('data'));
+   if(!changed.length)fail('선수가 다른 창에서 변경됐습니다. 다시 불러와 주세요.',409);
+   return send(result);
+  }
   if(action==='train'){
    const player=trainPlayer(row.data,b.kind,b.key);
    const changed=checked(await admin.from('cr_players').update({data:player,revision:row.revision+1,updated_at:new Date().toISOString()}).eq('user_id',a.user_id).eq('revision',row.revision).select('data'));
@@ -117,7 +123,7 @@ Deno.serve(async(req:Request)=>{
    if(typeof b.matchId!=='string'||!/^[0-9a-f-]{36}$/.test(b.matchId))fail('경기를 확인하세요.');
    const m=checked(await admin.from('cr_matches').select('*').eq('id',b.matchId).eq('user_id',a.user_id).maybeSingle());
    if(!m)fail('경기를 찾을 수 없습니다.',404);
-   if(m.finished_at)return send({player:row.data,reward:m.result});
+   if(m.finished_at)return send({player:normalizePlayer(row.data),reward:m.result});
    if(!Array.isArray(b.score)||b.score.length!==2||b.score.some((n:any)=>!Number.isInteger(n)||n<0||n>13)||b.score[0]===b.score[1]||!Number.isFinite(b.seconds)||b.seconds<0||b.seconds>90)fail('경기 결과를 확인하세요.');
    const elapsed=(Date.now()-Date.parse(m.started_at))/1000;
    if(elapsed<15||elapsed>86400||(Math.max(...b.score)<11&&b.seconds>0)||elapsed+3<90-b.seconds)fail('경기 시간과 결과를 확인하세요.');

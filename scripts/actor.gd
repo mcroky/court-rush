@@ -18,9 +18,29 @@ const CROSS_TIME = .38
 var court_role = "guard"
 var growth: Dictionary={}
 var height_ratio=1.0
+var appearance: Dictionary={}
+func apply_appearance(ids: Dictionary) -> void:
+	appearance=CourtWardrobe.appearance(ids)
+	if skinned!=null:CourtWardrobe.apply(skinned.human_mesh,appearance)
+var transfer_target = Vector3.ZERO
+var transfer_from = Vector3.ZERO
+var transfer_caught = false
+
+func transfer_pose(index: int) -> Vector3:
+	var side = -1.0 if index == 0 else 1.0
+	if action == "receive":
+		var center = transfer_target
+		if transfer_caught:
+			center = center.lerp(global_position+global_basis*Vector3(0,1.20*height_ratio,.28),smoothstep(0,.24,action_time))
+		return center+global_basis.x*side*.12
+	var pocket = global_position+global_basis*Vector3(0,1.25*height_ratio,.28)
+	var center = transfer_from.lerp(pocket,smoothstep(0,.11,action_time))
+	center += global_basis.z*.32*smoothstep(.10,.23,action_time)
+	return center+global_basis.x*side*.12
 
 func apply_athlete(data: Dictionary) -> void:
 	growth=data.duplicate(true)
+	if data.get("appearance",null) is Dictionary:apply_appearance(data.appearance)
 	if not data.is_empty():court_role=str(data.get("role","guard")) if BasketballRules.ROLE_PROFILES.has(str(data.get("role","guard"))) else "guard"
 	height_ratio=1.0
 	if skinned!=null:
@@ -1305,7 +1325,9 @@ func dribble_local() -> Vector3:
 		var t = clampf(action_time / 0.38, 0, 1)
 		return Vector3(lerpf(-dribble_hand, dribble_hand, smoothstep(0.06, 0.88, t)) * 0.65, 0.31 + pow(absf(2 * t - 1), 1.2) * 0.78, 0.54)
 	var t = fposmod(dribble_phase, TAU) / TAU
-	var world=global_position+global_basis*Vector3(ball_side*.44*VISUAL_SCALE,0,(.25+.04*run_swing_weight)*VISUAL_SCALE)
+	# Lead the driving shoulder as the torso leans forward. Keeping the
+	# standing pocket under a running chest forces the receiving wrist back.
+	var world=global_position+global_basis*Vector3(ball_side*.44*VISUAL_SCALE,0,(.25+.34*run_swing_weight)*VISUAL_SCALE*height_ratio)
 	world.y=bounce_height(t)
 	return body.to_local(world)
 
@@ -1313,7 +1335,7 @@ func dribble_rate(speed: float) -> float:
 	return 9.0+minf(speed,5)*.55
 
 func bounce_height(t: float) -> float:
-	var crown=lerpf(1.10,1.06,run_swing_weight)
+	var crown=lerpf(1.10,1.06,run_swing_weight)*height_ratio
 	var floor_y=DRIBBLE_FLOOR
 	if t<.18:return crown-.14*pow(t/.18,2)
 	if t<.42:
@@ -1821,6 +1843,9 @@ func animate(delta: float, _time: float) -> void:
 			hand_world=receiver
 
 func ball_anchor(_time: float) -> Vector3:
+	if action in ["pass","receive"]:
+		var center = (palm_position(0)+palm_position(1))*.5
+		return transfer_from.lerp(center,smoothstep(0,.10,action_time)) if action == "pass" else center
 	if crossing(): return cross_ball_world()
 	if stealing() and steal_success:
 		return hand_world+steal_ball_offset*(1-smoothstep(0,.12,action_time-steal_contact_time))

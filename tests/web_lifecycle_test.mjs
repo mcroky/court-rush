@@ -20,11 +20,12 @@ function fixture(raw=null,failWrite=false){
     watchText(n);watchText(n.lastElementChild);nodes.set(id,n);return n;
   };
   node('canvas').tagName='CANVAS';
-  node('practice-option').dataset.select='practice';node('duel-option').dataset.select='duel';
+  node('practice-option').dataset.select='practice';node('duel-option').dataset.select='duel';node('team-option').dataset.select='team';
   node('shoot-touch').dataset.control='shoot';
+  node('team-control').dataset.control='team';
   document={hidden:false,body:{classList:classes()},activeElement:null,
     getElementById:node,addEventListener:(n,cb)=>docEvents.set(n,cb),
-    querySelectorAll:q=>q==='[data-select]'?[node('practice-option'),node('duel-option')]:q==='[data-control]'?[node('shoot-touch')]:[]};
+    querySelectorAll:q=>q==='[data-select]'?[node('practice-option'),node('duel-option'),node('team-option')]:q==='[data-control]'?[node('shoot-touch'),node('team-control')]:[]};
   const storage=new Map(raw===null?[]:[['unfree-settings-v1',raw]]);
   const window={addEventListener:(name,cb)=>events.set(name,cb)};
   const ctx=vm.createContext({window,document,console:{error:()=>{}},matchMedia:()=>({matches:false}),localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>{if(failWrite)throw Error('quota');writes.push(v);storage.set(k,v)}}});
@@ -108,4 +109,22 @@ function fixture(raw=null,failWrite=false){
  assert.equal(f.node('touch-shot-label').textContent,'리바운드');
  assert.equal(f.node('finish-label').textContent,'D · REBOUND');
 }
-console.log('WEB_LIFECYCLE: focus/visibility, persistent pause, repeat keys, touch cancel, manual resume, shot-meter and defensive-action cues, migrated audio settings passed');
+{
+ const f=fixture();
+ f.run("ready=true;start('team');state={started:true,paused:false,phase:'live',mode:'team',possessionTeam:0};");
+ assert.equal(f.window.ufInput.command,'team');
+ f.key('keydown','KeyQ');assert.equal(f.window.ufInput.passBall,true);f.key('keyup','KeyQ');
+ f.key('keydown','KeyE');assert.equal(f.window.ufInput.switchPlayer,true);f.key('keyup','KeyE');
+ const event={pointerId:7,preventDefault(){}};
+ f.node('team-control').fire('pointerdown',event);assert.equal(f.window.ufInput.passBall,true);assert.equal(f.window.ufInput.switchPlayer,false);
+ f.node('team-control').fire('pointercancel');assert.equal(f.window.ufInput.passBall,false);
+ f.run('state.possessionTeam=1');f.node('team-control').fire('pointerdown',event);
+ assert.equal(f.window.ufInput.switchPlayer,true);assert.equal(f.window.ufInput.passBall,false);
+ f.events.get('blur')();assert.equal(f.window.ufInput.switchPlayer,false,'Team touch must release on blur');
+ const next={started:true,paused:false,phase:'ended',mode:'team',score:[11,6],seconds:80,owner:-1,action:'idle',charge:0,finish:'shot',makes:4,attempts:7,possessionTeam:0};
+ f.window.ufUpdate(next);
+ assert.equal(f.node('result-rematch').dataset.start,'team','Team rematch must not start a duel');
+ assert.equal(f.node('mode-badge').textContent,'3 ON 3');assert.equal(f.node('result-detail').textContent,'AI 3대3 · 보상 없음');
+ f.window.ufUpdate({...next,mode:'duel'});assert.equal(f.node('result-rematch').dataset.start,'duel');assert.equal(f.node('team-control').hidden,true);
+}
+console.log('WEB_LIFECYCLE: focus/visibility, pause, repeat keys, touch cancel, manual resume, shot-meter, audio, team Q/E, contextual touch and team rematch passed');

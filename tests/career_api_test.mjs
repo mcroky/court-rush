@@ -28,6 +28,21 @@ try{
  }
  const p=(await expect('create',{role:'guard',nickname:'검증선수'},a.session)).player;
  ok(p.role==='guard'&&p.statPoints===3,'server creates a guarded progression profile');
+ ok(p.wardrobe.coins===300&&p.wardrobe.owned.length===3,'new player receives starter coins and three default items');
+ const purchase=await expect('buy',{itemId:'sunset_jersey',price:0,coins:999999,user_id:'forged'},a.session);
+ ok(purchase.player.wardrobe.coins===180&&purchase.receipt.spent===120,'server ignores forged price, currency and owner');
+ const duplicateBuy=await expect('buy',{itemId:'sunset_jersey'},a.session);
+ ok(duplicateBuy.receipt.spent===0&&duplicateBuy.player.wardrobe.coins===180,'purchase retry does not charge twice');
+ await expect('equip',{itemId:'ice_shoes'},a.session,400);
+ await expect('buy',{itemId:'volt_jersey'},a.session,400);
+ await expect('buy',{itemId:'not_for_sale'},a.session,400);
+ await expect('buy',{itemId:'sunset_jersey'},null,401);
+ const shopping=await Promise.all([call('buy',{itemId:'slate_shorts'},a.session),call('buy',{itemId:'slate_shorts'},a.session)]);
+ ok(shopping.some(r=>r.status===200)&&shopping.every(r=>[200,409].includes(r.status)),'concurrent shopping resolves safely');
+ await expect('buy',{itemId:'slate_shorts'},a.session);
+ await expect('equip',{itemId:'sunset_jersey'},a.session);await expect('equip',{itemId:'slate_shorts'},a.session);
+ const outfit=(await expect('profile',{},a.session)).player;
+ ok(outfit.wardrobe.coins===90&&outfit.wardrobe.owned.length===5&&outfit.wardrobe.equipped.jersey==='sunset_jersey','inventory and wallet persisted without duplicate charges');
  await expect('create',{role:'center',nickname:'두번째선수'},a.session,409);
  for(let i=0;i<3;i++)await expect('train',{kind:'stat',key:'speed'},a.session);
  await expect('train',{kind:'stat',key:'speed'},a.session,400);
@@ -36,6 +51,7 @@ try{
  await expect('start',{stage:2,requestId:randomUUID()},a.session,400);
  const id=randomUUID(),ticket=await expect('start',{stage:1,requestId:id},a.session);
  ok(ticket.athlete.height===178&&ticket.opponent.athlete.height===178,'match snapshot includes physical position data');
+ ok(ticket.athlete.appearance.jersey==='sunset_jersey'&&!ticket.opponent.athlete.appearance,'personal outfit enters game snapshot without dressing opponent');
  const duplicate=await expect('start',{stage:1,requestId:id},a.session);ok(duplicate.matchId===id,'start retry reuses ticket');
  const fast=await call('finish',{matchId:id,score:[11,0],seconds:89},a.session);ok(fast.status===400,'instant forged victory rejected');
  const foreign=await call('finish',{matchId:id,score:[11,0],seconds:70},b.session);ok(foreign.status>=400,'another account cannot claim a match');
@@ -46,6 +62,8 @@ try{
  const after=(await expect('profile',{},a.session)).player;
  ok(after.level===2&&after.wins===1&&after.cleared===1&&after.statPoints===3,'concurrent result retry rewards only once');
  ok(results.every(r=>r.data.reward.xp===100),'reward amount is fixed by server');
+ ok(after.wardrobe.coins===210&&after.wardrobe.equipped.shorts==='slate_shorts','concurrent finish awards 120 coins only once and preserves outfit');
+ await expect('buy',{itemId:'ice_shoes'},a.session);await expect('equip',{itemId:'ice_shoes'},a.session);
  await Promise.all(Array.from({length:7},()=>call('train',{kind:'stat',key:'handle'},a.session)));
  const trained=(await expect('profile',{},a.session)).player;
  ok(trained.statPoints>=0&&trained.stats.handle+trained.statPoints===3,'concurrent training cannot spend the same point twice');
@@ -55,6 +73,8 @@ try{
  const reset=await expect('recover',{username:a.username,password:nextPassword,recoveryCode:a.code});a.password=nextPassword;
  ok(reset.recoveryCode.length===32&&reset.recoveryCode!==a.code,'recovery changes password and rotates code without email');
  a.session=(await expect('login',{username:a.username,password:a.password})).session;
+ const restored=(await expect('profile',{},a.session)).player;
+ ok(restored.wardrobe.coins===50&&restored.wardrobe.equipped.shoes==='ice_shoes','clothes and balance survive logout, recovery and new session');
  ok((await call('profile',{},old)).status===401,'old session remains invalid after account recovery');
  console.log('CAREER_API checks='+checks+' passed');
 }finally{

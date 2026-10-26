@@ -12,6 +12,9 @@
   const replace=(pattern,fn)=>{const match=value.match(pattern);return match?source.replace(value,fn(match)):null;};
   let result;
   const choice=(en,ja,zh)=>({en,ja,'zh-CN':zh})[language];
+  if((result=replace(/^(\d+)코트 클리어 후 구매$/,m=>choice(`Clear court ${m[1]} to purchase`,`コート${m[1]}クリア後に購入`,`通关球场 ${m[1]} 后可购买`)))!==null)return result;
+  if((result=replace(/^(.+) · \+(\d+) 코인$/,m=>`${text(m[1],language)} · +${m[2]} ${choice('coins','コイン','金币')}`))!==null)return result;
+  if((result=replace(/^(\d+) 코인$/,m=>`${m[1]} ${choice('coins','コイン','金币')}`))!==null)return result;
   if((result=replace(/^코트 준비 중 (\d+)%$/,m=>choice(`Loading court ${m[1]}%`,`コート準備中 ${m[1]}%`,`球场加载中 ${m[1]}%`)))!==null)return result;
   if((result=replace(/^(캐릭터|모션) 준비 중 (\d+)%$/,m=>choice(`Loading ${m[1]==='캐릭터'?'characters':'motion'} ${m[2]}%`,`${m[1]==='캐릭터'?'キャラクター':'モーション'}準備中 ${m[2]}%`,`${m[1]==='캐릭터'?'角色':'动作'}加载中 ${m[2]}%`)))!==null)return result;
   if((result=replace(/^(가드|포워드|센터) Lv\.(\d+)$/,m=>`${text(m[1],language)} Lv.${m[2]}`))!==null)return result;

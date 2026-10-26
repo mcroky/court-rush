@@ -14,6 +14,7 @@ var mesh: ArrayMesh
 const Fabric = preload("res://assets/characters/court_fabric.gdshader")
 const Face = preload("res://assets/characters/court_face.gdshader")
 var authoring_head=false
+var garment_region=0
 
 func _init(): call_deferred("run")
 func run():
@@ -50,7 +51,7 @@ func surface(key: String) -> SurfaceTool:
 	return surfaces[key]
 func vertex(st: SurfaceTool,p: Vector3,n: Vector3,uv: Vector2,c: Color,w: Array):
 	st.set_normal(n.normalized())
-	st.set_uv(uv)
+	st.set_uv(uv+Vector2(garment_region*4,0))
 	# Graphics live in garment UV space, so they deform with every fold.
 	st.set_uv2(Vector2(.5+p.x/.16*(1 if n.z>=0 else -1),(1.365-p.y)/.26))
 	st.set_color(c)
@@ -151,6 +152,7 @@ func build():
 	mesh.set_meta("opponent",rival)
 
 func make_torso():
+	garment_region=0
 	# Skin neckline and trapezius under the open shoulder straps.
 	loft("skin",[[Vector3(0,1.32,.022),.169,.078,torso_weights(1.32)],[Vector3(0,1.405,.008),.177,.079,torso_weights(1.405)],[Vector3(0,1.431,.001),.168,.076,weights("spine_02")],[Vector3(0,1.451,-.005),.139,.067,weights("spine_02","neck_01",.12)],[Vector3(0,1.469,-.009),.095,.056,weights("spine_02","neck_01",.3)],[Vector3(0,1.487,-.012),.052,.043,weights("neck_01")],[Vector3(0,1.522,-.010),.040,.041,weights("neck_01")],[Vector3(0,1.566,-.003),.043,.042,weights("neck_01","head",.65)]],skin_color)
 	var profile = [[1.005,.147,.091],[1.045,.162,.104],[1.13,.141,.090],[1.23,.168,.105],[1.31,.187,.108]]
@@ -194,8 +196,10 @@ func make_torso():
 					var v: Array=rings[id[0]][id[1]]
 					p.append(v[0]);n.append(v[1]);u.append(v[2]);w.append(v[3])
 				var side_panel = absf(cos((s+.5)/48.0*TAU))>.95
+				garment_region=6 if side_panel else 1
 				tri("cloth",p,n,u,dark if side_panel else jersey,w)
 	# Ribbed neckline / armhole binding follows exactly the tank's upper edge.
+	garment_region=1
 	for s in range(48):
 		var a: Array = rings[24][s];var b: Array=rings[24][s+1]
 		var inward = Vector3(0,-.010,0)
@@ -207,6 +211,7 @@ func make_torso():
 		path("trim",[Vector3(side*.012,1.010,.123),Vector3(side*.016,.978,.131),Vector3(side*.024,.958,.129)],.0024,cream,"pelvis")
 
 func make_arm(suffix: String):
+	garment_region=0
 	var upper="upperarm"+suffix;var lower="lowerarm"+suffix;var hand="hand"+suffix
 	var shoulder: Vector3=neutral[upper].origin
 	var elbow: Vector3=neutral[lower].origin
@@ -222,7 +227,9 @@ func make_arm(suffix: String):
 		rows.append([p,item[1],item[1]*.88,w])
 	loft("skin",rows,skin_color,axis,20)
 	# Wrist sweatband; continuous skin underneath, no mechanical joint spheres.
+	garment_region=4
 	loft("cloth",[[wrist-axis*.047,.029,.026,weights(lower,hand,.2)],[wrist-axis*.023,.028,.026,weights(lower,hand,.6)]],cream if suffix==".l" else dark,axis,16)
+	garment_region=0
 	var middle: Vector3=neutral["middle_01"+suffix].origin
 	var palm_axis=(middle-wrist).normalized()
 	loft("skin",[[wrist,.025,.017,weights(hand)],[wrist.lerp(middle,.42),.039,.020,weights(hand)],[middle,.038,.014,weights(hand)]],skin_color,palm_axis,16)
@@ -247,6 +254,7 @@ func make_arm(suffix: String):
 	loft("skin",little,skin_color,palm_axis,8)
 
 func make_leg(suffix: String):
+	garment_region=0
 	var thigh="thigh"+suffix;var calf="calf"+suffix;var foot="foot"+suffix
 	var hip: Vector3=neutral[thigh].origin
 	var knee: Vector3=neutral[calf].origin
@@ -296,15 +304,18 @@ func make_leg(suffix: String):
 					var v=garment[id[0]][id[1]]
 					ps.append(v[0]);ns.append(v[1]);us.append(v[2]);ws.append(v[3])
 				var panel=cos((s+.5)/32.0*TAU)>.65
+				garment_region=7 if panel else 2
 				# Top D profiles turn into round legs. Their steep crotch slope can
 				# oppose a radial normal; do not independently flip those faces.
 				var st=surface("cloth")
 				for vi in ([0,1,2] if side>0 else [0,2,1]):
 					vertex(st,ps[vi],ns[vi],us[vi],jersey.darkened(.35) if panel else dark,ws[vi])
 	var hem=Vector3(hip.lerp(knee,.92).x,.563,hip.lerp(knee,.92).z)
+	garment_region=2
 	var leg_axis=Vector3.UP
 	loft("trim",[[hem,.113,.109,weights(thigh)],[hem+leg_axis*.012,.114,.110,weights(thigh)]],cream,leg_axis,32)
 	# Compression sock, high-top basketball shoe and contrasting rubber sole.
+	garment_region=5
 	loft("cloth",[[ankle-Vector3.UP*.025,.032,.035,weights(foot)],[ankle+Vector3.UP*.09,.034,.035,weights(calf,foot,.6)],[ankle+Vector3.UP*.105,.035,.036,weights(calf,foot,.4)]],cream)
 	var x=ankle.x
 	var shoe_rows=[[.019,.057,.134],[.035,.058,.135],[.057,.057,.129],[.079,.052,.117],[.10,.040,.071],[.143,.035,.050]]
@@ -312,12 +323,15 @@ func make_leg(suffix: String):
 	for row in shoe_rows:
 		var center_z=lerpf(.016,-.035,smoothstep(.057,.143,row[0]))
 		shoe.append([Vector3(x,row[0],center_z),row[1],row[2],weights(foot)])
+	garment_region=3
 	loft("leather",shoe,cream,Vector3.UP,24)
+	garment_region=8
 	loft("trim",[[Vector3(x,.019,.016),.058,.135,weights(foot)],[Vector3(x,.035,.016),.059,.136,weights(foot)]],dark,Vector3.UP,24)
 	for i in range(4):
 		var y=.10-i*.009
 		var z=.053+i*.017
 		path("trim",[Vector3(x-.026,y,z),Vector3(x+.026,y,z)],.0028,dark,foot)
+	garment_region=9
 	path("trim",[Vector3(x-.047,.052,-.02),Vector3(x-.052,.068,.045),Vector3(x-.031,.079,.105)],.006,jersey,foot)
 	path("trim",[Vector3(x+.047,.052,-.02),Vector3(x+.052,.068,.045),Vector3(x+.031,.079,.105)],.006,jersey,foot)
 
@@ -337,6 +351,7 @@ func head_profile(y: float) -> Vector3:
 	return Vector3(.001,.001,-.01)
 
 func make_head():
+	garment_region=0
 	authoring_head=true
 	var head="head"
 	var rings=[]

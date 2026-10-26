@@ -1,12 +1,13 @@
 param(
- [string]$Version='0.7.6',
+ [string]$Version='0.8.0',
  [string]$Repository='mcroky/court-rush',
+ [string]$PagesDirectory='release/pages',
  [switch]$Push
 )
 $ErrorActionPreference='Stop'
 if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw 'Use a numeric release version.' }
 $projectRoot=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$pagesRoot=[IO.Path]::GetFullPath((Join-Path $projectRoot 'release/pages'))
+$pagesRoot=[IO.Path]::GetFullPath((Join-Path $projectRoot $PagesDirectory))
 if (-not $pagesRoot.StartsWith($projectRoot+[IO.Path]::DirectorySeparatorChar)) { throw 'Invalid publish workspace.' }
 if (-not (Test-Path -LiteralPath (Join-Path $projectRoot 'build/web/engine-config.js'))) { throw 'Export Web and run tools/build_web.mjs first.' }
 New-Item -ItemType Directory -Force -Path $pagesRoot | Out-Null

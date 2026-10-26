@@ -1,9 +1,52 @@
-import {ROLES,STAT_NAMES,SKILLS,STAGES,attributes,xpNeeded} from './career-rules.js';
+import {ROLES,STAT_NAMES,SKILLS,STAGES,attributes,xpNeeded,WARDROBE_CATALOG as CATALOG,wardrobeOf} from './career-rules.js';
 const $=id=>document.getElementById(id),config=window.COURT_CAREER_CONFIG;
 const dialog=$('career-dialog'),content=$('career-content'),status=$('career-status');
 const sessionKey='court-rush.session.v1',resultKey='court-rush.result.v1';
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let session=null,player=null,username='',persistent=false,busy=false,refreshing=null,pending=null,claiming=false,startRequest=null;
+let shopping=false,shopSlot='jersey',selectedItem='court_teal',tryOn={...CATALOG.defaults},shopYaw=0,previewReady=false,shopCollection='all',shopOwned='all';
+const slots={jersey:'상의',shorts:'하의',shoes:'농구화'};
+function previewShop(){previewReady=Boolean(window.CourtGame?.wardrobe({appearance:tryOn,athlete:player?attributes(player):{},yaw:shopYaw}));}
+function leaveShop(){if(!shopping)return;shopping=false;document.body.classList.remove('wardrobe-open');dialog.classList.remove('wardrobe-dialog');window.CourtGame?.closeWardrobe();window.CourtGame?.setAppearance(player?wardrobeOf(player).equipped:{});}
+function openShop(){
+ window.CourtGame?.pause();shopping=true;shopCollection='all';shopOwned='all';tryOn={...(player?wardrobeOf(player).equipped:CATALOG.defaults)};shopYaw=0;selectedItem=tryOn[shopSlot];
+ document.body.classList.add('wardrobe-open');dialog.classList.add('wardrobe-dialog');if(!dialog.open)dialog.showModal();renderShop();previewShop();
+}
+function shopItems(){
+ const owned=player?wardrobeOf(player).owned:Object.values(CATALOG.defaults);
+ return CATALOG.items.filter(i=>i.slot===shopSlot&&(shopCollection==='all'||i.collection===shopCollection)&&(shopOwned==='all'||(shopOwned==='owned')===owned.includes(i.id)));
+}
+function filterShop(){const items=shopItems();if(items.length){selectedItem=items[0].id;tryOn[shopSlot]=selectedItem;}renderShop();previewShop();}
+function renderShop(){
+ const w=player?wardrobeOf(player):null,item=CATALOG.items.find(i=>i.id===selectedItem),owned=w?.owned.includes(item.id),equipped=w?.equipped[item.slot]===item.id;
+ const locked=!owned&&(player?.cleared||0)<(item.unlock||0),items=shopItems();
+ const collectionItems=CATALOG.items.filter(i=>shopCollection==='all'||i.collection===shopCollection),collected=collectionItems.filter(i=>(w?.owned||Object.values(CATALOG.defaults)).includes(i.id)).length;
+ const tiers=['','코트 기본','스트리트','시그니처','챔피언'];
+ frame(`<span class="eyebrow">COURT STORE / ${CATALOG.items.length} ITEMS / ${CATALOG.collections.length} COLLECTIONS</span>
+ <div class="shop-heading"><h2>코트 위의 내 스타일.</h2><strong class="coin-wallet">◉ <span translate="no">${w?w.coins:'—'}</span> <span>코트 코인</span></strong></div>
+ <p class="shop-intro">의상은 능력치를 바꾸지 않습니다. 코트 코인으로 구매하고, 부위별로 자유롭게 조합하세요.</p>
+ <div class="shop-preview-controls"><button id="shop-turn-left" aria-label="캐릭터 왼쪽 회전">↶</button><span>실제 캐릭터 미리보기</span><button id="shop-turn-right" aria-label="캐릭터 오른쪽 회전">↷</button><button id="shop-restore">장착 의상으로</button></div>
+ <div class="shop-filters"><label>컬렉션<select id="shop-collection" aria-label="컬렉션"><option value="all">전체 컬렉션</option><option value="original">코트 오리지널</option>${CATALOG.collections.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></label><label>보유 상태<select id="shop-owned" aria-label="보유 상태"><option value="all">모든 의상</option><option value="owned">보유한 의상</option><option value="missing">아직 없는 의상</option></select></label><div class="collection-progress"><span>수집 현황</span><b translate="no">${collected} / ${collectionItems.length}</b><progress max="${collectionItems.length}" value="${collected}"></progress></div></div>
+ <nav class="career-tabs shop-tabs" aria-label="의상 분류">${Object.entries(slots).map(([key,label])=>`<button data-slot="${key}" aria-pressed="${shopSlot===key}">${label}</button>`).join('')}</nav>
+ <div class="shop-grid">${items.map(i=>`<button class="shop-item tier-${i.tier}" data-item="${i.id}" aria-pressed="${selectedItem===i.id}" style="--garment:#${i.base};--panel:#${i.panel};--trim:#${i.accent}" aria-label="${i.name}"><span class="item-tier">${tiers[i.tier]}</span><span class="garment-thumb ${i.slot} pattern-${i.pattern}" aria-hidden="true"><i></i></span><b>${i.name}</b><span>${w?.equipped[i.slot]===i.id?'장착 중':w?.owned.includes(i.id)?'보유 중':i.price===0?'기본 지급':`◉ ${i.price}`}</span>${(i.unlock||0)>(player?.cleared||0)?`<small class="shop-lock">${i.unlock}코트 클리어 후 구매</small>`:''}</button>`).join('')||'<p class="shop-empty">이 조건에 맞는 의상이 없습니다.</p>'}</div>
+ ${items.length?`<section class="shop-selection"><div><b>${item.name}</b><small>미리 입어 보는 중 · 구매 전에도 확인할 수 있어요.</small>${item.variant?'<button id="shop-outfit">컬렉션 한 벌 입어보기</button>':''}</div><button id="shop-action" class="primary" ${equipped||(player&&locked)?'disabled':''}>${!player?'로그인하고 선수 만들기':equipped?'장착 중':owned?'장착하기':locked?item.unlock+'코트 클리어 후 구매':`구매하기 · ${item.price} 코인`}</button></section>`:''}
+ <p class="career-fine">첫 선수에게 300 코인 지급. 육성 1대1 첫 클리어 120~260 코인, 재도전 승리 45~80 코인, 패배 20 코인. 연습·일반 경기·3대3은 보상이 없습니다.</p><p class="career-fine">잠긴 컬렉션도 미리 입어볼 수 있습니다. 모든 의상은 정해진 가격으로 구매하며, 무작위 뽑기나 유료 결제는 없습니다.</p><button id="shop-player">${player?'선수 육성으로':'로그인 · 내 선수'}</button>${player?'<button id="shop-refresh">기록 새로고침</button>':''}`);
+ $('shop-collection').value=shopCollection;$('shop-owned').value=shopOwned;
+ $('shop-collection').onchange=e=>{if(busy)return;shopCollection=e.target.value;filterShop();};
+ $('shop-owned').onchange=e=>{if(busy)return;shopOwned=e.target.value;filterShop();};
+ content.querySelectorAll('[data-slot]').forEach(b=>b.onclick=()=>{if(busy)return;shopSlot=b.dataset.slot;const list=shopItems();selectedItem=list.find(i=>i.id===tryOn[shopSlot])?.id||list[0]?.id||tryOn[shopSlot];if(list.length)tryOn[shopSlot]=selectedItem;renderShop();previewShop();content.querySelector(`[data-slot="${shopSlot}"]`).focus({preventScroll:true});});
+ content.querySelectorAll('[data-item]').forEach(b=>b.onclick=()=>{if(busy)return;selectedItem=b.dataset.item;tryOn[shopSlot]=selectedItem;renderShop();previewShop();content.querySelector(`[data-item="${selectedItem}"]`).focus({preventScroll:true});});
+ $('shop-turn-left').onclick=()=>{shopYaw-=Math.PI/4;previewShop();};$('shop-turn-right').onclick=()=>{shopYaw+=Math.PI/4;previewShop();};
+ $('shop-restore').onclick=()=>{tryOn={...(player?wardrobeOf(player).equipped:CATALOG.defaults)};selectedItem=tryOn[shopSlot];shopCollection='all';shopOwned='all';renderShop();previewShop();};
+ if($('shop-outfit'))$('shop-outfit').onclick=()=>{for(const piece of CATALOG.items.filter(i=>i.collection===item.collection&&i.variant===item.variant))tryOn[piece.slot]=piece.id;previewShop();notice('한 벌을 미리 입었습니다. 구매와 장착은 부위별로 선택하세요.');};
+ $('shop-player').onclick=()=>{if(!busy){leaveShop();open();}};
+ if($('shop-refresh'))$('shop-refresh').onclick=()=>run(async()=>{player=(await api('profile')).player;panel();renderShop();notice('서버의 의상 기록을 불러왔습니다.');});
+ if($('shop-action'))$('shop-action').onclick=()=>{if(!player){leaveShop();open();return;}run(async()=>{
+  notice('의상 기록을 저장하고 있습니다…');
+  try{const r=await api(owned?'equip':'buy',{itemId:item.id});player=r.player;panel();renderShop();notice(owned?'장착했습니다. 경기에도 적용됩니다.':'구매했습니다. 장착하기를 누르면 경기에도 적용됩니다.');}
+  catch(e){if(e.status===409){player=(await api('profile')).player;panel();renderShop();}throw e;}
+ });};
+}
 function notice(message,error=false){const el=$('career-message');if(el){el.textContent=message;el.classList.toggle('error',error);}}
 function storageSave(){try{localStorage.removeItem(sessionKey);sessionStorage.removeItem(sessionKey);if(session)(persistent?localStorage:sessionStorage).setItem(sessionKey,JSON.stringify({session,username}));}catch{status.textContent='로그인은 이 창에서 유지됩니다. 브라우저 저장을 사용할 수 없습니다.';}}
 function saveResult(){try{if(pending?.score)sessionStorage.setItem(resultKey,JSON.stringify(pending));else sessionStorage.removeItem(resultKey);}catch{}}
@@ -25,10 +68,12 @@ async function api(action,body={}){
  try{return await raw(action,body,session.access_token);}catch(e){if(e.status!==401)throw e;await refresh();return raw(action,body,session.access_token);}
 }
 function panel(){
+ window.CourtGame?.setAppearance(player?wardrobeOf(player).equipped:{});
  status.textContent=player?`${player.nickname} · ${ROLES[player.role].name} · Lv.${player.level} / ${player.cleared}코트 클리어`:session?`${username} · 첫 선수를 만들어 주세요`:'아이디로 시작하는 나만의 선수';
  $('career-open').textContent=player?'선수 육성 · 코트 도전 →':session?'첫 선수 만들기 →':'내 선수 키우기 →';
 }
 function open(view='login'){
+ leaveShop();
  window.CourtGame?.pause();
  if(!dialog.open)dialog.showModal();
  if(session){if(player)renderPlayer();else renderCreation();}else renderAuth(view);
@@ -61,6 +106,7 @@ function renderPlayer(){
  content.querySelectorAll('[data-train]').forEach(b=>b.onclick=()=>run(async()=>{const r=await api('train',{kind:b.dataset.train,key:b.dataset.key});player=r.player;panel();renderPlayer();notice('훈련을 저장했습니다. 다음 도전부터 적용됩니다.');}));
  content.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>confirmStart(Number(b.dataset.stage)));
  $('career-account').onclick=renderAccount;
+ const shop=document.createElement('button');shop.id='career-shop';shop.className='primary';shop.textContent='의상 상점 · '+wardrobeOf(player).coins+' 코인';shop.onclick=openShop;content.querySelector('.career-heading').after(shop);
 }
 function confirmStart(stage){
  const s=window.CourtGame?.getState();
@@ -84,20 +130,22 @@ function renderAccount(){
   $('delete-cancel').onclick=renderAccount;$('delete-confirm').onclick=()=>run(async()=>{await api('delete',{password:pass});session=null;player=null;username='';pending=null;saveResult();storageSave();panel();renderAuth();notice('계정과 성장 기록을 삭제했습니다.');});
  }else run(async()=>{const r=await api('recovery',{password:pass});renderCode(r.recoveryCode,()=>player?renderPlayer():renderCreation());});};
 }
-async function run(fn){if(busy)return;busy=true;content.setAttribute('aria-busy','true');try{await fn();}catch(e){notice(e.message,true);}finally{busy=false;content.removeAttribute('aria-busy');}}
+async function run(fn){if(busy)return;busy=true;content.setAttribute('aria-busy','true');const controls=[...content.querySelectorAll('button,select')].map(el=>[el,el.disabled]);for(const [el] of controls)el.disabled=true;try{await fn();}catch(e){notice(e.message,true);}finally{busy=false;for(const [el,disabled] of controls)if(content.contains(el))el.disabled=disabled;content.removeAttribute('aria-busy');}}
 async function claim(){
  if(!pending?.score||claiming||!session||pending.username!==username)return;claiming=true;
  $('career-reward').textContent='경기 보상을 저장하고 있습니다…';
- try{const r=await api('finish',{matchId:pending.matchId,score:pending.score,seconds:pending.seconds});player=r.player;pending=null;saveResult();panel();$('career-reward').textContent=`${r.reward.won?'승리!':'다음 코트에서 다시!'} +${r.reward.xp} XP · Lv.${player.level} · 스탯 ${player.statPoints}P / 기술 ${player.skillPoints}P`;$('career-retry').hidden=true;}
+ try{const r=await api('finish',{matchId:pending.matchId,score:pending.score,seconds:pending.seconds});player=r.player;pending=null;saveResult();panel();if(shopping)renderShop();$('career-reward').textContent=`${r.reward.won?'승리!':'다음 코트에서 다시!'} +${r.reward.xp} XP · Lv.${player.level} · 스탯 ${player.statPoints}P / 기술 ${player.skillPoints}P${r.reward.coins?' · +'+r.reward.coins+' 코인':''}`;$('career-retry').hidden=true;}
  catch(e){$('career-reward').textContent='보상 저장 대기 · '+e.message;$('career-retry').hidden=false;}
  finally{claiming=false;}
 }
 window.addEventListener('court-state',e=>{const s=e.detail;if(pending&&s.careerMatchId===pending.matchId&&s.phase==='ended'&&!pending.score){pending={...pending,score:s.score,seconds:s.seconds};saveResult();claim();}});
 $('career-open').onclick=()=>open();$('career-menu').onclick=()=>open();$('entry-career').onclick=()=>open();$('career-result-open').onclick=()=>open();$('career-retry').onclick=claim;
+$('wardrobe-menu').onclick=openShop;$('wardrobe-open').onclick=openShop;dialog.addEventListener('close',leaveShop);
+window.addEventListener('court-state',()=>{if(shopping&&!previewReady)previewShop();});
 $('career-close').onclick=()=>{if(!busy)dialog.close();};dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
 panel();
 try{const remembered=localStorage.getItem(sessionKey),saved=remembered||sessionStorage.getItem(sessionKey);if(saved){const parsed=JSON.parse(saved);if(typeof parsed.session?.access_token==='string'&&typeof parsed.session?.refresh_token==='string'&&Number.isFinite(parsed.session.expires_at)){session=parsed.session;username=parsed.username||'';persistent=Boolean(remembered);}}
  const result=JSON.parse(sessionStorage.getItem(resultKey)||'null');if(result&&typeof result.matchId==='string'&&Array.isArray(result.score))pending=result;
 }catch{status.textContent='저장된 로그인 정보를 읽지 못했습니다. 다시 로그인하세요.';}
-if(session)api('profile').then(r=>{username=r.username;player=r.player;panel();if(pending?.score)claim();if(new URLSearchParams(location.search).get('account')==='manage')open();}).catch(e=>{session=null;storageSave();status.textContent='다시 로그인해 주세요. '+e.message;});
+if(session)api('profile').then(r=>{username=r.username;player=r.player;panel();if(shopping){renderShop();previewShop();}if(pending?.score)claim();if(new URLSearchParams(location.search).get('account')==='manage')open();}).catch(e=>{session=null;storageSave();status.textContent='다시 로그인해 주세요. '+e.message;});
 else if(new URLSearchParams(location.search).get('account')==='manage')open();

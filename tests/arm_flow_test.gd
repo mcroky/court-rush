@@ -29,6 +29,7 @@ func run() -> void:
 			var free = 0 if side > 0 else 1
 			var last_elbows = [Vector3.ZERO,Vector3.ZERO]
 			var lengths=[]
+			var swing_samples: Array = []
 			for f in range(int(fps*2.4)):
 				p.motion = Vector2(0,4.2)
 				p.position += p.movement_step(1.0/fps)
@@ -65,9 +66,20 @@ func run() -> void:
 				var wrist=chest.affine_inverse()*v.palm_world[free]
 				var shoulder=chest.affine_inverse()*v.bone_world(v.arms[free][0]).origin
 				if absf(leg.z) > .20:
-					opposed += 1
-					if leg.z*(wrist.z-shoulder.z-.17) > 0: wrong_phase += 1
+					swing_samples.append(Vector2(leg.z,wrist.z-shoulder.z))
 				samples += 1
+			# Judge timing around the observed protective-hand position. The
+			# previous hardcoded17cm offset misclassified a forward balance pose
+			# as a phase error even when the wrist followed the opposite foot.
+			var minimum = INF
+			var maximum = -INF
+			for sample in swing_samples:
+				minimum = minf(minimum,sample.y)
+				maximum = maxf(maximum,sample.y)
+			check(maximum-minimum>.10,"Free arm stopped counter-swinging")
+			for sample in swing_samples:
+				opposed += 1
+				if sample.x*(sample.y-(minimum+maximum)*.5)>0: wrong_phase += 1
 	check(opposed > 100 and float(wrong_phase)/maxi(opposed,1) < .12,"Free arm lagged the opposite foot rhythm")
 	print("ARM_FLOW frames=",samples," opposition_samples=",opposed," mismatches=",wrong_phase," max_elbow_lateral=",max_elbow_width," failures=",failures)
 	game.queue_free()

@@ -1,4 +1,28 @@
+import {WARDROBE_CATALOG as CATALOG} from './wardrobe-catalog.mjs';
+export {WARDROBE_CATALOG} from './wardrobe-catalog.mjs';
 function reject(message){throw Object.assign(Error(message),{status:400});}
+export function wardrobeOf(original){
+ const w=original?.wardrobe;
+ if(w&&w.version!==1)reject('새 버전의 선수 기록입니다. 게임을 새로고침하세요.');
+ if(!w)return {version:1,coins:CATALOG.starterCoins,owned:Object.values(CATALOG.defaults),equipped:{...CATALOG.defaults}};
+ if(!Number.isSafeInteger(w.coins)||w.coins<0||!Array.isArray(w.owned)||!w.equipped)reject('의상 저장 기록을 확인하세요.');
+ const owned=[...new Set([...Object.values(CATALOG.defaults),...w.owned.filter(id=>CATALOG.items.some(item=>item.id===id))])];
+ const equipped={...CATALOG.defaults};
+ for(const slot of Object.keys(equipped))if(owned.includes(w.equipped[slot])&&CATALOG.items.some(i=>i.id===w.equipped[slot]&&i.slot===slot))equipped[slot]=w.equipped[slot];
+ return {version:1,coins:w.coins,owned,equipped};
+}
+export function normalizePlayer(original){const p=structuredClone(original);p.wardrobe=wardrobeOf(p);return p;}
+export function buyClothing(original,itemId){
+ const item=CATALOG.items.find(i=>i.id===itemId);if(!item)reject('판매 중인 의상이 아닙니다.');
+ const p=normalizePlayer(original),owned=p.wardrobe.owned.includes(item.id);
+ if(!owned){if(p.cleared<(item.unlock||0))reject('이 컬렉션은 코트를 더 클리어하면 열립니다.');if(p.wardrobe.coins<item.price)reject('코트 코인이 부족합니다.');p.wardrobe.coins-=item.price;p.wardrobe.owned.push(item.id);}
+ return {player:p,receipt:{itemId:item.id,spent:owned?0:item.price,alreadyOwned:owned}};
+}
+export function equipClothing(original,itemId){
+ const item=CATALOG.items.find(i=>i.id===itemId);if(!item)reject('의상 항목을 확인하세요.');
+ const p=normalizePlayer(original);if(!p.wardrobe.owned.includes(item.id))reject('먼저 의상을 구매하세요.');
+ p.wardrobe.equipped[item.slot]=item.id;return p;
+}
 export const STAT_NAMES={speed:'이동',handle:'핸들링',shoot:'슈팅',finish:'골밑 마무리',defense:'수비',rebound:'리바운드'};
 export const ROLES={
  guard:{name:'가드',height:178,weight:76,tag:'빠른 첫발과 볼 핸들링',base:{speed:64,handle:68,shoot:60,finish:48,defense:47,rebound:33}},
@@ -15,15 +39,15 @@ export const STAGES=[
 export function xpNeeded(level){return 100+(level-1)*60;}
 export function newPlayer(role,nickname){
  if(!Object.hasOwn(ROLES,role)||typeof nickname!=='string'||nickname.trim().length<2||nickname.trim().length>12)reject('포지션과 2~12자 선수 이름을 확인하세요.');
- return {version:1,nickname:nickname.trim(),role,level:1,xp:0,statPoints:3,skillPoints:1,cleared:0,wins:0,losses:0,stats:Object.fromEntries(Object.keys(STAT_NAMES).map(k=>[k,0])),skills:Object.fromEntries(Object.keys(SKILLS).map(k=>[k,0]))};
+ return normalizePlayer({version:1,nickname:nickname.trim(),role,level:1,xp:0,statPoints:3,skillPoints:1,cleared:0,wins:0,losses:0,stats:Object.fromEntries(Object.keys(STAT_NAMES).map(k=>[k,0])),skills:Object.fromEntries(Object.keys(SKILLS).map(k=>[k,0]))});
 }
 export function attributes(p){
  const r=ROLES[p.role];if(!r)reject('선수 데이터가 올바르지 않습니다.');
- return {...Object.fromEntries(Object.keys(STAT_NAMES).map(k=>[k,Math.min(99,r.base[k]+p.stats[k])])),height:r.height,weight:r.weight,role:p.role,skills:{...p.skills},training:{...p.stats},level:p.level};
+ return {...Object.fromEntries(Object.keys(STAT_NAMES).map(k=>[k,Math.min(99,r.base[k]+p.stats[k])])),height:r.height,weight:r.weight,role:p.role,skills:{...p.skills},training:{...p.stats},level:p.level,appearance:{...wardrobeOf(p).equipped}};
 }
-export function opponentAthlete(stage){const s=STAGES[stage-1],p=newPlayer(s.role,s.name);p.level=s.level;for(const k of Object.keys(p.stats))p.stats[k]=Math.min(20,(s.level-1)*(k==='shoot'?2:1));return attributes(p);}
+export function opponentAthlete(stage){const s=STAGES[stage-1],p=newPlayer(s.role,s.name);p.level=s.level;for(const k of Object.keys(p.stats))p.stats[k]=Math.min(20,(s.level-1)*(k==='shoot'?2:1));const {appearance,...athlete}=attributes(p);return athlete;}
 export function trainPlayer(original,kind,key){
- const p=structuredClone(original),stat=kind==='stat';
+ const p=normalizePlayer(original),stat=kind==='stat';
  if(!['stat','skill'].includes(kind)||!Object.hasOwn(stat?STAT_NAMES:SKILLS,key))reject('훈련 항목을 확인하세요.');
  const pool=stat?'statPoints':'skillPoints',group=stat?'stats':'skills',cap=stat?20:5;
  if(p[pool]<1)reject('성장 포인트가 부족합니다.');
@@ -32,10 +56,12 @@ export function trainPlayer(original,kind,key){
 }
 export function rewardPlayer(original,stage,won){
  if(!Number.isInteger(stage)||stage<1||stage>STAGES.length||stage>original.cleared+1)reject('아직 도전할 수 없는 코트입니다.');
- const p=structuredClone(original),first=won&&stage>p.cleared;
+ const p=normalizePlayer(original),first=won&&stage>p.cleared;
  const xp=won?(first?STAGES[stage-1].xp:Math.floor(STAGES[stage-1].xp*.35)):25;
  p.xp+=xp;p.wins+=Number(won);p.losses+=Number(!won);if(won)p.cleared=Math.max(p.cleared,stage);
  while(p.level<20&&p.xp>=xpNeeded(p.level)){p.xp-=xpNeeded(p.level);p.level++;p.statPoints+=3;p.skillPoints++;}
  if(p.level===20)p.xp=Math.min(p.xp,xpNeeded(20)-1);
- return {player:p,reward:{xp,firstClear:first,won,stage}};
+ const coins=won?(first?100+stage*20:40+stage*5):20;
+ p.wardrobe.coins+=coins;
+ return {player:p,reward:{xp,coins,firstClear:first,won,stage}};
 }

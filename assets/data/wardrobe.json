@@ -1,0 +1,1901 @@
+{
+  "version": 1,
+  "starterCoins": 300,
+  "defaults": {
+    "jersey": "court_teal",
+    "shorts": "court_navy",
+    "shoes": "court_cream"
+  },
+  "items": [
+    {
+      "id": "court_teal",
+      "slot": "jersey",
+      "name": "코트 오리지널 저지",
+      "price": 0,
+      "base": "246763",
+      "panel": "172e39",
+      "accent": "efe4c6",
+      "pattern": 0,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "sunset_jersey",
+      "slot": "jersey",
+      "name": "선셋 블록 저지",
+      "price": 120,
+      "base": "ed754b",
+      "panel": "783f54",
+      "accent": "fff0c9",
+      "pattern": 1,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "midnight_jersey",
+      "slot": "jersey",
+      "name": "미드나이트 핀스트라이프",
+      "price": 160,
+      "base": "263b68",
+      "panel": "fc8baf",
+      "accent": "e8edf5",
+      "pattern": 2,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "cream_jersey",
+      "slot": "jersey",
+      "name": "크림 바시티 저지",
+      "price": 180,
+      "base": "f3dfb4",
+      "panel": "783d48",
+      "accent": "8f4d43",
+      "pattern": 1,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "volt_jersey",
+      "slot": "jersey",
+      "name": "볼트 페이드 저지",
+      "price": 240,
+      "base": "bded5b",
+      "panel": "267a72",
+      "accent": "173c40",
+      "pattern": 3,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "court_navy",
+      "slot": "shorts",
+      "name": "코트 오리지널 쇼츠",
+      "price": 0,
+      "base": "172e39",
+      "panel": "174340",
+      "accent": "efe4c6",
+      "pattern": 0,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "slate_shorts",
+      "slot": "shorts",
+      "name": "슬레이트 사이드 쇼츠",
+      "price": 90,
+      "base": "64728c",
+      "panel": "cad9df",
+      "accent": "f1ebd9",
+      "pattern": 0,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "wine_shorts",
+      "slot": "shorts",
+      "name": "와인 더블라인 쇼츠",
+      "price": 120,
+      "base": "74374d",
+      "panel": "e4ae8d",
+      "accent": "fff0d7",
+      "pattern": 1,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "night_shorts",
+      "slot": "shorts",
+      "name": "나이트 패널 쇼츠",
+      "price": 150,
+      "base": "202f4e",
+      "panel": "6fd4ca",
+      "accent": "d7f5e6",
+      "pattern": 1,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "court_cream",
+      "slot": "shoes",
+      "name": "코트 오리지널 하이탑",
+      "price": 0,
+      "base": "efe4c6",
+      "panel": "172e39",
+      "accent": "246763",
+      "pattern": 0,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "ember_shoes",
+      "slot": "shoes",
+      "name": "엠버 하이탑",
+      "price": 140,
+      "base": "ee704a",
+      "panel": "f7e5cb",
+      "accent": "5d3544",
+      "pattern": 0,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "ice_shoes",
+      "slot": "shoes",
+      "name": "아이스 하이탑",
+      "price": 160,
+      "base": "d7e9eb",
+      "panel": "344b66",
+      "accent": "6ac8d0",
+      "pattern": 0,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "volt_shoes",
+      "slot": "shoes",
+      "name": "볼트 하이탑",
+      "price": 200,
+      "base": "a6df4c",
+      "panel": "25393e",
+      "accent": "f1ead6",
+      "pattern": 0,
+      "collection": "original",
+      "unlock": 0,
+      "tier": 1
+    },
+    {
+      "id": "local_1_jersey",
+      "slot": "jersey",
+      "name": "로컬 리그 · 포레스트 저지",
+      "names": [
+        "로컬 리그 · 포레스트 저지",
+        "Local League · Forest Jersey",
+        "ローカルリーグ · フォレスト ジャージ",
+        "街区联赛 · 森林 球衣"
+      ],
+      "collection": "local",
+      "variant": 1,
+      "unlock": 0,
+      "tier": 1,
+      "price": 180,
+      "base": "2c7055",
+      "panel": "f2dfb4",
+      "accent": "d99853",
+      "pattern": 4
+    },
+    {
+      "id": "local_1_shorts",
+      "slot": "shorts",
+      "name": "로컬 리그 · 포레스트 쇼츠",
+      "names": [
+        "로컬 리그 · 포레스트 쇼츠",
+        "Local League · Forest Shorts",
+        "ローカルリーグ · フォレスト ショーツ",
+        "街区联赛 · 森林 短裤"
+      ],
+      "collection": "local",
+      "variant": 1,
+      "unlock": 0,
+      "tier": 1,
+      "price": 140,
+      "base": "f2dfb4",
+      "panel": "2c7055",
+      "accent": "d99853",
+      "pattern": 1
+    },
+    {
+      "id": "local_1_shoes",
+      "slot": "shoes",
+      "name": "로컬 리그 · 포레스트 하이탑",
+      "names": [
+        "로컬 리그 · 포레스트 하이탑",
+        "Local League · Forest High-Tops",
+        "ローカルリーグ · フォレスト ハイカット",
+        "街区联赛 · 森林 高帮鞋"
+      ],
+      "collection": "local",
+      "variant": 1,
+      "unlock": 0,
+      "tier": 1,
+      "price": 240,
+      "base": "2c7055",
+      "panel": "f2dfb4",
+      "accent": "d99853",
+      "pattern": 1
+    },
+    {
+      "id": "local_2_jersey",
+      "slot": "jersey",
+      "name": "로컬 리그 · 버건디 저지",
+      "names": [
+        "로컬 리그 · 버건디 저지",
+        "Local League · Burgundy Jersey",
+        "ローカルリーグ · バーガンディ ジャージ",
+        "街区联赛 · 勃艮第 球衣"
+      ],
+      "collection": "local",
+      "variant": 2,
+      "unlock": 0,
+      "tier": 1,
+      "price": 230,
+      "base": "823e55",
+      "panel": "ead8b4",
+      "accent": "d8ac6a",
+      "pattern": 4
+    },
+    {
+      "id": "local_2_shorts",
+      "slot": "shorts",
+      "name": "로컬 리그 · 버건디 쇼츠",
+      "names": [
+        "로컬 리그 · 버건디 쇼츠",
+        "Local League · Burgundy Shorts",
+        "ローカルリーグ · バーガンディ ショーツ",
+        "街区联赛 · 勃艮第 短裤"
+      ],
+      "collection": "local",
+      "variant": 2,
+      "unlock": 0,
+      "tier": 1,
+      "price": 190,
+      "base": "ead8b4",
+      "panel": "823e55",
+      "accent": "d8ac6a",
+      "pattern": 1
+    },
+    {
+      "id": "local_2_shoes",
+      "slot": "shoes",
+      "name": "로컬 리그 · 버건디 하이탑",
+      "names": [
+        "로컬 리그 · 버건디 하이탑",
+        "Local League · Burgundy High-Tops",
+        "ローカルリーグ · バーガンディ ハイカット",
+        "街区联赛 · 勃艮第 高帮鞋"
+      ],
+      "collection": "local",
+      "variant": 2,
+      "unlock": 0,
+      "tier": 1,
+      "price": 290,
+      "base": "823e55",
+      "panel": "ead8b4",
+      "accent": "d8ac6a",
+      "pattern": 1
+    },
+    {
+      "id": "local_3_jersey",
+      "slot": "jersey",
+      "name": "로컬 리그 · 로열 저지",
+      "names": [
+        "로컬 리그 · 로열 저지",
+        "Local League · Royal Jersey",
+        "ローカルリーグ · ロイヤル ジャージ",
+        "街区联赛 · 皇家蓝 球衣"
+      ],
+      "collection": "local",
+      "variant": 3,
+      "unlock": 0,
+      "tier": 1,
+      "price": 270,
+      "base": "3859a1",
+      "panel": "ece1bd",
+      "accent": "d9aa51",
+      "pattern": 4
+    },
+    {
+      "id": "local_3_shorts",
+      "slot": "shorts",
+      "name": "로컬 리그 · 로열 쇼츠",
+      "names": [
+        "로컬 리그 · 로열 쇼츠",
+        "Local League · Royal Shorts",
+        "ローカルリーグ · ロイヤル ショーツ",
+        "街区联赛 · 皇家蓝 短裤"
+      ],
+      "collection": "local",
+      "variant": 3,
+      "unlock": 0,
+      "tier": 1,
+      "price": 230,
+      "base": "ece1bd",
+      "panel": "3859a1",
+      "accent": "d9aa51",
+      "pattern": 1
+    },
+    {
+      "id": "local_3_shoes",
+      "slot": "shoes",
+      "name": "로컬 리그 · 로열 하이탑",
+      "names": [
+        "로컬 리그 · 로열 하이탑",
+        "Local League · Royal High-Tops",
+        "ローカルリーグ · ロイヤル ハイカット",
+        "街区联赛 · 皇家蓝 高帮鞋"
+      ],
+      "collection": "local",
+      "variant": 3,
+      "unlock": 0,
+      "tier": 1,
+      "price": 330,
+      "base": "3859a1",
+      "panel": "ece1bd",
+      "accent": "d9aa51",
+      "pattern": 1
+    },
+    {
+      "id": "asphalt_1_jersey",
+      "slot": "jersey",
+      "name": "아스팔트 크루 · 차콜 저지",
+      "names": [
+        "아스팔트 크루 · 차콜 저지",
+        "Asphalt Crew · Charcoal Jersey",
+        "アスファルトクルー · チャコール ジャージ",
+        "沥青街队 · 炭灰 球衣"
+      ],
+      "collection": "asphalt",
+      "variant": 1,
+      "unlock": 1,
+      "tier": 2,
+      "price": 280,
+      "base": "343b48",
+      "panel": "d6c7ae",
+      "accent": "ee8751",
+      "pattern": 5
+    },
+    {
+      "id": "asphalt_1_shorts",
+      "slot": "shorts",
+      "name": "아스팔트 크루 · 차콜 쇼츠",
+      "names": [
+        "아스팔트 크루 · 차콜 쇼츠",
+        "Asphalt Crew · Charcoal Shorts",
+        "アスファルトクルー · チャコール ショーツ",
+        "沥青街队 · 炭灰 短裤"
+      ],
+      "collection": "asphalt",
+      "variant": 1,
+      "unlock": 1,
+      "tier": 2,
+      "price": 240,
+      "base": "d6c7ae",
+      "panel": "343b48",
+      "accent": "ee8751",
+      "pattern": 2
+    },
+    {
+      "id": "asphalt_1_shoes",
+      "slot": "shoes",
+      "name": "아스팔트 크루 · 차콜 하이탑",
+      "names": [
+        "아스팔트 크루 · 차콜 하이탑",
+        "Asphalt Crew · Charcoal High-Tops",
+        "アスファルトクルー · チャコール ハイカット",
+        "沥青街队 · 炭灰 高帮鞋"
+      ],
+      "collection": "asphalt",
+      "variant": 1,
+      "unlock": 1,
+      "tier": 2,
+      "price": 340,
+      "base": "343b48",
+      "panel": "d6c7ae",
+      "accent": "ee8751",
+      "pattern": 2
+    },
+    {
+      "id": "asphalt_2_jersey",
+      "slot": "jersey",
+      "name": "아스팔트 크루 · 샌드 저지",
+      "names": [
+        "아스팔트 크루 · 샌드 저지",
+        "Asphalt Crew · Sand Jersey",
+        "アスファルトクルー · サンド ジャージ",
+        "沥青街队 · 沙色 球衣"
+      ],
+      "collection": "asphalt",
+      "variant": 2,
+      "unlock": 1,
+      "tier": 2,
+      "price": 330,
+      "base": "b89f7e",
+      "panel": "49473e",
+      "accent": "f5e5bb",
+      "pattern": 5
+    },
+    {
+      "id": "asphalt_2_shorts",
+      "slot": "shorts",
+      "name": "아스팔트 크루 · 샌드 쇼츠",
+      "names": [
+        "아스팔트 크루 · 샌드 쇼츠",
+        "Asphalt Crew · Sand Shorts",
+        "アスファルトクルー · サンド ショーツ",
+        "沥青街队 · 沙色 短裤"
+      ],
+      "collection": "asphalt",
+      "variant": 2,
+      "unlock": 1,
+      "tier": 2,
+      "price": 290,
+      "base": "49473e",
+      "panel": "b89f7e",
+      "accent": "f5e5bb",
+      "pattern": 2
+    },
+    {
+      "id": "asphalt_2_shoes",
+      "slot": "shoes",
+      "name": "아스팔트 크루 · 샌드 하이탑",
+      "names": [
+        "아스팔트 크루 · 샌드 하이탑",
+        "Asphalt Crew · Sand High-Tops",
+        "アスファルトクルー · サンド ハイカット",
+        "沥青街队 · 沙色 高帮鞋"
+      ],
+      "collection": "asphalt",
+      "variant": 2,
+      "unlock": 1,
+      "tier": 2,
+      "price": 390,
+      "base": "b89f7e",
+      "panel": "49473e",
+      "accent": "f5e5bb",
+      "pattern": 2
+    },
+    {
+      "id": "asphalt_3_jersey",
+      "slot": "jersey",
+      "name": "아스팔트 크루 · 러스트 저지",
+      "names": [
+        "아스팔트 크루 · 러스트 저지",
+        "Asphalt Crew · Rust Jersey",
+        "アスファルトクルー · ラスト ジャージ",
+        "沥青街队 · 锈红 球衣"
+      ],
+      "collection": "asphalt",
+      "variant": 3,
+      "unlock": 1,
+      "tier": 2,
+      "price": 370,
+      "base": "ac583e",
+      "panel": "403b43",
+      "accent": "ecd5af",
+      "pattern": 5
+    },
+    {
+      "id": "asphalt_3_shorts",
+      "slot": "shorts",
+      "name": "아스팔트 크루 · 러스트 쇼츠",
+      "names": [
+        "아스팔트 크루 · 러스트 쇼츠",
+        "Asphalt Crew · Rust Shorts",
+        "アスファルトクルー · ラスト ショーツ",
+        "沥青街队 · 锈红 短裤"
+      ],
+      "collection": "asphalt",
+      "variant": 3,
+      "unlock": 1,
+      "tier": 2,
+      "price": 330,
+      "base": "403b43",
+      "panel": "ac583e",
+      "accent": "ecd5af",
+      "pattern": 2
+    },
+    {
+      "id": "asphalt_3_shoes",
+      "slot": "shoes",
+      "name": "아스팔트 크루 · 러스트 하이탑",
+      "names": [
+        "아스팔트 크루 · 러스트 하이탑",
+        "Asphalt Crew · Rust High-Tops",
+        "アスファルトクルー · ラスト ハイカット",
+        "沥青街队 · 锈红 高帮鞋"
+      ],
+      "collection": "asphalt",
+      "variant": 3,
+      "unlock": 1,
+      "tier": 2,
+      "price": 430,
+      "base": "ac583e",
+      "panel": "403b43",
+      "accent": "ecd5af",
+      "pattern": 2
+    },
+    {
+      "id": "metro_1_jersey",
+      "slot": "jersey",
+      "name": "메트로 라인 · 코발트 저지",
+      "names": [
+        "메트로 라인 · 코발트 저지",
+        "Metro Line · Cobalt Jersey",
+        "メトロライン · コバルト ジャージ",
+        "都市线路 · 钴蓝 球衣"
+      ],
+      "collection": "metro",
+      "variant": 1,
+      "unlock": 2,
+      "tier": 2,
+      "price": 420,
+      "base": "244a9b",
+      "panel": "192d53",
+      "accent": "85d7ea",
+      "pattern": 2
+    },
+    {
+      "id": "metro_1_shorts",
+      "slot": "shorts",
+      "name": "메트로 라인 · 코발트 쇼츠",
+      "names": [
+        "메트로 라인 · 코발트 쇼츠",
+        "Metro Line · Cobalt Shorts",
+        "メトロライン · コバルト ショーツ",
+        "都市线路 · 钴蓝 短裤"
+      ],
+      "collection": "metro",
+      "variant": 1,
+      "unlock": 2,
+      "tier": 2,
+      "price": 380,
+      "base": "192d53",
+      "panel": "244a9b",
+      "accent": "85d7ea",
+      "pattern": 3
+    },
+    {
+      "id": "metro_1_shoes",
+      "slot": "shoes",
+      "name": "메트로 라인 · 코발트 하이탑",
+      "names": [
+        "메트로 라인 · 코발트 하이탑",
+        "Metro Line · Cobalt High-Tops",
+        "メトロライン · コバルト ハイカット",
+        "都市线路 · 钴蓝 高帮鞋"
+      ],
+      "collection": "metro",
+      "variant": 1,
+      "unlock": 2,
+      "tier": 2,
+      "price": 480,
+      "base": "244a9b",
+      "panel": "192d53",
+      "accent": "85d7ea",
+      "pattern": 3
+    },
+    {
+      "id": "metro_2_jersey",
+      "slot": "jersey",
+      "name": "메트로 라인 · 레일 저지",
+      "names": [
+        "메트로 라인 · 레일 저지",
+        "Metro Line · Rail Jersey",
+        "メトロライン · レール ジャージ",
+        "都市线路 · 轨道 球衣"
+      ],
+      "collection": "metro",
+      "variant": 2,
+      "unlock": 2,
+      "tier": 2,
+      "price": 470,
+      "base": "63778a",
+      "panel": "273d50",
+      "accent": "f1d280",
+      "pattern": 2
+    },
+    {
+      "id": "metro_2_shorts",
+      "slot": "shorts",
+      "name": "메트로 라인 · 레일 쇼츠",
+      "names": [
+        "메트로 라인 · 레일 쇼츠",
+        "Metro Line · Rail Shorts",
+        "メトロライン · レール ショーツ",
+        "都市线路 · 轨道 短裤"
+      ],
+      "collection": "metro",
+      "variant": 2,
+      "unlock": 2,
+      "tier": 2,
+      "price": 430,
+      "base": "273d50",
+      "panel": "63778a",
+      "accent": "f1d280",
+      "pattern": 3
+    },
+    {
+      "id": "metro_2_shoes",
+      "slot": "shoes",
+      "name": "메트로 라인 · 레일 하이탑",
+      "names": [
+        "메트로 라인 · 레일 하이탑",
+        "Metro Line · Rail High-Tops",
+        "メトロライン · レール ハイカット",
+        "都市线路 · 轨道 高帮鞋"
+      ],
+      "collection": "metro",
+      "variant": 2,
+      "unlock": 2,
+      "tier": 2,
+      "price": 530,
+      "base": "63778a",
+      "panel": "273d50",
+      "accent": "f1d280",
+      "pattern": 3
+    },
+    {
+      "id": "metro_3_jersey",
+      "slot": "jersey",
+      "name": "메트로 라인 · 체리 저지",
+      "names": [
+        "메트로 라인 · 체리 저지",
+        "Metro Line · Cherry Jersey",
+        "メトロライン · チェリー ジャージ",
+        "都市线路 · 樱桃 球衣"
+      ],
+      "collection": "metro",
+      "variant": 3,
+      "unlock": 2,
+      "tier": 2,
+      "price": 510,
+      "base": "b64668",
+      "panel": "542d58",
+      "accent": "f7d9c1",
+      "pattern": 2
+    },
+    {
+      "id": "metro_3_shorts",
+      "slot": "shorts",
+      "name": "메트로 라인 · 체리 쇼츠",
+      "names": [
+        "메트로 라인 · 체리 쇼츠",
+        "Metro Line · Cherry Shorts",
+        "メトロライン · チェリー ショーツ",
+        "都市线路 · 樱桃 短裤"
+      ],
+      "collection": "metro",
+      "variant": 3,
+      "unlock": 2,
+      "tier": 2,
+      "price": 470,
+      "base": "542d58",
+      "panel": "b64668",
+      "accent": "f7d9c1",
+      "pattern": 3
+    },
+    {
+      "id": "metro_3_shoes",
+      "slot": "shoes",
+      "name": "메트로 라인 · 체리 하이탑",
+      "names": [
+        "메트로 라인 · 체리 하이탑",
+        "Metro Line · Cherry High-Tops",
+        "メトロライン · チェリー ハイカット",
+        "都市线路 · 樱桃 高帮鞋"
+      ],
+      "collection": "metro",
+      "variant": 3,
+      "unlock": 2,
+      "tier": 2,
+      "price": 570,
+      "base": "b64668",
+      "panel": "542d58",
+      "accent": "f7d9c1",
+      "pattern": 3
+    },
+    {
+      "id": "coast_1_jersey",
+      "slot": "jersey",
+      "name": "코스트 웨이브 · 라군 저지",
+      "names": [
+        "코스트 웨이브 · 라군 저지",
+        "Coast Wave · Lagoon Jersey",
+        "コーストウェーブ · ラグーン ジャージ",
+        "海岸浪潮 · 泻湖 球衣"
+      ],
+      "collection": "coast",
+      "variant": 1,
+      "unlock": 3,
+      "tier": 2,
+      "price": 560,
+      "base": "43b3ac",
+      "panel": "246977",
+      "accent": "f7e5b7",
+      "pattern": 3
+    },
+    {
+      "id": "coast_1_shorts",
+      "slot": "shorts",
+      "name": "코스트 웨이브 · 라군 쇼츠",
+      "names": [
+        "코스트 웨이브 · 라군 쇼츠",
+        "Coast Wave · Lagoon Shorts",
+        "コーストウェーブ · ラグーン ショーツ",
+        "海岸浪潮 · 泻湖 短裤"
+      ],
+      "collection": "coast",
+      "variant": 1,
+      "unlock": 3,
+      "tier": 2,
+      "price": 520,
+      "base": "246977",
+      "panel": "43b3ac",
+      "accent": "f7e5b7",
+      "pattern": 4
+    },
+    {
+      "id": "coast_1_shoes",
+      "slot": "shoes",
+      "name": "코스트 웨이브 · 라군 하이탑",
+      "names": [
+        "코스트 웨이브 · 라군 하이탑",
+        "Coast Wave · Lagoon High-Tops",
+        "コーストウェーブ · ラグーン ハイカット",
+        "海岸浪潮 · 泻湖 高帮鞋"
+      ],
+      "collection": "coast",
+      "variant": 1,
+      "unlock": 3,
+      "tier": 2,
+      "price": 620,
+      "base": "43b3ac",
+      "panel": "246977",
+      "accent": "f7e5b7",
+      "pattern": 4
+    },
+    {
+      "id": "coast_2_jersey",
+      "slot": "jersey",
+      "name": "코스트 웨이브 · 코랄 저지",
+      "names": [
+        "코스트 웨이브 · 코랄 저지",
+        "Coast Wave · Coral Jersey",
+        "コーストウェーブ · コーラル ジャージ",
+        "海岸浪潮 · 珊瑚 球衣"
+      ],
+      "collection": "coast",
+      "variant": 2,
+      "unlock": 3,
+      "tier": 2,
+      "price": 610,
+      "base": "e9856a",
+      "panel": "a5507b",
+      "accent": "fff0c8",
+      "pattern": 3
+    },
+    {
+      "id": "coast_2_shorts",
+      "slot": "shorts",
+      "name": "코스트 웨이브 · 코랄 쇼츠",
+      "names": [
+        "코스트 웨이브 · 코랄 쇼츠",
+        "Coast Wave · Coral Shorts",
+        "コーストウェーブ · コーラル ショーツ",
+        "海岸浪潮 · 珊瑚 短裤"
+      ],
+      "collection": "coast",
+      "variant": 2,
+      "unlock": 3,
+      "tier": 2,
+      "price": 570,
+      "base": "a5507b",
+      "panel": "e9856a",
+      "accent": "fff0c8",
+      "pattern": 4
+    },
+    {
+      "id": "coast_2_shoes",
+      "slot": "shoes",
+      "name": "코스트 웨이브 · 코랄 하이탑",
+      "names": [
+        "코스트 웨이브 · 코랄 하이탑",
+        "Coast Wave · Coral High-Tops",
+        "コーストウェーブ · コーラル ハイカット",
+        "海岸浪潮 · 珊瑚 高帮鞋"
+      ],
+      "collection": "coast",
+      "variant": 2,
+      "unlock": 3,
+      "tier": 2,
+      "price": 670,
+      "base": "e9856a",
+      "panel": "a5507b",
+      "accent": "fff0c8",
+      "pattern": 4
+    },
+    {
+      "id": "coast_3_jersey",
+      "slot": "jersey",
+      "name": "코스트 웨이브 · 마린 저지",
+      "names": [
+        "코스트 웨이브 · 마린 저지",
+        "Coast Wave · Marine Jersey",
+        "コーストウェーブ · マリン ジャージ",
+        "海岸浪潮 · 海蓝 球衣"
+      ],
+      "collection": "coast",
+      "variant": 3,
+      "unlock": 3,
+      "tier": 2,
+      "price": 650,
+      "base": "437cb6",
+      "panel": "84cdd0",
+      "accent": "f5e5b2",
+      "pattern": 3
+    },
+    {
+      "id": "coast_3_shorts",
+      "slot": "shorts",
+      "name": "코스트 웨이브 · 마린 쇼츠",
+      "names": [
+        "코스트 웨이브 · 마린 쇼츠",
+        "Coast Wave · Marine Shorts",
+        "コーストウェーブ · マリン ショーツ",
+        "海岸浪潮 · 海蓝 短裤"
+      ],
+      "collection": "coast",
+      "variant": 3,
+      "unlock": 3,
+      "tier": 2,
+      "price": 610,
+      "base": "84cdd0",
+      "panel": "437cb6",
+      "accent": "f5e5b2",
+      "pattern": 4
+    },
+    {
+      "id": "coast_3_shoes",
+      "slot": "shoes",
+      "name": "코스트 웨이브 · 마린 하이탑",
+      "names": [
+        "코스트 웨이브 · 마린 하이탑",
+        "Coast Wave · Marine High-Tops",
+        "コーストウェーブ · マリン ハイカット",
+        "海岸浪潮 · 海蓝 高帮鞋"
+      ],
+      "collection": "coast",
+      "variant": 3,
+      "unlock": 3,
+      "tier": 2,
+      "price": 710,
+      "base": "437cb6",
+      "panel": "84cdd0",
+      "accent": "f5e5b2",
+      "pattern": 4
+    },
+    {
+      "id": "retro_1_jersey",
+      "slot": "jersey",
+      "name": "레트로 체커 · 머스터드 저지",
+      "names": [
+        "레트로 체커 · 머스터드 저지",
+        "Retro Checker · Mustard Jersey",
+        "レトロチェッカー · マスタード ジャージ",
+        "复古棋盘 · 芥末 球衣"
+      ],
+      "collection": "retro",
+      "variant": 1,
+      "unlock": 4,
+      "tier": 3,
+      "price": 760,
+      "base": "c99b44",
+      "panel": "4b3d42",
+      "accent": "f5dfaa",
+      "pattern": 6
+    },
+    {
+      "id": "retro_1_shorts",
+      "slot": "shorts",
+      "name": "레트로 체커 · 머스터드 쇼츠",
+      "names": [
+        "레트로 체커 · 머스터드 쇼츠",
+        "Retro Checker · Mustard Shorts",
+        "レトロチェッカー · マスタード ショーツ",
+        "复古棋盘 · 芥末 短裤"
+      ],
+      "collection": "retro",
+      "variant": 1,
+      "unlock": 4,
+      "tier": 3,
+      "price": 720,
+      "base": "4b3d42",
+      "panel": "c99b44",
+      "accent": "f5dfaa",
+      "pattern": 5
+    },
+    {
+      "id": "retro_1_shoes",
+      "slot": "shoes",
+      "name": "레트로 체커 · 머스터드 하이탑",
+      "names": [
+        "레트로 체커 · 머스터드 하이탑",
+        "Retro Checker · Mustard High-Tops",
+        "レトロチェッカー · マスタード ハイカット",
+        "复古棋盘 · 芥末 高帮鞋"
+      ],
+      "collection": "retro",
+      "variant": 1,
+      "unlock": 4,
+      "tier": 3,
+      "price": 820,
+      "base": "c99b44",
+      "panel": "4b3d42",
+      "accent": "f5dfaa",
+      "pattern": 5
+    },
+    {
+      "id": "retro_2_jersey",
+      "slot": "jersey",
+      "name": "레트로 체커 · 플럼 저지",
+      "names": [
+        "레트로 체커 · 플럼 저지",
+        "Retro Checker · Plum Jersey",
+        "レトロチェッカー · プラム ジャージ",
+        "复古棋盘 · 梅紫 球衣"
+      ],
+      "collection": "retro",
+      "variant": 2,
+      "unlock": 4,
+      "tier": 3,
+      "price": 810,
+      "base": "795178",
+      "panel": "d3a789",
+      "accent": "f8e1b5",
+      "pattern": 6
+    },
+    {
+      "id": "retro_2_shorts",
+      "slot": "shorts",
+      "name": "레트로 체커 · 플럼 쇼츠",
+      "names": [
+        "레트로 체커 · 플럼 쇼츠",
+        "Retro Checker · Plum Shorts",
+        "レトロチェッカー · プラム ショーツ",
+        "复古棋盘 · 梅紫 短裤"
+      ],
+      "collection": "retro",
+      "variant": 2,
+      "unlock": 4,
+      "tier": 3,
+      "price": 770,
+      "base": "d3a789",
+      "panel": "795178",
+      "accent": "f8e1b5",
+      "pattern": 5
+    },
+    {
+      "id": "retro_2_shoes",
+      "slot": "shoes",
+      "name": "레트로 체커 · 플럼 하이탑",
+      "names": [
+        "레트로 체커 · 플럼 하이탑",
+        "Retro Checker · Plum High-Tops",
+        "レトロチェッカー · プラム ハイカット",
+        "复古棋盘 · 梅紫 高帮鞋"
+      ],
+      "collection": "retro",
+      "variant": 2,
+      "unlock": 4,
+      "tier": 3,
+      "price": 870,
+      "base": "795178",
+      "panel": "d3a789",
+      "accent": "f8e1b5",
+      "pattern": 5
+    },
+    {
+      "id": "retro_3_jersey",
+      "slot": "jersey",
+      "name": "레트로 체커 · 민트 저지",
+      "names": [
+        "레트로 체커 · 민트 저지",
+        "Retro Checker · Mint Jersey",
+        "レトロチェッカー · ミント ジャージ",
+        "复古棋盘 · 薄荷 球衣"
+      ],
+      "collection": "retro",
+      "variant": 3,
+      "unlock": 4,
+      "tier": 3,
+      "price": 850,
+      "base": "75b49c",
+      "panel": "315961",
+      "accent": "f1e4bd",
+      "pattern": 6
+    },
+    {
+      "id": "retro_3_shorts",
+      "slot": "shorts",
+      "name": "레트로 체커 · 민트 쇼츠",
+      "names": [
+        "레트로 체커 · 민트 쇼츠",
+        "Retro Checker · Mint Shorts",
+        "レトロチェッカー · ミント ショーツ",
+        "复古棋盘 · 薄荷 短裤"
+      ],
+      "collection": "retro",
+      "variant": 3,
+      "unlock": 4,
+      "tier": 3,
+      "price": 810,
+      "base": "315961",
+      "panel": "75b49c",
+      "accent": "f1e4bd",
+      "pattern": 5
+    },
+    {
+      "id": "retro_3_shoes",
+      "slot": "shoes",
+      "name": "레트로 체커 · 민트 하이탑",
+      "names": [
+        "레트로 체커 · 민트 하이탑",
+        "Retro Checker · Mint High-Tops",
+        "レトロチェッカー · ミント ハイカット",
+        "复古棋盘 · 薄荷 高帮鞋"
+      ],
+      "collection": "retro",
+      "variant": 3,
+      "unlock": 4,
+      "tier": 3,
+      "price": 910,
+      "base": "75b49c",
+      "panel": "315961",
+      "accent": "f1e4bd",
+      "pattern": 5
+    },
+    {
+      "id": "neon_1_jersey",
+      "slot": "jersey",
+      "name": "네온 나이트 · 라임 저지",
+      "names": [
+        "네온 나이트 · 라임 저지",
+        "Neon Night · Lime Jersey",
+        "ネオンナイト · ライム ジャージ",
+        "霓虹之夜 · 青柠 球衣"
+      ],
+      "collection": "neon",
+      "variant": 1,
+      "unlock": 5,
+      "tier": 3,
+      "price": 980,
+      "base": "263343",
+      "panel": "a7df58",
+      "accent": "d5f58d",
+      "pattern": 7
+    },
+    {
+      "id": "neon_1_shorts",
+      "slot": "shorts",
+      "name": "네온 나이트 · 라임 쇼츠",
+      "names": [
+        "네온 나이트 · 라임 쇼츠",
+        "Neon Night · Lime Shorts",
+        "ネオンナイト · ライム ショーツ",
+        "霓虹之夜 · 青柠 短裤"
+      ],
+      "collection": "neon",
+      "variant": 1,
+      "unlock": 5,
+      "tier": 3,
+      "price": 940,
+      "base": "a7df58",
+      "panel": "263343",
+      "accent": "d5f58d",
+      "pattern": 6
+    },
+    {
+      "id": "neon_1_shoes",
+      "slot": "shoes",
+      "name": "네온 나이트 · 라임 하이탑",
+      "names": [
+        "네온 나이트 · 라임 하이탑",
+        "Neon Night · Lime High-Tops",
+        "ネオンナイト · ライム ハイカット",
+        "霓虹之夜 · 青柠 高帮鞋"
+      ],
+      "collection": "neon",
+      "variant": 1,
+      "unlock": 5,
+      "tier": 3,
+      "price": 1040,
+      "base": "263343",
+      "panel": "a7df58",
+      "accent": "d5f58d",
+      "pattern": 6
+    },
+    {
+      "id": "neon_2_jersey",
+      "slot": "jersey",
+      "name": "네온 나이트 · 바이올렛 저지",
+      "names": [
+        "네온 나이트 · 바이올렛 저지",
+        "Neon Night · Violet Jersey",
+        "ネオンナイト · バイオレット ジャージ",
+        "霓虹之夜 · 紫罗兰 球衣"
+      ],
+      "collection": "neon",
+      "variant": 2,
+      "unlock": 5,
+      "tier": 3,
+      "price": 1030,
+      "base": "433761",
+      "panel": "bc86dc",
+      "accent": "e4c9ed",
+      "pattern": 7
+    },
+    {
+      "id": "neon_2_shorts",
+      "slot": "shorts",
+      "name": "네온 나이트 · 바이올렛 쇼츠",
+      "names": [
+        "네온 나이트 · 바이올렛 쇼츠",
+        "Neon Night · Violet Shorts",
+        "ネオンナイト · バイオレット ショーツ",
+        "霓虹之夜 · 紫罗兰 短裤"
+      ],
+      "collection": "neon",
+      "variant": 2,
+      "unlock": 5,
+      "tier": 3,
+      "price": 990,
+      "base": "bc86dc",
+      "panel": "433761",
+      "accent": "e4c9ed",
+      "pattern": 6
+    },
+    {
+      "id": "neon_2_shoes",
+      "slot": "shoes",
+      "name": "네온 나이트 · 바이올렛 하이탑",
+      "names": [
+        "네온 나이트 · 바이올렛 하이탑",
+        "Neon Night · Violet High-Tops",
+        "ネオンナイト · バイオレット ハイカット",
+        "霓虹之夜 · 紫罗兰 高帮鞋"
+      ],
+      "collection": "neon",
+      "variant": 2,
+      "unlock": 5,
+      "tier": 3,
+      "price": 1090,
+      "base": "433761",
+      "panel": "bc86dc",
+      "accent": "e4c9ed",
+      "pattern": 6
+    },
+    {
+      "id": "neon_3_jersey",
+      "slot": "jersey",
+      "name": "네온 나이트 · 사이버 저지",
+      "names": [
+        "네온 나이트 · 사이버 저지",
+        "Neon Night · Cyber Jersey",
+        "ネオンナイト · サイバー ジャージ",
+        "霓虹之夜 · 赛博 球衣"
+      ],
+      "collection": "neon",
+      "variant": 3,
+      "unlock": 5,
+      "tier": 3,
+      "price": 1070,
+      "base": "283b51",
+      "panel": "49c8d9",
+      "accent": "dbefec",
+      "pattern": 7
+    },
+    {
+      "id": "neon_3_shorts",
+      "slot": "shorts",
+      "name": "네온 나이트 · 사이버 쇼츠",
+      "names": [
+        "네온 나이트 · 사이버 쇼츠",
+        "Neon Night · Cyber Shorts",
+        "ネオンナイト · サイバー ショーツ",
+        "霓虹之夜 · 赛博 短裤"
+      ],
+      "collection": "neon",
+      "variant": 3,
+      "unlock": 5,
+      "tier": 3,
+      "price": 1030,
+      "base": "49c8d9",
+      "panel": "283b51",
+      "accent": "dbefec",
+      "pattern": 6
+    },
+    {
+      "id": "neon_3_shoes",
+      "slot": "shoes",
+      "name": "네온 나이트 · 사이버 하이탑",
+      "names": [
+        "네온 나이트 · 사이버 하이탑",
+        "Neon Night · Cyber High-Tops",
+        "ネオンナイト · サイバー ハイカット",
+        "霓虹之夜 · 赛博 高帮鞋"
+      ],
+      "collection": "neon",
+      "variant": 3,
+      "unlock": 5,
+      "tier": 3,
+      "price": 1130,
+      "base": "283b51",
+      "panel": "49c8d9",
+      "accent": "dbefec",
+      "pattern": 6
+    },
+    {
+      "id": "circuit_1_jersey",
+      "slot": "jersey",
+      "name": "서킷 러너 · 레이싱 저지",
+      "names": [
+        "서킷 러너 · 레이싱 저지",
+        "Circuit Runner · Racing Jersey",
+        "サーキットランナー · レーシング ジャージ",
+        "赛道疾驰 · 竞速 球衣"
+      ],
+      "collection": "circuit",
+      "variant": 1,
+      "unlock": 6,
+      "tier": 3,
+      "price": 1250,
+      "base": "b7463a",
+      "panel": "f0d5ad",
+      "accent": "2b4250",
+      "pattern": 5
+    },
+    {
+      "id": "circuit_1_shorts",
+      "slot": "shorts",
+      "name": "서킷 러너 · 레이싱 쇼츠",
+      "names": [
+        "서킷 러너 · 레이싱 쇼츠",
+        "Circuit Runner · Racing Shorts",
+        "サーキットランナー · レーシング ショーツ",
+        "赛道疾驰 · 竞速 短裤"
+      ],
+      "collection": "circuit",
+      "variant": 1,
+      "unlock": 6,
+      "tier": 3,
+      "price": 1210,
+      "base": "f0d5ad",
+      "panel": "b7463a",
+      "accent": "2b4250",
+      "pattern": 7
+    },
+    {
+      "id": "circuit_1_shoes",
+      "slot": "shoes",
+      "name": "서킷 러너 · 레이싱 하이탑",
+      "names": [
+        "서킷 러너 · 레이싱 하이탑",
+        "Circuit Runner · Racing High-Tops",
+        "サーキットランナー · レーシング ハイカット",
+        "赛道疾驰 · 竞速 高帮鞋"
+      ],
+      "collection": "circuit",
+      "variant": 1,
+      "unlock": 6,
+      "tier": 3,
+      "price": 1310,
+      "base": "b7463a",
+      "panel": "f0d5ad",
+      "accent": "2b4250",
+      "pattern": 7
+    },
+    {
+      "id": "circuit_2_jersey",
+      "slot": "jersey",
+      "name": "서킷 러너 · 옥탄 저지",
+      "names": [
+        "서킷 러너 · 옥탄 저지",
+        "Circuit Runner · Octane Jersey",
+        "サーキットランナー · オクタン ジャージ",
+        "赛道疾驰 · 辛烷 球衣"
+      ],
+      "collection": "circuit",
+      "variant": 2,
+      "unlock": 6,
+      "tier": 3,
+      "price": 1300,
+      "base": "e89c42",
+      "panel": "33434d",
+      "accent": "f3deb1",
+      "pattern": 5
+    },
+    {
+      "id": "circuit_2_shorts",
+      "slot": "shorts",
+      "name": "서킷 러너 · 옥탄 쇼츠",
+      "names": [
+        "서킷 러너 · 옥탄 쇼츠",
+        "Circuit Runner · Octane Shorts",
+        "サーキットランナー · オクタン ショーツ",
+        "赛道疾驰 · 辛烷 短裤"
+      ],
+      "collection": "circuit",
+      "variant": 2,
+      "unlock": 6,
+      "tier": 3,
+      "price": 1260,
+      "base": "33434d",
+      "panel": "e89c42",
+      "accent": "f3deb1",
+      "pattern": 7
+    },
+    {
+      "id": "circuit_2_shoes",
+      "slot": "shoes",
+      "name": "서킷 러너 · 옥탄 하이탑",
+      "names": [
+        "서킷 러너 · 옥탄 하이탑",
+        "Circuit Runner · Octane High-Tops",
+        "サーキットランナー · オクタン ハイカット",
+        "赛道疾驰 · 辛烷 高帮鞋"
+      ],
+      "collection": "circuit",
+      "variant": 2,
+      "unlock": 6,
+      "tier": 3,
+      "price": 1360,
+      "base": "e89c42",
+      "panel": "33434d",
+      "accent": "f3deb1",
+      "pattern": 7
+    },
+    {
+      "id": "circuit_3_jersey",
+      "slot": "jersey",
+      "name": "서킷 러너 · 아크틱 저지",
+      "names": [
+        "서킷 러너 · 아크틱 저지",
+        "Circuit Runner · Arctic Jersey",
+        "サーキットランナー · アークティック ジャージ",
+        "赛道疾驰 · 极地 球衣"
+      ],
+      "collection": "circuit",
+      "variant": 3,
+      "unlock": 6,
+      "tier": 3,
+      "price": 1340,
+      "base": "d4e6e5",
+      "panel": "3d7186",
+      "accent": "d95e4c",
+      "pattern": 5
+    },
+    {
+      "id": "circuit_3_shorts",
+      "slot": "shorts",
+      "name": "서킷 러너 · 아크틱 쇼츠",
+      "names": [
+        "서킷 러너 · 아크틱 쇼츠",
+        "Circuit Runner · Arctic Shorts",
+        "サーキットランナー · アークティック ショーツ",
+        "赛道疾驰 · 极地 短裤"
+      ],
+      "collection": "circuit",
+      "variant": 3,
+      "unlock": 6,
+      "tier": 3,
+      "price": 1300,
+      "base": "3d7186",
+      "panel": "d4e6e5",
+      "accent": "d95e4c",
+      "pattern": 7
+    },
+    {
+      "id": "circuit_3_shoes",
+      "slot": "shoes",
+      "name": "서킷 러너 · 아크틱 하이탑",
+      "names": [
+        "서킷 러너 · 아크틱 하이탑",
+        "Circuit Runner · Arctic High-Tops",
+        "サーキットランナー · アークティック ハイカット",
+        "赛道疾驰 · 极地 高帮鞋"
+      ],
+      "collection": "circuit",
+      "variant": 3,
+      "unlock": 6,
+      "tier": 3,
+      "price": 1400,
+      "base": "d4e6e5",
+      "panel": "3d7186",
+      "accent": "d95e4c",
+      "pattern": 7
+    },
+    {
+      "id": "skyline_1_jersey",
+      "slot": "jersey",
+      "name": "스카이라인 · 트와일라잇 저지",
+      "names": [
+        "스카이라인 · 트와일라잇 저지",
+        "Skyline · Twilight Jersey",
+        "スカイライン · トワイライト ジャージ",
+        "城市天际 · 暮光 球衣"
+      ],
+      "collection": "skyline",
+      "variant": 1,
+      "unlock": 7,
+      "tier": 4,
+      "price": 1580,
+      "base": "4b548b",
+      "panel": "b983b1",
+      "accent": "f6c797",
+      "pattern": 8
+    },
+    {
+      "id": "skyline_1_shorts",
+      "slot": "shorts",
+      "name": "스카이라인 · 트와일라잇 쇼츠",
+      "names": [
+        "스카이라인 · 트와일라잇 쇼츠",
+        "Skyline · Twilight Shorts",
+        "スカイライン · トワイライト ショーツ",
+        "城市天际 · 暮光 短裤"
+      ],
+      "collection": "skyline",
+      "variant": 1,
+      "unlock": 7,
+      "tier": 4,
+      "price": 1540,
+      "base": "b983b1",
+      "panel": "4b548b",
+      "accent": "f6c797",
+      "pattern": 8
+    },
+    {
+      "id": "skyline_1_shoes",
+      "slot": "shoes",
+      "name": "스카이라인 · 트와일라잇 하이탑",
+      "names": [
+        "스카이라인 · 트와일라잇 하이탑",
+        "Skyline · Twilight High-Tops",
+        "スカイライン · トワイライト ハイカット",
+        "城市天际 · 暮光 高帮鞋"
+      ],
+      "collection": "skyline",
+      "variant": 1,
+      "unlock": 7,
+      "tier": 4,
+      "price": 1640,
+      "base": "4b548b",
+      "panel": "b983b1",
+      "accent": "f6c797",
+      "pattern": 8
+    },
+    {
+      "id": "skyline_2_jersey",
+      "slot": "jersey",
+      "name": "스카이라인 · 선라이즈 저지",
+      "names": [
+        "스카이라인 · 선라이즈 저지",
+        "Skyline · Sunrise Jersey",
+        "スカイライン · サンライズ ジャージ",
+        "城市天际 · 日出 球衣"
+      ],
+      "collection": "skyline",
+      "variant": 2,
+      "unlock": 7,
+      "tier": 4,
+      "price": 1630,
+      "base": "db8359",
+      "panel": "b84e67",
+      "accent": "f3d9a9",
+      "pattern": 8
+    },
+    {
+      "id": "skyline_2_shorts",
+      "slot": "shorts",
+      "name": "스카이라인 · 선라이즈 쇼츠",
+      "names": [
+        "스카이라인 · 선라이즈 쇼츠",
+        "Skyline · Sunrise Shorts",
+        "スカイライン · サンライズ ショーツ",
+        "城市天际 · 日出 短裤"
+      ],
+      "collection": "skyline",
+      "variant": 2,
+      "unlock": 7,
+      "tier": 4,
+      "price": 1590,
+      "base": "b84e67",
+      "panel": "db8359",
+      "accent": "f3d9a9",
+      "pattern": 8
+    },
+    {
+      "id": "skyline_2_shoes",
+      "slot": "shoes",
+      "name": "스카이라인 · 선라이즈 하이탑",
+      "names": [
+        "스카이라인 · 선라이즈 하이탑",
+        "Skyline · Sunrise High-Tops",
+        "スカイライン · サンライズ ハイカット",
+        "城市天际 · 日出 高帮鞋"
+      ],
+      "collection": "skyline",
+      "variant": 2,
+      "unlock": 7,
+      "tier": 4,
+      "price": 1690,
+      "base": "db8359",
+      "panel": "b84e67",
+      "accent": "f3d9a9",
+      "pattern": 8
+    },
+    {
+      "id": "skyline_3_jersey",
+      "slot": "jersey",
+      "name": "스카이라인 · 스톰 저지",
+      "names": [
+        "스카이라인 · 스톰 저지",
+        "Skyline · Storm Jersey",
+        "スカイライン · ストーム ジャージ",
+        "城市天际 · 风暴 球衣"
+      ],
+      "collection": "skyline",
+      "variant": 3,
+      "unlock": 7,
+      "tier": 4,
+      "price": 1670,
+      "base": "526276",
+      "panel": "89a8b5",
+      "accent": "e6dcb8",
+      "pattern": 8
+    },
+    {
+      "id": "skyline_3_shorts",
+      "slot": "shorts",
+      "name": "스카이라인 · 스톰 쇼츠",
+      "names": [
+        "스카이라인 · 스톰 쇼츠",
+        "Skyline · Storm Shorts",
+        "スカイライン · ストーム ショーツ",
+        "城市天际 · 风暴 短裤"
+      ],
+      "collection": "skyline",
+      "variant": 3,
+      "unlock": 7,
+      "tier": 4,
+      "price": 1630,
+      "base": "89a8b5",
+      "panel": "526276",
+      "accent": "e6dcb8",
+      "pattern": 8
+    },
+    {
+      "id": "skyline_3_shoes",
+      "slot": "shoes",
+      "name": "스카이라인 · 스톰 하이탑",
+      "names": [
+        "스카이라인 · 스톰 하이탑",
+        "Skyline · Storm High-Tops",
+        "スカイライン · ストーム ハイカット",
+        "城市天际 · 风暴 高帮鞋"
+      ],
+      "collection": "skyline",
+      "variant": 3,
+      "unlock": 7,
+      "tier": 4,
+      "price": 1730,
+      "base": "526276",
+      "panel": "89a8b5",
+      "accent": "e6dcb8",
+      "pattern": 8
+    },
+    {
+      "id": "crown_1_jersey",
+      "slot": "jersey",
+      "name": "크라운 클럽 · 블랙 골드 저지",
+      "names": [
+        "크라운 클럽 · 블랙 골드 저지",
+        "Crown Club · Black Gold Jersey",
+        "クラウンクラブ · ブラックゴールド ジャージ",
+        "王冠俱乐部 · 黑金 球衣"
+      ],
+      "collection": "crown",
+      "variant": 1,
+      "unlock": 8,
+      "tier": 4,
+      "price": 2100,
+      "base": "273139",
+      "panel": "a6824f",
+      "accent": "f5d188",
+      "pattern": 1
+    },
+    {
+      "id": "crown_1_shorts",
+      "slot": "shorts",
+      "name": "크라운 클럽 · 블랙 골드 쇼츠",
+      "names": [
+        "크라운 클럽 · 블랙 골드 쇼츠",
+        "Crown Club · Black Gold Shorts",
+        "クラウンクラブ · ブラックゴールド ショーツ",
+        "王冠俱乐部 · 黑金 短裤"
+      ],
+      "collection": "crown",
+      "variant": 1,
+      "unlock": 8,
+      "tier": 4,
+      "price": 2060,
+      "base": "a6824f",
+      "panel": "273139",
+      "accent": "f5d188",
+      "pattern": 2
+    },
+    {
+      "id": "crown_1_shoes",
+      "slot": "shoes",
+      "name": "크라운 클럽 · 블랙 골드 하이탑",
+      "names": [
+        "크라운 클럽 · 블랙 골드 하이탑",
+        "Crown Club · Black Gold High-Tops",
+        "クラウンクラブ · ブラックゴールド ハイカット",
+        "王冠俱乐部 · 黑金 高帮鞋"
+      ],
+      "collection": "crown",
+      "variant": 1,
+      "unlock": 8,
+      "tier": 4,
+      "price": 2160,
+      "base": "273139",
+      "panel": "a6824f",
+      "accent": "f5d188",
+      "pattern": 4
+    },
+    {
+      "id": "crown_2_jersey",
+      "slot": "jersey",
+      "name": "크라운 클럽 · 아이보리 골드 저지",
+      "names": [
+        "크라운 클럽 · 아이보리 골드 저지",
+        "Crown Club · Ivory Gold Jersey",
+        "クラウンクラブ · アイボリーゴールド ジャージ",
+        "王冠俱乐部 · 象牙金 球衣"
+      ],
+      "collection": "crown",
+      "variant": 2,
+      "unlock": 8,
+      "tier": 4,
+      "price": 2150,
+      "base": "e9dfbf",
+      "panel": "947044",
+      "accent": "4a3b39",
+      "pattern": 1
+    },
+    {
+      "id": "crown_2_shorts",
+      "slot": "shorts",
+      "name": "크라운 클럽 · 아이보리 골드 쇼츠",
+      "names": [
+        "크라운 클럽 · 아이보리 골드 쇼츠",
+        "Crown Club · Ivory Gold Shorts",
+        "クラウンクラブ · アイボリーゴールド ショーツ",
+        "王冠俱乐部 · 象牙金 短裤"
+      ],
+      "collection": "crown",
+      "variant": 2,
+      "unlock": 8,
+      "tier": 4,
+      "price": 2110,
+      "base": "947044",
+      "panel": "e9dfbf",
+      "accent": "4a3b39",
+      "pattern": 2
+    },
+    {
+      "id": "crown_2_shoes",
+      "slot": "shoes",
+      "name": "크라운 클럽 · 아이보리 골드 하이탑",
+      "names": [
+        "크라운 클럽 · 아이보리 골드 하이탑",
+        "Crown Club · Ivory Gold High-Tops",
+        "クラウンクラブ · アイボリーゴールド ハイカット",
+        "王冠俱乐部 · 象牙金 高帮鞋"
+      ],
+      "collection": "crown",
+      "variant": 2,
+      "unlock": 8,
+      "tier": 4,
+      "price": 2210,
+      "base": "e9dfbf",
+      "panel": "947044",
+      "accent": "4a3b39",
+      "pattern": 4
+    },
+    {
+      "id": "crown_3_jersey",
+      "slot": "jersey",
+      "name": "크라운 클럽 · 크림슨 골드 저지",
+      "names": [
+        "크라운 클럽 · 크림슨 골드 저지",
+        "Crown Club · Crimson Gold Jersey",
+        "クラウンクラブ · クリムゾンゴールド ジャージ",
+        "王冠俱乐部 · 绯红金 球衣"
+      ],
+      "collection": "crown",
+      "variant": 3,
+      "unlock": 8,
+      "tier": 4,
+      "price": 2190,
+      "base": "8d3546",
+      "panel": "c59a55",
+      "accent": "f2db9c",
+      "pattern": 1
+    },
+    {
+      "id": "crown_3_shorts",
+      "slot": "shorts",
+      "name": "크라운 클럽 · 크림슨 골드 쇼츠",
+      "names": [
+        "크라운 클럽 · 크림슨 골드 쇼츠",
+        "Crown Club · Crimson Gold Shorts",
+        "クラウンクラブ · クリムゾンゴールド ショーツ",
+        "王冠俱乐部 · 绯红金 短裤"
+      ],
+      "collection": "crown",
+      "variant": 3,
+      "unlock": 8,
+      "tier": 4,
+      "price": 2150,
+      "base": "c59a55",
+      "panel": "8d3546",
+      "accent": "f2db9c",
+      "pattern": 2
+    },
+    {
+      "id": "crown_3_shoes",
+      "slot": "shoes",
+      "name": "크라운 클럽 · 크림슨 골드 하이탑",
+      "names": [
+        "크라운 클럽 · 크림슨 골드 하이탑",
+        "Crown Club · Crimson Gold High-Tops",
+        "クラウンクラブ · クリムゾンゴールド ハイカット",
+        "王冠俱乐部 · 绯红金 高帮鞋"
+      ],
+      "collection": "crown",
+      "variant": 3,
+      "unlock": 8,
+      "tier": 4,
+      "price": 2250,
+      "base": "8d3546",
+      "panel": "c59a55",
+      "accent": "f2db9c",
+      "pattern": 4
+    }
+  ],
+  "collections": [
+    {
+      "id": "local",
+      "name": "로컬 리그",
+      "names": [
+        "로컬 리그",
+        "Local League",
+        "ローカルリーグ",
+        "街区联赛"
+      ],
+      "unlock": 0
+    },
+    {
+      "id": "asphalt",
+      "name": "아스팔트 크루",
+      "names": [
+        "아스팔트 크루",
+        "Asphalt Crew",
+        "アスファルトクルー",
+        "沥青街队"
+      ],
+      "unlock": 1
+    },
+    {
+      "id": "metro",
+      "name": "메트로 라인",
+      "names": [
+        "메트로 라인",
+        "Metro Line",
+        "メトロライン",
+        "都市线路"
+      ],
+      "unlock": 2
+    },
+    {
+      "id": "coast",
+      "name": "코스트 웨이브",
+      "names": [
+        "코스트 웨이브",
+        "Coast Wave",
+        "コーストウェーブ",
+        "海岸浪潮"
+      ],
+      "unlock": 3
+    },
+    {
+      "id": "retro",
+      "name": "레트로 체커",
+      "names": [
+        "레트로 체커",
+        "Retro Checker",
+        "レトロチェッカー",
+        "复古棋盘"
+      ],
+      "unlock": 4
+    },
+    {
+      "id": "neon",
+      "name": "네온 나이트",
+      "names": [
+        "네온 나이트",
+        "Neon Night",
+        "ネオンナイト",
+        "霓虹之夜"
+      ],
+      "unlock": 5
+    },
+    {
+      "id": "circuit",
+      "name": "서킷 러너",
+      "names": [
+        "서킷 러너",
+        "Circuit Runner",
+        "サーキットランナー",
+        "赛道疾驰"
+      ],
+      "unlock": 6
+    },
+    {
+      "id": "skyline",
+      "name": "스카이라인",
+      "names": [
+        "스카이라인",
+        "Skyline",
+        "スカイライン",
+        "城市天际"
+      ],
+      "unlock": 7
+    },
+    {
+      "id": "crown",
+      "name": "크라운 클럽",
+      "names": [
+        "크라운 클럽",
+        "Crown Club",
+        "クラウンクラブ",
+        "王冠俱乐部"
+      ],
+      "unlock": 8
+    }
+  ]
+}

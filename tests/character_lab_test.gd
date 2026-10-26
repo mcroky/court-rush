@@ -49,6 +49,13 @@ func run() -> void:
 	for f in range(60):lab._physics_process(1.0/60)
 	for p in lab.athletes:
 		check(not p.defending and not p.boxing_out and p.defense_weight<.01,"Defense state leaked into running")
+	for view in ["side","other-side"]:
+		lab.view=view
+		lab.mode="dribble"
+		for f in 60:lab._physics_process(1.0/60)
+		for p in lab.athletes:
+			check(absf(angle_difference(p.rotation.y,PI*.5 if view=="side" else -PI*.5))<.01,"Side view did not present the requested shoulder")
+			check(p.has_ball and p.ordinary_dribble(),"Side view lost its real gameplay dribble pose")
 	print("CHARACTER_LAB frames=",frames," failures=",failures)
 	lab.queue_free()
 	await process_frame

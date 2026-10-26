@@ -65,6 +65,7 @@ func _physics_process(delta):
 			var drive=smoothstep(.60,.95,actor.cross_phase()) if actor.crossing() else ((1-smoothstep(1.4,2.1,fposmod(elapsed,2.4))) if actor.cross_received else 0.0)
 			facing+=actor.cross_to*.65*drive
 		if view=="side":facing=facing+PI*.5 if mode in ["cut","cross"] else PI*.5
+		if view=="other-side":facing=facing-PI*.5 if mode in ["cut","cross"] else -PI*.5
 		if view=="back":facing=facing+PI if mode in ["cut","cross"] else (PI-.28 if i==0 else PI+.28)
 		var presentation_turn=view!=previous_view
 		actor.facing=facing

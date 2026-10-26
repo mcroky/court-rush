@@ -26,7 +26,7 @@
   'W長押し：低い姿勢で短いサイドステップ。シュート後は相手とリムの間に入り、Wでボックスアウト。落ちるボールをDでキャッチ。相手に回り込まれると解除されます。',
   '1対1は11点先取または90秒。同点なら次の得点で決着。守備リバウンド・スティールの後は外側のラインを出てから攻撃します。',
   'Escで停止・再開。タブ移動、案内表示、言語変更でも一時停止します。メニューを閉じて「再開」を押してください。',
-  'マイ選手はAIコート8段階で経験値・能力・スキルを育成しサーバー保存。練習と通常の1対1に育成報酬はありません。ソロPvEで、オンライン対戦と3対3は今後の予定です。',
+  'マイ選手はAIコート8段階で経験値・能力・スキルを育成しサーバー保存。練習と通常の1対1に育成報酬はありません。育成はソロPvEです。AI3対3は報酬なしで遊べます（Qパス・E切替）。オンライン対戦は今後の予定です。',
   'スマートフォンは横向き推奨。左スティックと右のアクションボタンで操作。シュート準備中だけ、ボタン脇の小さなゲージを表示します。'
  ]],
  'zh-CN':['找到你的节奏。',[
@@ -40,12 +40,14 @@
   '按住 W 进入低姿防守，以短促横移跟防。投篮后站到对手与篮筐之间，按住 W 卡位，再按 D 接下落的球。对手绕到侧面后卡位解除。',
   '1 对 1 先得 11 分或限时 90 秒；平分时下一次得分决胜。防守篮板或抢断后，须先将球带出外线再进攻。',
   'Esc 暂停或继续。切换标签页、查看说明及更改语言时也会暂停。关闭菜单后选择继续游戏。',
-  '“我的球员”包含 8 个 AI 球场，经验、属性与技能保存在服务器。练习及普通 1 对 1 不发成长奖励。目前为单人 PvE，在线对战及 3 对 3 留待后续。',
+  '“我的球员”包含 8 个 AI 球场，经验、属性与技能保存在服务器。练习及普通 1 对 1 不发成长奖励。目前为单人 PvE，AI 3 对 3 无奖励（Q传球、E切换）。在线对战留待后续。',
   '手机建议横屏。使用左侧摇杆和右侧动作按钮，仅在准备投篮时于投篮按钮旁显示细小计时条。'
  ]]
  };
  const news={
- en:['Make contact. Make the block.','v0.7.6 · Block contact',[
+ en:['Your court. Your style.','v0.8.0 · Clothing store & collections',[
+  '94 clothing items: 32 jerseys, 31 shorts and 31 shoes. Buy and equip individual pieces with court coins. Nine new themes, court-clear unlocks, matching outfit previews, rotation and ownership filters. Clothing is cosmetic and saved with your account.',
+  'Start with 300 coins. Career 1v1 first clears earn 120–260 coins, repeat wins 45–80 and losses 20. Practice, casual 1v1 and AI 3v3 give no rewards. AI 3v3 adds two teammates, Q passing and E defender switching. Refined sideways ball-carrying arm and wrist poses are also included.',
   'v0.7.6 · Fixed downward blocks rejected during upward takeoff, early-shot block selection while holding Guard, and the strike direction after a turn. Touch labels now distinguish Block from Rebound.',
   'v0.7.5 · Defense: short alternating side steps, planted transitions from pursuit into a low stance, and smoother arm and shoulder recovery. Height-aware support fixes foot sliding for shorter guards. Character Studio adds low stance, defensive slides and box-out previews.',
   'Fixed foot and knee snaps when stopping or entering blocks and rebounds. Reduced repeated torso and shoulder corrections, refined the rebound-to-dribble handoff and relaxed the free hand. Unchanged HUD text now skips redundant updates.',
@@ -53,9 +55,11 @@
   'Mobile now follows the player at a closer distance. The large shot panel is replaced by a small timing rail beside Shoot, shown only during shot preparation. A smaller scoreboard keeps the court clear.',
   'Choose Korean, English, Japanese or Simplified Chinese. Menus, career, account flows, match hints and help follow your selection, which is saved on this device.',
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
-  'Current career is solo AI 1v1 PvE. Online competition, 3v3 and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
+  'Current career is solo AI 1v1 PvE. AI 3v3 is a separate mode without rewards. Online competition and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['手のひらが届く、その瞬間に。','v0.7.6・ブロック判定の修正',[
+ ja:['コートで、自分らしく。','v0.8.0・ウェアショップとコレクション',[
+  'トップス32・ショーツ31・シューズ31、計94点。コートコインで部位別に購入・着用。新規9テーマ、コート進行による解放、一式試着・回転・所持フィルターを追加。能力値には影響せずアカウントに保存されます。',
+  '初期300コイン。育成1対1の初クリア120〜260、再勝利45〜80、敗北20。練習・通常1対1・AI3対3は報酬なし。AI仲間2人との3対3、Qパス・E守備切替、横から見た持球時の腕と手首の調整も公開します。',
   'v0.7.6 · 上昇中に腕を振り下ろしてもブロックが無効になる不具合、守備を押しながらのシュート直後の選択、方向転換後の打撃方向を修正。タッチ表示もブロックとリバウンドを区別します。',
   'v0.7.5 · 守備：左右の足を交互に運ぶ短いサイドステップ、追走から接地して低く構える動作、腕と肩の回収を調整。身長に合わせた脚の計算で、小柄なガードの足滑りも修正しました。キャラクタースタジオに低い守備・左右のステップ・ボックスアウトを追加しました。',
   '急停止・ブロック・リバウンドへの移行時に足や膝が跳ねる不具合を修正。胴体と肩の補正の重複を減らし、リバウンドからドリブルへ戻る手と反対の手の姿勢を調整しました。同じ試合表示の不要な更新も省きました。',
@@ -63,9 +67,11 @@
   'モバイルは選手に近い追従カメラへ。大きなシュートパネルを廃止し、準備中だけボタン脇の小さなゲージを表示。スコア表示も小さくしました。',
   '韓国語・英語・日本語・簡体字中国語を選択可能。メニュー・育成・アカウント・試合案内・操作説明に適用し、この端末に保存します。',
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
-  '現在の育成はソロAI 1対1 PvEです。オンライン対戦・3対3・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
+  '現在の育成はソロAI 1対1 PvEです。AI3対3は報酬なしの別モードです。オンライン対戦・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['手掌触球，完成封盖。','v0.7.6 · 盖帽判定修复',[
+ 'zh-CN':['球场上的专属风格。','v0.8.0 · 服装商店与收集',[
+  '共94件：32件球衣、31条短裤、31双球鞋。使用球场金币分别购买装备。新增9个主题、球场通关解锁、整套试穿、旋转、拥有状态筛选和收集进度。服装不影响属性，记录保存在账号中。',
+  '初始300金币。成长1对1首通120–260、重复胜利45–80、失败20。练习、普通1对1和AI3对3无奖励。同时发布两名AI队友的3对3、Q传球与E切换防守球员，并调整持球时侧面的手臂和手腕姿势。',
   'v0.7.6 · 修复起跳上升时向下挥掌接触球却被判无效、按住防守时投篮初期误选篮板，以及转向后的封盖方向。触屏按钮区分盖帽和篮板。',
   'v0.7.5 · 防守：调整双脚交替的小幅横移、追防后落脚进入低姿防守的衔接，以及手臂与肩部的回收。按身高计算腿部支撑，修复较矮后卫的脚底滑动。角色工作室新增低姿防守、横向滑步和卡位三种预览。',
   '修复急停、盖帽及篮板动作开始时脚和膝盖突然跳动的问题，减少躯干和肩部的重复修正，调整抢到篮板后恢复运球的手部衔接及另一只手的放松姿势。同时减少相同比赛文字的不必要刷新。',

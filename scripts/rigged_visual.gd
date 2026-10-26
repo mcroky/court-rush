@@ -54,6 +54,7 @@ var pelvis_world_height=0.0
 var stop_height=0.0
 var was_stopping=false
 var last_hand_basis: Array=[Basis.IDENTITY,Basis.IDENTITY]
+var previous_root_basis = Basis.IDENTITY
 var last_action=""
 var action_entry_time=0.0
 var finish_entry_height=0.0
@@ -189,7 +190,7 @@ func aim(index: int, child: int, target: Vector3) -> void:
 	if before.length_squared()<.00001 or after.length_squared()<.00001: return
 	set_bone_rotation(index,Basis(Quaternion(before.normalized(),after.normalized()))*pose.basis)
 
-func solve(chain: Array, world_target: Vector3, pole: Vector3) -> void:
+func solve(chain: Array, world_target: Vector3, pole: Vector3, rear_axis: Vector3 = Vector3.ZERO, rear_limit: float = 0.0) -> void:
 	var root = skeleton.get_bone_global_pose(chain[0]).origin
 	var joint = skeleton.get_bone_global_pose(chain[1]).origin
 	var end = skeleton.get_bone_global_pose(chain[2]).origin
@@ -202,7 +203,25 @@ func solve(chain: Array, world_target: Vector3, pole: Vector3) -> void:
 	var bend = skeleton.to_local(pole)-root
 	bend = (bend-direction*bend.dot(direction)).normalized()
 	if bend.length_squared()<.01: bend = direction.cross(Vector3.RIGHT).normalized()
-	var knee = root+direction*along+bend*sqrt(maxf(0,a*a-along*along))
+	var radius = sqrt(maxf(0,a*a-along*along))
+	if rear_axis.length_squared() > .5 and radius > .001:
+		# Choose a point on the same two-bone circle: the wrist and both
+		# segment lengths stay fixed while shoulder extension is bounded.
+		var forward = (skeleton.global_basis.inverse()*rear_axis).normalized()
+		var cap = -rear_limit/maxf(render_scale,.01)
+		if (direction*along+bend*radius).dot(forward) < cap:
+			var plane = forward-direction*forward.dot(direction)
+			if plane.length() > .001:
+				var projected = plane.normalized()
+				var cosine = clampf((cap-direction.dot(forward)*along)/(radius*plane.length()),-1,1)
+				var across = direction.cross(projected).normalized()*sqrt(maxf(0,1-cosine*cosine))
+				var first = projected*cosine+across
+				var second = projected*cosine-across
+				var up = (skeleton.global_basis.inverse()*Vector3.UP).normalized()
+				var first_score = first.dot(bend)-(4 if (direction*along+first*radius).dot(up)>-.04/render_scale else 0)
+				var second_score = second.dot(bend)-(4 if (direction*along+second*radius).dot(up)>-.04/render_scale else 0)
+				bend = first if first_score >= second_score else second
+	var knee = root+direction*along+bend*radius
 	aim(chain[0],chain[1],knee)
 	aim(chain[1],chain[2],root+direction*distance)
 
@@ -224,6 +243,17 @@ func chest_motion_frame() -> Basis:
 	right=(right-up*right.dot(up)).normalized()
 	var forward=right.cross(up).normalized()
 	return Basis(right,forward.cross(right).normalized(),forward).orthonormalized()
+
+func ball_balance_pose(index: int, shoulder: Vector3, chest_frame: Basis, speed: float) -> Dictionary:
+	# The ball handler's free hand protects the front of the body. A sprint
+	# backswing pulls the upper arm behind the ribs when seen from the side.
+	var side = -1.0 if index == 0 else 1.0
+	var step = (bone_world(feet[index][2]).origin-bone_world(feet[1-index][2]).origin).dot(global_basis.z)
+	var swing = -clampf(step/.60,-1,1)*clampf(speed/3.0,0,1)
+	return {
+		"target":shoulder+chest_frame*Vector3(side*.045,-.27,.26+swing*.09),
+		"guide":shoulder+chest_frame*Vector3(side*.09,-.30,-.09)
+	}
 
 func relaxed_hand_basis(index: int, target: Vector3, pole: Vector3) -> Basis:
 	# Solve to the palm as an extended forearm. Iterating wrist IK with a
@@ -459,6 +489,15 @@ func rebound_pose(actor, index: int, shoulder: Vector3) -> Dictionary:
 
 func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	if teleported: reset_contacts()
+	var hands_before_turn = last_hand_basis.duplicate()
+	if initialized and actor.ordinary_dribble():
+		# A free wrist turns with the athlete before its local swing is eased.
+		# Easing only in world space lets the chest turn past the hand during
+		# a cut, leaving the fingers pointing backwards along the forearm.
+		var free_hand = 0 if actor.dribble_hand > 0 else 1
+		var transport = global_basis.orthonormalized()*previous_root_basis.inverse()
+		last_hand_basis[free_hand] = transport*last_hand_basis[free_hand]
+	previous_root_basis = global_basis.orthonormalized()
 	if actor.action!=last_action:
 		action_entry_time=0
 		action_entry_height=root_height
@@ -803,11 +842,15 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	var anatomical_chest=chest_motion_frame()
 	for i in range(2):
 		var side = -1.0 if i==0 else 1.0
+		var free_dribble_arm = actor.ordinary_dribble() and side!=actor.dribble_hand
 		var athletic_arm=(athletic and basketball_weight>.01) or (not action_pose and not actor.has_ball and speed>.15)
 		var stationary_guard=actor.ordinary_dribble() and speed<.3
 		var holding=actor.has_ball and actor.dribble_ended and actor.action=="idle"
-		var driven = actor.has_ball and (side==actor.dribble_hand or not actor.ordinary_dribble())
-		driven = driven or contact_mode or actor.crossing() or athletic_arm or stationary_guard
+		# Both arms retain their basketball pose through the gap between a
+		# running swing and the standing guard; never drop the free arm back
+		# to an unrelated source-clip wrist while the player brakes.
+		var driven = actor.has_ball
+		driven = driven or contact_mode or actor.crossing() or athletic_arm or stationary_guard or actor.action in ["pass","receive"]
 		arm_weight[i] = move_toward(arm_weight[i],1.0 if driven else 0.0,delta*10)
 		var chain: Array = arms[i]
 		var source_palm=bone_world(chain[2])*palm_offsets[i]
@@ -840,20 +883,22 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			target=actor.cross_ball_world()+Vector3.UP*actor.DRIBBLE_PALM
 		var frame = actor.hands[i].global_basis.orthonormalized()
 		var guide=actor.body.to_global(actor.elbow_pose[i]) if driven else bone_world(chain[1]).origin
-		if (actor.ordinary_dribble() and side==actor.dribble_hand) or actor.crossing():
-			# Bend toward the ribs below the shoulder, rather than lifting an
-			# outward/backward elbow as the palm comes up to receive the ball.
-			guide=bone_world(chain[0]).origin+global_basis*Vector3(side*.025,-.50,.04)
+		if actor.ordinary_dribble() and side==actor.dribble_hand:
+			# The running chest can overtake the low dribble pocket. A pole in
+			# front of that shoulder folds the forearm backwards to reach it.
+			# Keep the elbow below/beside the ribs, behind the receiving wrist,
+			# in the visible chest frame rather than the root's old heading.
+			guide=bone_world(chain[0]).origin+anatomical_chest*Vector3(side*.06,-.30,-.15)
 		if actor.crossing() or cross_weight>0:
 			var chest_frame=anatomical_chest
 			var low_pole=bone_world(chain[0]).origin+Vector3.DOWN*.50+chest_frame.x*side*.015-chest_frame.z*.15
 			guide=guide.lerp(low_pole,1.0 if actor.crossing() else cross_weight)
 		if holding:
-			target=actor.global_position+actor.global_basis*Vector3(side*.125,1.25,.28)
+			target=actor.global_position+actor.global_basis*Vector3(side*.125,1.25*actor.height_ratio,.28*actor.height_ratio)
 			var normal=global_basis.x*-side
 			var fingers=(Vector3.UP*.55+global_basis.z*.83).normalized()
 			frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
-			guide=bone_world(chain[0]).origin+global_basis*Vector3(side*.13,-.30,-.05)
+			guide=bone_world(chain[0]).origin+anatomical_chest*Vector3(side*.13,-.30,-.05)
 		elif stationary_guard and side!=actor.dribble_hand:
 			var shoulder=bone_world(chain[0]).origin
 			target=shoulder+global_basis*Vector3(side*.04,-.32,.18)
@@ -887,6 +932,18 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			target=target.lerp(run_target,run_weight)
 			guide=shoulder+Vector3.DOWN*.50+chest_frame.x*side*.015-chest_frame.z*.15
 			frame=frame.slerp(chest_frame*Basis(Vector3.RIGHT,-.25),run_weight)
+		if actor.action in ["pass","receive"]:
+			target = actor.transfer_pose(i)
+			var entry = smoothstep(0,.12,action_entry_time)
+			target = actor.to_global(entry_palms[i]).lerp(target,entry)
+			var normal = global_basis.x*-side
+			var fingers = (Vector3.UP*.85+global_basis.z*.25).normalized()
+			frame = Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
+			guide = bone_world(chain[0]).origin+global_basis*Vector3(side*.12,-.32,-.12)
+		if free_dribble_arm:
+			var pose = ball_balance_pose(i,bone_world(chain[0]).origin,anatomical_chest,speed)
+			target=pose.target
+			guide=pose.guide
 		if guard_weight>0:
 			# Blend the guard after the running layer so releasing a stance never
 			# replaces the shoulder and palm frame at an arbitrary weight threshold.
@@ -900,7 +957,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			var fingers=(Vector3.UP*.90+anatomical_chest.x*side*.25).normalized()
 			var normal=anatomical_chest.z
 			frame=frame.slerp(Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized(),guard_weight)
-		if actor.ordinary_dribble() or actor.crossing():
+		if (actor.ordinary_dribble() and not free_dribble_arm) or actor.crossing():
 			frame = Basis(actor.global_basis.x,actor.global_basis.z,Vector3.DOWN).orthonormalized()
 			if actor.ordinary_dribble() and side==actor.dribble_hand:
 				var bounce_phase=fposmod(actor.dribble_phase,TAU)/TAU
@@ -943,6 +1000,8 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			target = to_global(previous_palms_local[i].move_toward(desired_local,delta*6.5))
 			target=palm_world[i].move_toward(target,delta*11.0)
 		var wrist_target = target-desired_hand*palm_offsets[i]*render_scale
+		var rear_axis = anatomical_chest.z if actor.ordinary_dribble() else Vector3.ZERO
+		var rear_limit = .105*actor.height_ratio
 		if contact_hand or actor.crossing() or actor.action in ["layup","rebound"] or (actor.stealing() and i==actor.steal_hand):
 			# A bounded scapula reach lets the shoulder help the dribble, not a longer arm.
 			var collar = skeleton.get_bone_parent(chain[0])
@@ -954,14 +1013,26 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			var reach_limit=.12 if contact_hand or actor.crossing() else .32
 			reach_rotation = Quaternion.IDENTITY.slerp(reach_rotation,minf(1,reach_limit/maxf(.001,reach_angle)))
 			set_bone_rotation(collar,Basis(reach_rotation)*collar_pose.basis)
-		solve(chain,wrist_target,guide)
-		if (athletic_arm or stationary_guard) and (not contact_mode or guard_weight>0) and not actor.crossing() and not holding and (not actor.has_ball or side!=actor.dribble_hand):
+		solve(chain,wrist_target,guide,rear_axis,rear_limit)
+		if contact_hand:
+			# A side dribble need not point every finger straight ahead. Let
+			# the hand yaw with the forearm while keeping its normal on the ball.
+			for refinement in 2:
+				var forearm = (bone_world(chain[2]).origin-bone_world(chain[1]).origin).normalized()
+				var fingers = forearm-frame.z*forearm.dot(frame.z)
+				if fingers.length_squared() > .01:
+					fingers=fingers.normalized()
+					frame=Basis(fingers.cross(frame.z).normalized(),fingers,frame.z).orthonormalized()
+					desired_hand=frame*palm_frames[i].inverse()
+					wrist_target=target-desired_hand*palm_offsets[i]*render_scale
+					solve(chain,wrist_target,guide,rear_axis,rear_limit)
+		if free_dribble_arm or ((athletic_arm or stationary_guard) and (not contact_mode or guard_weight>0) and not actor.crossing() and not holding and (not actor.has_ball or side!=actor.dribble_hand)):
 			# The relaxed hand continues the forearm. An upright chest frame here
 			# leaves the wrist cocked upward for the entire running cycle.
 			desired_hand=desired_hand.slerp(relaxed_hand_basis(i,target,guide),1-guard_weight)
 			frame=desired_hand*palm_frames[i]
 			wrist_target=target-desired_hand*palm_offsets[i]*render_scale
-			solve(chain,wrist_target,guide)
+			solve(chain,wrist_target,guide,rear_axis,rear_limit)
 		if actor.crossing():
 			var relax=1-actor.cross_contact_weight(side)
 			var contact_frame=frame
@@ -970,16 +1041,21 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			frame=cross_entry_frames[i].slerp(frame,smoothstep(0,.11,actor.action_time))
 			desired_hand=frame*palm_frames[i].inverse()
 			wrist_target=target-desired_hand*palm_offsets[i]*render_scale
-			solve(chain,wrist_target,guide)
+			solve(chain,wrist_target,guide,rear_axis,rear_limit)
 		# Free-arm forearm alignment is itself a pose change. Bound it after
 		# solving too, so the sending wrist cannot snap when it becomes free.
 		if initialized and (actor.ordinary_dribble() or actor.crossing() or (not action_pose and not actor.has_ball)):
 			var angle=last_hand_basis[i].get_rotation_quaternion().angle_to(desired_hand.get_rotation_quaternion())
 			var wrist_rate=12.0 if not actor.has_ball else 20.0
 			desired_hand=last_hand_basis[i].slerp(desired_hand,minf(1,delta*wrist_rate/maxf(.001,angle)))
+			if actor.ordinary_dribble():
+				# Root transport and local easing must also respect the final
+				# visible wrist speed, including the first frame after a cross.
+				var world_angle=hands_before_turn[i].get_rotation_quaternion().angle_to(desired_hand.get_rotation_quaternion())
+				desired_hand=hands_before_turn[i].slerp(desired_hand,minf(1,delta*23.5/maxf(.001,world_angle)))
 			frame=desired_hand*palm_frames[i]
 			wrist_target=target-desired_hand*palm_offsets[i]*render_scale
-			solve(chain,wrist_target,guide)
+			solve(chain,wrist_target,guide,rear_axis,rear_limit)
 		set_bone_rotation(chain[2],skeleton.global_basis.orthonormalized().inverse()*desired_hand)
 		if driven or arm_weight[i]>.001:
 			var cup=.32
