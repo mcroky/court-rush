@@ -26,3 +26,13 @@
 - 이동 슛288조건/52,932다리 샘플, 최소 준비 발 간격0.2579m·무릎17.93m/s 이하 실패0. 슛 회복48조건, 릴리즈 정렬0.9961 이상·첫 신발 이동5.96cm 이하·무릎17.48m/s 이하 실패0. artifacts/v0810-verified-shot-entry.txt, v0810-carried8-shot_recovery.txt.
 - planted_cut108, defense_shuffle4,428프레임, cross_handoff36·일반 컷12, 스킬 후 대기45, cut_response72, held_ball40, team_match27항목 실패0. 최신 로그는 artifacts/v0810-stable-*.txt, v0810-final-*.txt. 수정 범위와 관련된 기존 검사 기준은 변경하지 않았다.
 -678원문×3번역, 웹 입력/수명주기, 의상 패키징 검사 통과. 실제 브라우저·빌드·공개 확인은 아래에 이어 기록한다. 수치 통과가 모션의 미적 완성·Android 실기기·전체화면60fps 보증을 뜻하지 않는다.
+
+## 브라우저·공개 완료
+
+- Godot 웹 재수출과 셸 생성 완료.20개 셸 파일이 커밋 소스와 일치한다. 코드 파싱 실패는 없고 기존 루트 인증서 저장소 경고는 결과와 구분했다.
+- 소스4830f6b, Pages718095f3089b01f500b81e644cfa155e6e3071c1. GitHub Pages 실행40304094911 success. 고정 주소 https://mcroky.github.io/court-rush/ 에0.8.10을 게시했다.
+- 공개 핵심10개 파일·최신 버전 일치,138항목/12컬렉션·익명 선수401·CORS/WASM MIME 통과. game.pck SHA256:4c41e4158deec4a0692d7c773bb098a25b192c413356e6c45139e5e507d6ec80. artifacts/v0810-public-release.json. 첫 공개 검사는 Pages 반영 전0.8.9를 받아 실패했으며, CI 완료 후 재검사로 실제 새 파일을 확인했다.
+- 로컬 확대 화면에서 느린 측면 빈손 달리기와 보통 속도 드리블의 전방 무릎·큰 반대 팔·공 접촉을 확인했다. artifacts/v0810-run-final.png, v0810-dribble-final.png. 공개390×844 브라우저에서는 달리기→A 크로스→반대 방향 재출발→정지를 확인했다. artifacts/v0810-public-mobile-run.png. 터치 UI 배치도 화면에서 확인했으나 이동 입력은 키보드를 사용했다.
+- 공개 캐릭터 스튜디오의 측면 드리블을 정상 속도로 실행한 뒤 자세를 멈춰 관찰했다. artifacts/v0810-public-dribble.png, v0810-public-stride.png. 로컬·공개 게임과 공개 스튜디오 console warning/error0.
+-0.8.10 업데이트 제목·설명을 ko/en/ja/zh-CN으로 전환 확인 후 한국어 복원. artifacts/v0810-public-updates.png. Roky Studio 최신 카드·요약·기존 게임 링크 확인. artifacts/v0810-studio-update.png.
+- 임시 viewport를 복원하고 자체 검증 탭만 닫았다. 사용자 경기는 초기화하지 않았고 계정·저장·공유 인증 설정을 변경하지 않았다.
