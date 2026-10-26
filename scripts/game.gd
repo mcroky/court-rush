@@ -21,6 +21,10 @@ var court_audio: Node
 var audio_settings: Dictionary = {}
 var audio_settings_json = ""
 var web_input: JavaScriptObject
+var frame_probe=false
+var web_switch_seq=0
+var web_pass_seq=0
+var web_control_reset=-1
 var rng = RandomNumberGenerator.new()
 var time = 0.0
 var mode = "practice"
@@ -250,6 +254,7 @@ func toggle_showroom() -> void:
 	send_state()
 
 func _ready() -> void:
+	frame_probe="--frame-probe" in OS.get_cmdline_user_args()
 	for binding in [["team_pass",KEY_Q],["team_switch",KEY_E]]:
 		if not InputMap.has_action(binding[0]):
 			InputMap.add_action(binding[0])
@@ -266,7 +271,11 @@ func _ready() -> void:
 		return
 	rng.seed = 7137
 	setup_environment()
-	Art.court(self)
+	var static_court=Node3D.new()
+	static_court.name="StaticCourt"
+	add_child(static_court)
+	Art.court(static_court)
+	Art.batch_static(static_court)
 	for i in range(2):
 		var player = Actor.new()
 		add_child(player)
@@ -317,6 +326,8 @@ func setup_environment() -> void:
 	sun.light_color = Color("fff4df")
 	sun.light_energy = 0.85
 	sun.shadow_enabled = true
+	# This bounded half court needs one shadow map, not four depth cascades.
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 45
 	add_child(sun)
 	camera = Camera3D.new()
@@ -355,6 +366,7 @@ func play_sound(name: String, volume: float = -9) -> void:
 	stream.play()
 
 func start_mode(next_mode: String) -> void:
+	get_viewport().msaa_3d=Viewport.MSAA_DISABLED if next_mode=="team" else Viewport.MSAA_2X
 	close_wardrobe()
 	if inspecting: toggle_showroom()
 	var chosen_role: String = players[0].court_role
@@ -592,7 +604,15 @@ func read_controls() -> Dictionary:
 		controls.steal = bool(web_input.steal)
 		controls.guard = bool(web_input.guard)
 		controls["pass"] = bool(web_input.passBall)
-		controls["switch"] = bool(web_input.switchPlayer)
+		var reset=int(web_input.controlReset)
+		var switch_seq=int(web_input.switchSeq)
+		var pass_seq=int(web_input.passSeq)
+		var cancelled=reset!=web_control_reset
+		controls["switch"] = not cancelled and (bool(web_input.switchPlayer) or switch_seq!=web_switch_seq)
+		controls["pass"] = not cancelled and (bool(web_input.passBall) or pass_seq!=web_pass_seq)
+		web_switch_seq=switch_seq
+		web_pass_seq=pass_seq
+		web_control_reset=reset
 		var command = int(web_input.commandId)
 		if command != last_command:
 			last_command = command
@@ -811,6 +831,7 @@ func _physics_process(delta: float) -> void:
 	var right = Vector3(camera.global_basis.x.x, 0, camera.global_basis.x.z).normalized()
 	var down = Vector3(camera.global_basis.z.x, 0, camera.global_basis.z.z).normalized()
 	var desired = right * direction.x + down * direction.y
+	if players[0].action=="shot":players[0].shot_exit_intent=Vector2(desired.x,desired.z)*players[0].athletic_profile().speed
 	var speed: float = players[0].athletic_profile().speed if not input.guard else 2.7
 	if input.guard and players[0].boxing_out: speed = 1.7
 	if players[0].action in ["gather", "shot", "layup", "dunk", "fake", "block", "rebound"]:
@@ -1001,10 +1022,12 @@ func update_actions(delta: float) -> void:
 			if player.action == "shot": player.jump = Actor.shot_height(player.action_time)
 			if before_jump > 0 and player.jump <= 0.001:
 				play_sound("landing", -20)
-				player.feet_world.clear()
+				if player.action!="shot":player.feet_world.clear()
 			if player.action_time >= duration + 0.16:
-				player.action = "idle"
-				player.jump = 0
+				if player.action=="shot":player.finish_shot()
+				else:
+					player.action = "idle"
+					player.jump = 0
 		elif player.action in ["fake", "cross", "steal", "spin", "twostep", "behind", "hesi"] and player.action_time >= DRIBBLE_DURATIONS.get(player.action, .38):
 			if player.action in DRIBBLE_DURATIONS: player.dribble_phase = 0
 			if player.action == "spin": player.rotation.y = player.turn_origin + player.turn_sign * TAU
@@ -1082,6 +1105,7 @@ func separate_players() -> void:
 	var distance = offset.length()
 	# Widen the contact surface as the hips settle, avoiding an instant separation pop.
 	var contact_distance = .7 + .16*maxf(players[0].boxout_weight,players[1].boxout_weight)
+	contact_distance+=maxf(players[0].guard_contact_extra(players[1]),players[1].guard_contact_extra(players[0]))
 	if distance < contact_distance and distance > 0.001:
 		var normal = offset.normalized()
 		var push = normal * (contact_distance - distance)
@@ -1110,6 +1134,8 @@ func begin_gather(index: int) -> void:
 	players[index].shot_gather_yaw = players[index].rotation.y
 	players[index].finish_running = not players[index].dribble_ended and players[index].finish_kind != "shot" and players[index].motion.length() > 1.2
 	players[index].gather_step_start = players[index].step_serial
+	players[index].shot_exit_intent=Vector2.ZERO
+	players[index].shot_recovery_left=0.0
 	players[index].dribble_ended = true
 	players[index].action = "gather"
 	players[index].action_time = 0
@@ -1220,6 +1246,7 @@ func release_ball() -> void:
 	# Release from the rendered hand after takeoff, never from a fixed world height.
 	flight_start = ball.position
 	player.has_ball = false
+	player.dribble_ended = false
 	ball_owner = -1
 	phase = "flight"
 	flight_t = 0
@@ -1556,6 +1583,8 @@ func send_state() -> void:
 		"ball": [snappedf(ball.position.x, 0.01), snappedf(ball.position.y, 0.01), snappedf(ball.position.z, 0.01)],
 		"action": players[0].action, "sound": sound_enabled
 	}
+	if frame_probe:
+		state["profile"]={"processMs":Performance.get_monitor(Performance.TIME_PROCESS)*1000,"physicsMs":Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)*1000,"drawCalls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"primitives":Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),"objects":Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),"adapter":RenderingServer.get_video_adapter_name()}
 	state["finish"] = players[0].finish_kind if players[0].action == "gather" else Rules.finish_type(players[0].position, players[0].motion)
 	state["sweet"] = Rules.release_bonus(shot_hold) > 0 and players[0].action == "gather"
 	state["drill"] = practice_drill

@@ -93,10 +93,56 @@ static func label(parent: Node3D, words: String, pos: Vector3, size: int, color:
 	return text
 
 static func arc(parent: Node3D, center: Vector3, radius: float, start: float, end: float, color: String, width: float = 0.028, count: int = 48) -> void:
+	var lines=Node3D.new()
+	parent.add_child(lines)
 	for i in range(count):
 		var t = lerpf(start, end, float(i) / count)
 		var u = lerpf(start, end, float(i + 1) / count)
-		segment(parent, center + Vector3(cos(t) * radius, 0, sin(t) * radius), center + Vector3(cos(u) * radius, 0, sin(u) * radius), width, color)
+		segment(lines, center + Vector3(cos(t) * radius, 0, sin(t) * radius), center + Vector3(cos(u) * radius, 0, sin(u) * radius), width, color)
+	batch_static(lines)
+
+static func batch_static(parent: Node3D) -> void:
+	# Geometry inside this root moves as one object. Bake local transforms, UVs
+	# and normals once; keep material and shadow boundaries as separate draws.
+	var groups={}
+	var original=parent.find_children("*","MeshInstance3D",true,false)
+	for item in original:
+		if item.mesh==null or item.skin!=null:continue
+		var transform=parent.global_transform.affine_inverse()*item.global_transform
+		for surface in item.mesh.get_surface_count():
+			var mat=item.get_active_material(surface)
+			var key=str(mat.get_instance_id() if mat!=null else 0)+":"+str(item.cast_shadow)
+			if not groups.has(key):
+				var tool=SurfaceTool.new();tool.begin(Mesh.PRIMITIVE_TRIANGLES);tool.set_material(mat)
+				groups[key]={"tool":tool,"shadow":item.cast_shadow}
+			var arrays=item.mesh.surface_get_arrays(surface).duplicate(true)
+			var vertices: PackedVector3Array=arrays[Mesh.ARRAY_VERTEX]
+			var normals: PackedVector3Array=arrays[Mesh.ARRAY_NORMAL]
+			var normal_basis=transform.basis.inverse().transposed()
+			for i in vertices.size():
+				vertices[i]=transform*vertices[i]
+				if normals.size()>i:normals[i]=(normal_basis*normals[i]).normalized()
+			arrays[Mesh.ARRAY_VERTEX]=vertices
+			arrays[Mesh.ARRAY_NORMAL]=normals
+			var tangents=arrays[Mesh.ARRAY_TANGENT]
+			if tangents!=null:
+				for i in range(0,tangents.size(),4):
+					var tangent=(transform.basis*Vector3(tangents[i],tangents[i+1],tangents[i+2])).normalized()
+					tangents[i]=tangent.x;tangents[i+1]=tangent.y;tangents[i+2]=tangent.z
+				arrays[Mesh.ARRAY_TANGENT]=tangents
+			var baked=ArrayMesh.new()
+			baked.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES,arrays)
+			groups[key].tool.append_from(baked,0,Transform3D.IDENTITY)
+	for group in groups.values():
+		var merged=MeshInstance3D.new()
+		merged.mesh=group.tool.commit()
+		merged.cast_shadow=group.shadow
+		parent.add_child(merged)
+	for item in original:
+		if item.mesh==null or item.skin!=null:continue
+		# Detach now: a nested court batch must not append queued originals again.
+		item.get_parent().remove_child(item)
+		item.queue_free()
 
 static func floor_text(parent: Node3D, words: String, pos: Vector3, size: int, color: String) -> void:
 	var text = label(parent, words, pos, size, color)
@@ -200,6 +246,7 @@ static func basketball(parent: Node3D) -> Node3D:
 		elif axis == 2:
 			ring.rotation_degrees.z = 90
 		arc(ring, Vector3.ZERO, 0.232, 0, TAU, "453c36", 0.009, 24)
+	batch_static(ball)
 	return ball
 
 

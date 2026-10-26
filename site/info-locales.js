@@ -45,7 +45,12 @@
  ]]
  };
  const news={
- en:['Plant, rise, release.','v0.8.2 · Running shots & arm alignment',[
+ en:['Finish the shot. Get moving again.','v0.8.3 · Shot recovery & team flow',[
+  'Shots now align the face, torso and arms toward the hoop. Follow through with a wrist snap, lower the arms, land and push off into the next run.',
+  'AI 3v3 adds a dedicated defender-switch button and the current player role and slot. E cycles all three defenders, including loose-ball play. Off-ball teammates cut, screen, roll and relocate, clearing the paint for a drive.',
+  'W adds at most 10 cm of frontal contact. It adds no range against flank or rear drives, or while a defender recovers from a feint.',
+  'Reduced court, ball and team-view rendering costs. Fullscreen stutter can still occur on some devices; further performance work remains.',
+  'v0.8.2 · Running shots and arm alignment:',
   'Running pull-ups now recover one foot and close the other before takeoff. Fixed crossed legs after sideways or backward runs, carried the last closing step through quick shots, and connected the trailing-foot push-off to the jump.',
   'The guide arm now supports the ball in front of the face instead of flaring beside the head. Elbows stack below the palms, the hands follow the head during turns, and the upper body settles into the shot. Character Studio adds a Running pull-up loop.',
   'Jump shots now connect knee loading, forefoot push-off, airborne ankle extension and knee movement, then forefoot landing and impact absorption. Pump fakes keep the loaded pose without snapping upright.',
@@ -61,7 +66,12 @@
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. AI 3v3 is a separate mode without rewards. Online competition and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['足をそろえ、顔の前からシュート。','v0.8.2・移動シュートと腕の姿勢',[
+ ja:['シュートを終え、次の一歩へ。','v0.8.3・シュート後の回復とチームの動き',[
+  '顔・胴体・腕をリングへ向け、手首のフォロースルーから腕の回収、着地、次の走り出しまでつなぎました。',
+  'AI3対3に守備切替ボタンと操作選手のポジション・順番表示を追加。Eで3人全員を切り替えられ、ルーズボール時も使用可能。味方はカット・スクリーン・ロール・再配置を続け、ドライブ時はゴール下を空けます。',
+  'Wの追加接触は正面のみ最大10cm。横や後ろへの突破、フェイント後に体勢を戻す間は追加範囲がありません。',
+  'コート・ボールとチーム画面の描画負荷を軽減。端末によって全画面の引っかかりは残るため、引き続き改善します。',
+  'v0.8.2・移動シュートと腕の姿勢：',
   '横・後ろへ走ってからシュートすると脚が交差する不具合を修正。回収する足と引き寄せる足を順につなぎ、素早いリリースでも最後の一歩を踏み切り前に完了。後ろの足で押し出す動作も調整しました。',
   '補助の腕が頭の横に開かず、顔の前でボールを支えるように肘と前腕を整列。ターン中も手が頭の動きに追従し、上体の構えと肘の回収を調整。スタジオに「ランニングからシュート」を追加しました。',
   '膝で荷重を受け、前足部で踏み切り、空中で足首と膝を動かして、前足部から着地し衝撃を吸収するシュートへ調整。短いフェイクでも準備姿勢から急に跳ね上がらないようにしました。',
@@ -77,7 +87,12 @@
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。AI3対3は報酬なしの別モードです。オンライン対戦・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['稳稳落脚，从面前出手。','v0.8.2 · 急停跳投与手臂姿势',[
+ 'zh-CN':['完成投篮，衔接下一步。','v0.8.3 · 投篮恢复与团队跑位',[
+  '投篮时脸部、躯干和手臂朝向篮筐，衔接压腕随球、收臂、落地缓冲，再由支撑脚蹬地恢复跑动。',
+  'AI3对3新增防守切换按钮和当前球员位置、序号。E可轮换三名防守球员，争抢空中球时也可切换。无球队友持续空切、掩护、顺下和重新站位，突破时让出篮下空间。',
+  'W仅增加正面最多10厘米的接触范围。侧面、背后突破或防守者假动作后恢复重心时不增加范围。',
+  '降低球场、篮球和团队画面的渲染开销。部分设备全屏仍可能卡顿，性能将继续改进。',
+  'v0.8.2 · 急停跳投与手臂姿势：',
   '修复横向或向后跑动后投篮时双腿交叉的问题。依次收回摆动脚、并入另一只脚，快速出手时也会在起跳前衔接最后一步，并改善后脚蹬地离地的连接。',
   '辅助手臂改为在脸前托球，肘部位于手掌下方，避免前臂向头部侧面张开。转身时双手随头部移动，并调整上身准备及肘部回收。角色工作室新增急停跳投循环预览。',
   '投篮衔接膝部蓄力、前脚掌蹬地、空中脚踝伸展与屈膝，再以前脚掌落地并吸收冲击。短按假投篮也会延续准备姿态，避免突然弹起。',
@@ -91,7 +106,7 @@
   '手机镜头更近地跟随球员。移除大型投篮提示框，仅在收球准备时于投篮按钮旁显示细条，并缩小比分牌以留出视野。',
   '可选择韩语、英语、日语、简体中文。菜单、球员成长、账号流程、比赛提示及操作说明随之切换，选择保存在本设备。',
   'v0.7.0：无需邮箱的账号密码注册、恢复码及账号删除；178cm 后卫、190cm 前锋、204cm 中锋；8 个 AI 球场、经验及属性技能训练，进度保存在服务器。',
-  '目前成长模式为单人 AI 1 对 1 PvE。在线对战、3 对 3 及移动商店发布为后续计划。服务器校验奖励及点数消费，但不验证每次游戏输入。'
+  '目前成长模式为单人 AI 1 对 1 PvE。AI 3 对 3 是独立的无奖励模式。在线对战及移动商店发布为后续计划。服务器校验奖励及点数消费，但不验证每次游戏输入。'
  ]]
  };
  i18n.infoHTML=source=>{

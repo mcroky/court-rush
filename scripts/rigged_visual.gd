@@ -377,6 +377,7 @@ func update_gaze(actor,delta: float) -> void:
 	var head_index=skeleton.find_bone("head")
 	var neck_index=skeleton.find_bone("neck_01")
 	var yaw=clampf(angle_difference(actor.rotation.y,actor.facing)*.55,-.35,.35)
+	if actor.action=="shot":yaw=angle_difference(actor.rotation.y,actor.shot_aim_yaw())
 	var up=0.0
 	if actor.defense_weight>.1 and actor.watch_direction.length_squared()>.01:
 		yaw=clampf(angle_difference(actor.rotation.y,atan2(actor.watch_direction.x,actor.watch_direction.z)),-.45,.45)
@@ -529,43 +530,48 @@ func shot_elbow_guide(actor,chain: Array,wrist: Vector3,palm: Vector3) -> Vector
 	return first if first_score>second_score else second
 
 func shot_pose(actor, side: float, shoulder: Vector3) -> Dictionary:
+	var aim=Basis(Vector3.UP,actor.shot_aim_yaw())
 	var shooting=side==actor.dribble_hand
 	var rise=smoothstep(0,.22,actor.action_time) if actor.action=="shot" else 0.0
 	var lift=smoothstep(0,.30,actor.action_time) if actor.action in ["gather","fake"] else 1.0
-	var head=actor.to_local(bone_world(skeleton.find_bone("head")).origin)
+	var head_root=actor.to_local(bone_world(skeleton.find_bone("head")).origin)
+	var head=aim.inverse()*(bone_world(skeleton.find_bone("head")).origin-actor.global_position)
 	var head_height=(head.y-actor.jump)/actor.height_ratio
 	var center=Vector3(head.x/actor.height_ratio+actor.dribble_hand*.065,lerpf(1.12,head_height+.18,lift)+actor.jump,.34)
 	center.z=maxf(center.z,head.z/actor.height_ratio+.22)
 	if actor.action=="shot":center.y=head_height+lerpf(.18,.50,rise)+actor.jump
-	var normal=Vector3.UP if shooting else global_basis.x*-side
-	var fingers=global_basis.z if shooting else (Vector3.UP*.65+global_basis.z*.76).normalized()
-	var target=athlete_target(actor,center)+(-Vector3.UP*.125 if shooting else global_basis.x*side*.125)
+	var normal=Vector3.UP if shooting else aim.x*-side
+	var fingers=aim.z if shooting else (Vector3.UP*.65+aim.z*.76).normalized()
+	var target=shot_target(actor,center,aim)+(-Vector3.UP*.125 if shooting else aim.x*side*.125)
 	# Stack the forearm in front of the face. A pole offset from the shoulder
 	# leaves the elbow flared beside the head even when the palm holds the ball.
 	var elbow_x=center.x+(0.0 if shooting else side*.04)
-	var guide=athlete_target(actor,Vector3(elbow_x,center.y-(.42 if shooting else .30),center.z+.14))
+	var guide=shot_target(actor,Vector3(elbow_x,center.y-(.42 if shooting else .30),center.z+.14),aim)
 	if actor.action=="shot":
 		var index=0 if side<0 else 1
 		var extension=smoothstep(.015,.22,actor.action_time)
-		var carried=actor.to_global(entry_palms[index]+head-finish_entry_head)
+		var carried=actor.to_global(entry_palms[index]+head_root-finish_entry_head)
 		target=carried.lerp(target,extension)
 		var ready=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
 		var support=entry_frames[index].slerp(ready,extension)
 		normal=support.z;fingers=support.y
-		var follow=smoothstep(.22,.36,actor.action_time)
+		var follow=smoothstep(.22,.34,actor.action_time)
 		if shooting:
 			var angle=follow*1.25
-			normal=Vector3.UP*cos(angle)+global_basis.z*sin(angle)
-			fingers=global_basis.z*cos(angle)-Vector3.UP*sin(angle)
-			target+=global_basis.z*.08*follow+Vector3.UP*.025*follow
+			normal=Vector3.UP*cos(angle)+aim.z*sin(angle)
+			fingers=aim.z*cos(angle)-Vector3.UP*sin(angle)
+			target+=aim.z*.08*follow+Vector3.UP*.025*follow
 		else:
 			var peel=smoothstep(.12,.28,actor.action_time)
-			target=target.lerp(athlete_target(actor,Vector3(side*.29,head_height+.16+actor.jump,center.z)),peel)
-		var recover=smoothstep(.52,.86,actor.action_time)
+			target=target.lerp(shot_target(actor,Vector3(side*.29,head_height+.16+actor.jump,center.z),aim),peel)
+		var recover=smoothstep(.44,.84,actor.action_time)
 		target=target.lerp(athlete_target(actor,Vector3(side*.24,1.24+root_height+.055,.18)),recover)
 		guide=guide.lerp(shoulder+global_basis*Vector3(side*.12,-.28,.05),recover)
 	var frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
 	return {"target":target,"frame":frame,"guide":guide}
+
+func shot_target(actor,local: Vector3,aim: Basis) -> Vector3:
+	return actor.global_position+aim*Vector3(local.x*actor.height_ratio,actor.jump+(local.y-actor.jump)*actor.height_ratio,local.z*actor.height_ratio)
 
 func layup_pose(actor, side: float, shoulder: Vector3) -> Dictionary:
 	var shooting=side==actor.dribble_hand
@@ -677,7 +683,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			visual_swing[i]=false
 	if guard_active:guard_entry_time+=delta
 	guard_was_active=guard_active
-	var transition = actor.brake_state!="" or actor.restart_left>0 or actor.chase_recovery
+	var transition = actor.brake_state!="" or actor.restart_left>0 or actor.chase_recovery or actor.shot_recovery_left>0
 	contact_mode = action_pose or actor.defense_weight>.35 or actor.boxout_weight>.2 or transition
 	if contact_mode and not previous_contact_mode and initialized:
 		# Free running can lag the authored recovery target to keep shoe speed
@@ -791,7 +797,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		var line=actor.global_basis.inverse()*(bone_world(arms[1][0]).origin-bone_world(arms[0][0]).origin)
 		var settle=smoothstep(0,.18,shot_posture_time)
 		layer.x=lerpf(layer.x,.08-atan2(axis.z,axis.y),settle)
-		layer.y=lerpf(layer.y,-atan2(-line.z,line.x),settle)
+		layer.y=lerpf(layer.y,angle_difference(actor.rotation.y,actor.shot_aim_yaw())-atan2(-line.z,line.x),settle)
 	torso_layer=torso_layer.lerp(layer,1-exp(-delta*18)) if initialized else layer
 	# Cancellation of an authored yaw must use this frame's source pose;
 	# filtering that cancellation would leave yesterday's sprint twist behind.
@@ -1101,7 +1107,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			var entry=smoothstep(0,.10,action_entry_time)
 			target=actor.to_global(entry_palms[i]).lerp(target,entry)
 			frame=entry_frames[i].slerp(frame,entry)
-		if athletic_arm and (not contact_mode or guard_weight>0) and not actor.crossing() and (not actor.has_ball or side!=actor.dribble_hand):
+		if athletic_arm and (not contact_mode or guard_weight>0 or actor.shot_recovery_left>0) and not actor.crossing() and (not actor.has_ball or side!=actor.dribble_hand):
 			# Counter-swing comes from the visible legs, so a planted cut carries
 			# shoulder, elbow and hand together rather than using a second clock.
 			var foot_delta=(bone_world(feet[i][2]).origin-bone_world(feet[1-i][2]).origin).dot(global_basis.z)
@@ -1197,6 +1203,12 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			set_bone_rotation(collar,Basis(reach_rotation)*collar_pose.basis)
 		if shooting_pose and (actor.action!="shot" or actor.action_time<.22):guide=shot_elbow_guide(actor,chain,wrist_target,target)
 		solve(chain,wrist_target,guide,rear_axis,rear_limit,actor.to_global(previous_elbows_local[i]),delta*10 if shooting_pose and initialized else 0.0)
+		if shooting_pose and actor.action=="shot" and actor.action_time>.48:
+			var relax=smoothstep(.48,.84,actor.action_time)
+			desired_hand=desired_hand.slerp(relaxed_hand_basis(i,target,guide),relax)
+			frame=desired_hand*palm_frames[i]
+			wrist_target=target-desired_hand*palm_offsets[i]*render_scale
+			solve(chain,wrist_target,guide,Vector3.ZERO,0.0,actor.to_global(previous_elbows_local[i]),delta*10)
 		if contact_hand:
 			# A side dribble need not point every finger straight ahead. Let
 			# the hand yaw with the forearm while keeping its normal on the ball.
@@ -1209,7 +1221,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 					desired_hand=frame*palm_frames[i].inverse()
 					wrist_target=target-desired_hand*palm_offsets[i]*render_scale
 					solve(chain,wrist_target,guide,rear_axis,rear_limit)
-		if free_dribble_arm or ((athletic_arm or stationary_guard) and (not contact_mode or guard_weight>0) and not actor.crossing() and not holding and (not actor.has_ball or side!=actor.dribble_hand)):
+		if free_dribble_arm or ((athletic_arm or stationary_guard) and (not contact_mode or guard_weight>0 or actor.shot_recovery_left>0) and not actor.crossing() and not holding and (not actor.has_ball or side!=actor.dribble_hand)):
 			# The relaxed hand continues the forearm. An upright chest frame here
 			# leaves the wrist cocked upward for the entire running cycle.
 			desired_hand=desired_hand.slerp(relaxed_hand_basis(i,target,guide),1-guard_weight)

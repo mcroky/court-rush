@@ -103,7 +103,7 @@ func _physics_process(delta):
 		var stopping=mode=="cut" and fposmod(elapsed,8.4)>=7.2
 		var velocity=Vector2(sin(facing),cos(facing))*(4.7 if mode not in ["idle","handle","hold","shot"] and not stopping else 0)
 		if mode=="pullup":
-			var t=fposmod(elapsed,3.0)
+			var t=fposmod(elapsed,3.4)
 			var next_action="idle" if t<.55 or t>=1.98 else ("gather" if t<1.10 else "shot")
 			actor.finish_kind="shot"
 			if next_action=="gather" and actor.action!="gather":
@@ -111,11 +111,17 @@ func _physics_process(delta):
 				actor.shot_gather_yaw=actor.rotation.y
 				actor.shot_gather_turn=true
 				actor.gather_step_start=actor.step_serial
-			actor.action=next_action
-			actor.action_time=maxf(0,t-(.55 if next_action=="gather" else 1.10))
-			actor.dribble_ended=t>=.55
 			actor.facing=facing if t<.55 else facing+PI*.5
+			if actor.action=="shot" and next_action=="idle":
+				actor.shot_exit_intent=Vector2(sin(actor.facing),cos(actor.facing))*4.7
+				actor.has_ball=false
+				actor.finish_shot()
+			actor.action=next_action
+			actor.action_time=maxf(0,t-(.55 if next_action=="gather" else 1.10)) if next_action!="idle" else 0.0
+			actor.dribble_ended=t>=.55 and t<1.32
+			actor.has_ball=t<1.32
 			if next_action=="gather":velocity=actor.gather_velocity()
+			elif t>=1.98 and t<2.90:velocity=Vector2(sin(actor.facing),cos(actor.facing))*4.7
 			elif t>=.55:velocity=Vector2.ZERO
 			if next_action=="shot":
 				actor.jump=Actor.shot_height(actor.action_time)

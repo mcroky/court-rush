@@ -127,4 +127,33 @@ function fixture(raw=null,failWrite=false){
  assert.equal(f.node('mode-badge').textContent,'3 ON 3');assert.equal(f.node('result-detail').textContent,'AI 3대3 · 보상 없음');
  f.window.ufUpdate({...next,mode:'duel'});assert.equal(f.node('result-rematch').dataset.start,'duel');assert.equal(f.node('team-control').hidden,true);
 }
+{
+ const f=fixture();f.playing();
+ const next={started:true,paused:false,phase:'live',mode:'team',score:[0,0],seconds:90,owner:1,action:'idle',charge:0,finish:'shot',makes:0,attempts:0,possessionTeam:1,canSwitchDefender:true,selectedPlayer:2,courtRole:'center'};
+ f.window.ufUpdate(next);assert.equal(f.node('team-switch').disabled,false);assert.equal(f.node('team-selected-role').textContent,'센터');assert.equal(f.node('team-selected-slot').textContent,'3/3');
+ const event={pointerId:19,currentTarget:f.node('team-switch'),preventDefault(){}};
+ f.node('team-switch').fire('pointerdown',event);assert.equal(f.window.ufInput.switchPlayer,true);
+ f.node('team-switch').fire('lostpointercapture',event);assert.equal(f.window.ufInput.switchPlayer,false);
+ f.window.ufUpdate({...next,phase:'flight',possessionTeam:0});assert.equal(f.node('team-control').disabled,false,'Loose ball must keep the defensive switch usable');
+ f.window.ufUpdate({...next,canSwitchDefender:false,possessionTeam:0});assert.equal(f.node('team-switch').disabled,true);
+ f.node('team-switch').fire('pointerdown',event);assert.equal(f.window.ufInput.switchPlayer,false,'Disabled attack-side switch accepted input');
+ for(const [w,h,dpr,team] of [[1920,1080,1,true],[3840,2160,2,true],[390,510,3,true],[1920,1080,2,false]]){
+  const size=f.run(`canvasSize(${w},${h},${dpr},${team})`);const budget=team?921600:2073600;
+  assert.ok(size.width*size.height<=budget+4000,'Fullscreen exceeded pixel budget');assert.ok(Math.abs(size.width/size.height-w/h)<.005,'Render budget stretched the court');
+ }
+ console.log('TEAM_SWITCH_UI: dedicated control, current role, loose-ball switching, capture cleanup and fullscreen aspect/pixel budget passed');
+}
+{
+ const f=fixture();f.playing();
+ f.key('keydown','KeyE');f.key('keyup','KeyE');
+ assert.equal(f.window.ufInput.switchPlayer,false);
+ assert.equal(f.window.ufInput.switchSeq,1,'Quick release lost the switch edge');
+ f.key('keydown','KeyE');f.key('keydown','KeyE',true);
+ assert.equal(f.window.ufInput.switchSeq,2,'Held E generated extra switch edges');
+ f.key('keyup','KeyE');f.key('keydown','KeyQ');f.key('keyup','KeyQ');
+ assert.equal(f.window.ufInput.passSeq,1,'Quick pass lost its edge');
+ const reset=f.window.ufInput.controlReset;f.events.get('blur')();
+ assert.ok(f.window.ufInput.controlReset>reset,'Blur must invalidate pending edges');
+ console.log('TEAM_INPUT_EDGES: quick taps retained, repeated holds suppressed, lifecycle reset invalidates stale input');
+}
 console.log('WEB_LIFECYCLE: focus/visibility, pause, repeat keys, touch cancel, manual resume, shot-meter, audio, team Q/E, contextual touch and team rematch passed');

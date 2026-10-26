@@ -28,6 +28,11 @@ var interceptions = 0
 var rebounds = 0
 var blocks = 0
 var feint_cooldowns: Array = [0.0,0.0,0.0,0.0,0.0,0.0]
+var offball_cursor: Array=[0,1,2,0,1,2]
+var offball_hold: Array=[0.0,0.0,0.0,0.0,0.0,0.0]
+var label_sources: Array=["","","","","",""]
+var marker_selection=-1
+var marker_owner=-2
 
 func _init(owner_game) -> void:
 	game = owner_game
@@ -99,6 +104,9 @@ func reset(next_team: int) -> void:
 	passing_to = -1
 	pass_caught = false
 	feint_cooldowns.fill(0.0)
+	offball_cursor=[0,1,2,0,1,2]
+	offball_hold.fill(0.0)
+	label_sources.fill("")
 	edges = {"shoot":true,"pass":true,"switch":true}
 	ai_cooldown = 1.0
 	decisions = 0
@@ -166,10 +174,9 @@ func tick(delta: float, input: Dictionary) -> void:
 			p.action = "idle"
 	var direction = Vector2(input.x,input.z).limit_length()
 	var desired = (Vector3(game.camera.global_basis.x.x,0,game.camera.global_basis.x.z).normalized()*direction.x+Vector3(game.camera.global_basis.z.x,0,game.camera.global_basis.z.z).normalized()*direction.y)
-	if pressed(input,"switch") and switch_cooldown <= 0 and possession != 0:
-		var choice = nearest_friendly(game.ball.position)
-		selected = choice if choice != selected else (selected+1)%3
-		switch_cooldown = .25
+	if pressed(input,"switch") and switch_cooldown <= 0 and (possession != 0 or game.ball_owner<0):
+		selected = (selected+1)%3
+		switch_cooldown = .18
 		game.announce("SWITCH", "선택한 선수의 발밑 링을 확인하세요.", 1)
 	var p = game.players[selected]
 	p.defending = input.guard and not p.has_ball
@@ -264,6 +271,7 @@ func tick(delta: float, input: Dictionary) -> void:
 
 func move_actor(index: int, desired: Vector3, delta: float) -> void:
 	var p = game.players[index]
+	if p.action=="shot":p.shot_exit_intent=Vector2(desired.x,desired.z)
 	var velocity = Vector2(desired.x,desired.z)*p.landing_speed_scale()
 	if p.action in ["gather","shot","layup","dunk","block","rebound","pass","receive","fake"] or game.phase == "dead": velocity = Vector2.ZERO
 	if p.defensive_jump() and p.action_time >= p.defense_land_time()+.115:
@@ -433,13 +441,7 @@ func decide() -> void:
 						ai_cooldown = 1.5
 					elif not game.needs_clear and (p.position.z < -3.0 or game.shot_clock < 4): game.begin_gather(i)
 			else:
-				var sign_side = -1.0 if i%3 == 1 else 1.0
-				var home = Vector3(sign_side*4.7,0,-1.2) if p.court_role == "guard" else Vector3(sign_side*4.0,0,-2.6) if p.court_role == "forward" else Vector3(sign_side*2.2,0,-4.5)
-				if home.distance_to(owner.position) < 2: home.x *= -1
-				# Forward cuts to the free side, center holds a screen near the handler.
-				if p.court_role == "forward" and sin(game.time*.65+i) > .65: home = Vector3(-sign_side*1.8,0,-4.2)
-				if p.court_role == "center" and owner.position.z > -.5: home = owner.position+Vector3(sign_side*1.2,0,-1.1)
-				goals[i] = Rules.clamp_to_court(home)
+				goals[i] = offball_goal(i,owner)
 		else:
 			var mark = marks[i]
 			var attack = game.players[mark]
@@ -447,9 +449,46 @@ func decide() -> void:
 			var toward: Vector3 = (Vector3(game.HOOP.x,0,game.HOOP.z)-attack.position).normalized()
 			var behind = (p.position-attack.position).dot(toward) < -.25
 			goals[i] = attack.position+toward*(1.0 if mark == carrier else .8)
+			if mark==carrier:goals[i]+=Vector3(toward.z,0,-toward.x)*sin(game.time*1.4+i)*.20
 			if mark != carrier and p.court_role == "center" and owner.position.z < -3.4 and owner.position.distance_to(p.position) < 2.0: goals[i] = owner.position+(Vector3(game.HOOP.x,0,game.HOOP.z)-owner.position).normalized()*.7
 			if i != selected: p.defending = gap.length() < 2.4 and not behind and not p.chase_recovery
 			if i != selected and p.action == "idle" and not behind and not p.chase_recovery and game.phase == "takeoff" and p.position.distance_to(owner.position) < 1.45 and owner.action_time > .04: game.start_defensive_jump(i,"block")
+
+func offball_goal(index: int,owner) -> Vector3:
+	var p=game.players[index]
+	var side=-1.0 if index%3==1 else 1.0
+	var path: Array
+	if p.court_role=="guard":
+		path=[Vector3(side*4.8,0,.5),Vector3(side*2.8,0,1.7),Vector3(-side*4.6,0,-.2)]
+	elif p.court_role=="forward":
+		path=[Vector3(side*4.5,0,-2.2),Vector3(side*1.2,0,-4.6),Vector3(-side*4.5,0,-3.7),Vector3(-side*3.2,0,-1.3)]
+	else:
+		path=[owner.position+Vector3(side*1.2,0,-1.1),Vector3(side*.9,0,-4.65),Vector3(side*3.3,0,-4.2),Vector3(-side*2.2,0,-2.4)]
+	var cursor=int(offball_cursor[index])%path.size()
+	if p.court_role=="center" and cursor==0 and owner.position.z<-2.0:cursor=1
+	var goal=space_offball_goal(index,path[cursor],owner)
+	if p.position.distance_to(goal)<.6:
+		if offball_hold[index]<=0:offball_hold[index]=game.time+(.40 if p.court_role=="center" and cursor==0 else .24)
+		if game.time>=offball_hold[index]:
+			cursor=(cursor+1)%path.size()
+			offball_hold[index]=0.0
+			goal=space_offball_goal(index,path[cursor],owner)
+	else:offball_hold[index]=0.0
+	offball_cursor[index]=cursor
+	return goal
+
+func space_offball_goal(index: int,point: Vector3,owner) -> Vector3:
+	var goal=point
+	var side=-1.0 if index%3==1 else 1.0
+	if owner.position.z<-3.0 and goal.z<-2.8:
+		# Clear the paint for a handler already driving; do not send two cutters
+		# and their defenders into the same finishing lane.
+		goal.x=side*maxf(3.2,absf(goal.x))
+		goal.z=maxf(-4.2,goal.z)
+	if goal.distance_to(owner.position)<1.15:goal+=Vector3(side*1.4,0,.5)
+	for i in 6:
+		if i!=index and i!=game.ball_owner and team(i)==team(index) and goal.distance_to(goals[i])<1.5:goal.x+=side*.8
+	return Rules.clamp_to_court(goal)
 
 func dribble(index: int, kind: String, direction: Vector3) -> void:
 	var p = game.players[index]
@@ -548,9 +587,11 @@ func separate() -> void:
 			if a.jump > .25 or b.jump > .25: continue
 			var offset: Vector3 = a.position-b.position
 			var distance = offset.length()
-			if distance >= .73: continue
+			var contact_distance=.73
+			if team(i)!=team(j):contact_distance+=maxf(a.guard_contact_extra(b),b.guard_contact_extra(a))
+			if distance >= contact_distance: continue
 			var normal = offset.normalized() if distance > .001 else Vector3.RIGHT
-			var push = normal*(.73-distance)
+			var push = normal*(contact_distance-distance)
 			var weight = .5
 			if a.boxing_out: weight = .12/a.athletic_profile().box_strength
 			elif b.boxing_out: weight = 1-.12/b.athletic_profile().box_strength
@@ -619,17 +660,26 @@ func turnover(title: String, subtitle: String, next_team: int) -> void:
 	game.play_sound("whistle",-16)
 
 func update_labels() -> void:
+	var changed=marker_selection!=selected or marker_owner!=game.ball_owner
+	marker_selection=selected
+	marker_owner=game.ball_owner
 	for i in 6:
 		var p = game.players[i]
 		p.marker.visible = i == selected or i == game.ball_owner
+		if changed:
+			for part in p.marker.find_children("*","MeshInstance3D",true,false):part.material_override=CourtArt.material("fff0a6" if i==selected else "ed9a6a")
 		labels[i].position = p.position+Vector3.UP*.28
-		labels[i].text = ("YOU · " if i == selected else "")+{"guard":"G","forward":"F","center":"C"}[p.court_role]
-		labels[i].modulate = Color("fff0a6") if i == selected else Color("b8f1dd") if team(i) == 0 else Color("ffbc9c")
+		var text=("YOU · " if i == selected else "")+{"guard":"G","forward":"F","center":"C"}[p.court_role]
+		if label_sources[i]!=text:
+			label_sources[i]=text
+			labels[i].text=text
+			labels[i].modulate = Color("fff0a6") if i == selected else Color("b8f1dd") if team(i) == 0 else Color("ffbc9c")
 
 func decorate_state(state: Dictionary) -> void:
 	var p = game.players[selected]
 	state.owner = 0 if game.ball_owner == selected else 1 if game.ball_owner >= 3 else 2 if game.ball_owner >= 0 else -1
 	state["selectedPlayer"] = selected
+	state["canSwitchDefender"]=possession!=0 or game.ball_owner<0
 	state["ballPlayer"] = game.ball_owner
 	state["possessionTeam"] = possession
 	state["roster"] = game.players.map(func(actor): return {"role":actor.court_role,"height":roundi(float(actor.growth.get("height",185))),"x":snappedf(actor.position.x,.01),"z":snappedf(actor.position.z,.01),"action":actor.action})

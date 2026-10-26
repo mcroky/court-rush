@@ -56,6 +56,13 @@ static func can_steal(attacker: Vector3, defender: Vector3, defending_direction:
 	var offset = attacker - defender
 	return offset.length() < 1.45 and offset.normalized().dot(defending_direction) > 0.3
 
+static func guard_contact_extra(defender: Vector3,attacker: Vector3,yaw: float,weight: float) -> float:
+	var offset=Vector2(attacker.x-defender.x,attacker.z-defender.z)
+	if offset.length()<.001:return 0.0
+	var front=offset.normalized().dot(Vector2(sin(yaw),cos(yaw)))
+	# At most ten centimetres, fading to zero before an attacker gets the flank.
+	return .10*clampf(weight,0,1)*smoothstep(.65,.95,front)
+
 static func can_box_out(holder: Vector3, opponent: Vector3, target: Vector3) -> bool:
 	var back = Vector2(opponent.x-holder.x, opponent.z-holder.z)
 	var front = Vector2(target.x-holder.x, target.z-holder.z)

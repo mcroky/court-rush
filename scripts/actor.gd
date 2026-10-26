@@ -64,6 +64,10 @@ func athletic_profile() -> Dictionary:
 	profile.box_strength+=clampf(float(training.get("defense",0)),0,20)*.008
 	return profile
 
+func guard_contact_extra(opponent) -> float:
+	if not defending or boxing_out or chase_recovery or action!="idle" or jump>.05 or not opponent.has_ball:return 0.0
+	return BasketballRules.guard_contact_extra(position,opponent.position,rotation.y,defense_weight)
+
 func defense_jump_peak() -> float:
 	return athletic_profile().rebound_jump if action == "rebound" else .62
 
@@ -120,6 +124,8 @@ func stance_rest(index: int) -> Vector3:
 
 func reset_stance() -> void:
 	if skinned != null: skinned.reset_contacts()
+	shot_recovery_left=0.0
+	shot_exit_intent=Vector2.ZERO
 	defending = false
 	boxing_out = false
 	defense_weight = 0
@@ -211,6 +217,43 @@ var finish_running = false
 var gather_step_start = 0
 var shot_gather_turn = false
 var shot_gather_yaw = 0.0
+var shot_exit_intent = Vector2.ZERO
+var shot_recovery_left=0.0
+
+func shot_aim_yaw() -> float:
+	return rotation.y+clampf(angle_difference(rotation.y,facing),-.32,.32)*smoothstep(.08,.22,action_time) if action=="shot" else rotation.y
+
+func finish_shot() -> void:
+	landing_recovery_left=LANDING_RECOVERY_TIME
+	landing_pose_left=.32
+	landing_from_height=body.position.y
+	landing_from_velocity=body_vertical_velocity
+	landing_from_offset=body.position
+	landing_from_upper=upper.rotation
+	var intent=shot_exit_intent if shot_exit_intent.length()>.1 else motion
+	landing_push_left=.52 if intent.length()>.1 else 0.0
+	shot_recovery_left=.52 if intent.length()>.1 else .24
+	landing_push_serial=step_serial
+	landing_push_support=1 if dribble_hand>0 else 0
+	landing_push_pitch=[0.0,0.0]
+	run_entry_left=1.1 if intent.length()>.1 else 0.0
+	run_entry_serial=step_serial
+	run_swing_weight=0
+	for i in 2:
+		var offset=skinned.toe_world[i]-shoes[i].to_global(LAYUP_TOE) if skinned!=null and skinned.initialized else Vector3.ZERO
+		feet_world[i]=shoes[i].global_position+offset
+		feet_world[i].y=.105
+		feet_yaw[i]=rotation.y
+	swinging=[false,false]
+	swing_progress=[1.0,1.0]
+	next_step=1-landing_push_support
+	stride=float(next_step)*PI
+	motion=intent*.18
+	if not has_ball:dribble_ended=false
+	action="idle"
+	action_time=0
+	jump=0
+	shot_exit_intent=Vector2.ZERO
 var gather_ball_valid=false
 var gather_ball_from=Vector3.ZERO
 var finish_ball_valid=false
@@ -1382,6 +1425,7 @@ func animate(delta: float, _time: float) -> void:
 	var previous_palms = hands.map(func(h): return h.global_basis.orthonormalized().get_rotation_quaternion())
 	var previous_upper_frame = upper.transform
 	pose_delta = delta
+	shot_recovery_left=maxf(0,shot_recovery_left-delta)
 	redirect_left=maxf(0,redirect_left-delta)
 	cross_exit_left = maxf(0,cross_exit_left-delta)
 	cross_drive_left=maxf(0,cross_drive_left-delta) if ordinary_dribble() else 0.0
@@ -1439,7 +1483,7 @@ func animate(delta: float, _time: float) -> void:
 	# A running pull-up plants in its approach heading. Turning the hips to the
 	# rim over the old sprint contacts winds the two legs across one another.
 	if shot_gather_turn and action in ["gather","shot"]:
-		rotation.y = shot_gather_yaw if action=="gather" else lerp_angle(shot_gather_yaw,facing,smoothstep(SHOT_PLANT_TIME+.008,.30,action_time))
+		rotation.y = shot_gather_yaw if action=="gather" else lerp_angle(shot_gather_yaw,facing,smoothstep(SHOT_PLANT_TIME+.008,.25,action_time))
 	elif action not in ["gather","shot"]:
 		shot_gather_turn = false
 	if action == "spin": rotation.y = turn_origin + turn_sign * TAU * smoothstep(0, 1, action_time / .64)
