@@ -36,4 +36,16 @@
 
 로컬 웹의 실제 브라우저 경기: 로그인→내 선수 성장 팀전→이동·슛·Q패스→자연스러운3분 종료(3:6패배). 직접 득점3점,46XP·27코인 지급. 내 선수20→66XP·지갑360→387코인 확인(`artifacts/v090-team-earned-result.png`). 상태 조작이나 종료 강제 없이 플레이했다. 별도390×844브라우저에서 외곽 왕복 이동·프레이밍도 확인했다(`artifacts/v090-mobile-outer-court.png`).
 
-적용 마이그레이션은 `20261026102407_court_rush_team_career`, Edge Function `court-rush` v6. 공개 배포·QA 계정 정리 결과는 아래 최종 검증 기록에 추가한다.
+적용 마이그레이션은 `20261026102407_court_rush_team_career`, Edge Function `court-rush` v6.
+
+## 공개 확인
+
+- 소스 `243ae75`, Pages `a94857e30f095b691279581c56ec02c43251a70f`, GitHub Actions `40309726131` 성공. 고정 주소 https://mcroky.github.io/court-rush/ 에v0.9.0 공개.
+- 공개10개 핵심 파일·게임팩이 로컬 빌드와 일치. SHA256 `4c5de4c0f91b992d4e4a157086eaaee429a5e614edf2156301f8e7051dae5bbb`,138개 의상/12컬렉션 유지, 익명 profile401, 최신 업데이트v0.9.0 확인. `artifacts/v090-public-release.txt`.
+- 공개390×844 브라우저에서 로그인→이전3분 경기의66XP·387코인·점퍼1/5 훈련 기록 불러오기→성장 팀전→실제 외곽 왕복 이동 확인. 경기에는 여섯 선수와 MY TEAM 표시, 콘솔 warn/error 없음. `artifacts/v090-public-mobile-team.png`.
+- 한국어·영어·일본어·간체중국어의 새 성장 팀전 설명/시작 버튼과v0.9.0 업데이트를 공개판에서 확인. 로컬 실전 후 `한 판 더`도 MY TEAM의 새 티켓으로 시작하고 이전 결과를 비운다.
+- Roky Studio 최신 소식에 `함께 뛰고, 함께 성장 v0.9.0`과 성장 보상 설명이 표시되고 기존 고정 게임 주소로 연결됨. `artifacts/v090-studio-update.png`.
+- 임시 계정4개 모두 삭제. 팀전 브라우저용 계정은 최종 공개 확인 뒤 API로 삭제하고 임시 자격증명 파일도 제거했다. 검증 탭·임시 뷰포트 정리. 사용자 메인 미리보기 경기는 변경하지 않았다.
+- 실제 휴대폰 GPU/발열·터치 실기기·Android 빌드/Google Play 공개는 이번 확인에 포함하지 않는다. 카메라 거리 전환을 고쳤으며 모든 기기의 렌더링 성능이 보장된다는 뜻은 아니다.
+
+검사 과정에서는 기존 JS 번역 목록을 JSON으로 읽던 진단 스크립트와 중복 번역 키를 고치고, 웹 테스트 fixture에 기존 `scrollIntoView`를 추가했다. 새 Godot 테스트의 `read_input` 오타를 실제 `read_controls`로 바로잡았다. 최종 런타임·패키징·브라우저 검사는 그 수정 뒤 통과한 결과다.
