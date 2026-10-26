@@ -49,7 +49,9 @@
  ]]
  };
  const news={
- en:['Stride out. Settle into your stance.','v0.8.9 · Running and recovery after dribble moves',[
+ en:['Open up the stride.','v0.8.10 · Full-body running and dribble counter-swing',[
+  "Airborne feet now travel with the advancing body before following the original running swing. Removed the extra short safety step, connected longer plants and larger arm swings, and preserved ball contact for the dribbling hand. The opposite arm follows the running clip. Stopping after a skill still returns to a standing stance.",
+  "v0.8.9 · Running and recovery after dribble moves",
   "A longer reaching stride and higher heel recovery preserve more of the original running clip. Fixed crossed legs on the entry screen. After a dribble move, stopping now returns each foot to a standing stance; continuing to move keeps the run flowing.",
   "v0.8.8 · Running rhythm and shooting-arm recovery",
   "Matched the running clip to alternating foot contacts, removed the extra launch step and improved the first strides. After a wing three, the guide hand lowers first while the shooting arm holds its wrist follow-through, then recovers. Running shot gathers also bring the trailing foot in more smoothly.",
@@ -84,7 +86,9 @@
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. AI 3v3 is a separate mode without rewards. Online competition and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['大きく走り、構えに戻る。','v0.8.9・走りとドリブル技の後の立ち姿',[
+ ja:['腕から足先まで、大きく走る。','v0.8.10・全身の走りとドリブルの逆腕',[
+  "浮いた足が体の前進に追いついてから元の走りの軌道をたどり、前足が後ろに残る動きを修正。短い補正ステップを除き、長い接地と大きな腕振りを接続しました。ドリブルする手はボールとの接触を保ち、逆の腕は走りのクリップに従います。技の後に止まれば立ち姿に戻ります。",
+  "v0.8.9・走りとドリブル技の後の立ち姿",
   "前足を伸ばし、後ろのかかとを高く回収する元クリップの走りを活かしました。開始画面で脚が交差する問題を修正。ドリブル技の後に止まると片足ずつ立ち姿へ戻り、移動を続ければそのまま走ります。",
   "v0.8.8・走る足運びとシュート後の腕の回収",
   "走りのクリップと左右の接地を同じリズムにし、出だしで同じ足が再び浮く動作を修正。45度のスリー後はガイドの手を先に下げ、シュート側は手首のフォロースルーを保ってから回収します。走りからシュートへ後ろ足を寄せる動作も調整しました。",
@@ -119,7 +123,9 @@
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。AI3対3は報酬なしの別モードです。オンライン対戦・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['迈开步幅，收回站姿。','v0.8.9 · 跑动与运球技能后的站姿恢复',[
+ 'zh-CN':['舒展手臂，迈开大步。','v0.8.10 · 全身跑动与运球时的反侧摆臂',[
+  "腾空的脚先随身体前进，再衔接原始跑步轨迹，修复前腿落在身体后方的问题。移除多余的小补步，衔接更长的支撑与更大的摆臂。运球手保持接触篮球，另一只手跟随跑步动画。技能后停下仍会恢复正常站姿。",
+  "v0.8.9 · 跑动与运球技能后的站姿恢复",
   "保留原始跑步动作中前脚伸出、后脚跟抬起回收的幅度。修复开始画面双腿交叉的问题。运球技能后停下时会逐脚恢复站姿；继续移动时则流畅衔接跑步。",
   "v0.8.8 · 跑动节奏与投篮手臂回收",
   "将跑步动画与左右脚落地节奏统一，修复起步时同一只脚再次抬起的问题。45度三分出手后，辅助手先下落，投篮手保持压腕随挥后再收回，同时改善跑动收球时后脚跟进的衔接。",
