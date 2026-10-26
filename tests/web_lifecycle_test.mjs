@@ -130,18 +130,19 @@ function fixture(raw=null,failWrite=false){
 {
  const f=fixture();f.playing();
  const next={started:true,paused:false,phase:'live',mode:'team',score:[0,0],seconds:90,owner:1,action:'idle',charge:0,finish:'shot',makes:0,attempts:0,possessionTeam:1,canSwitchDefender:true,selectedPlayer:2,courtRole:'center'};
- f.window.ufUpdate(next);assert.equal(f.node('team-switch').disabled,false);assert.equal(f.node('team-selected-role').textContent,'센터');assert.equal(f.node('team-selected-slot').textContent,'3/3');
- const event={pointerId:19,currentTarget:f.node('team-switch'),preventDefault(){}};
- f.node('team-switch').fire('pointerdown',event);assert.equal(f.window.ufInput.switchPlayer,true);
- f.node('team-switch').fire('lostpointercapture',event);assert.equal(f.window.ufInput.switchPlayer,false);
+ f.window.ufUpdate(next);assert.equal(f.node('team-control-label').textContent,'선수 전환');assert.equal(f.node('team-control-key').textContent,'E');
+ const event={pointerId:19,currentTarget:f.node('team-control'),preventDefault(){}};
+ f.node('team-control').fire('pointerdown',event);assert.equal(f.window.ufInput.switchPlayer,true);
+ f.node('team-control').fire('lostpointercapture',event);assert.equal(f.window.ufInput.switchPlayer,false);
  f.window.ufUpdate({...next,phase:'flight',possessionTeam:0});assert.equal(f.node('team-control').disabled,false,'Loose ball must keep the defensive switch usable');
- f.window.ufUpdate({...next,canSwitchDefender:false,possessionTeam:0});assert.equal(f.node('team-switch').disabled,true);
- f.node('team-switch').fire('pointerdown',event);assert.equal(f.window.ufInput.switchPlayer,false,'Disabled attack-side switch accepted input');
+ f.window.ufUpdate({...next,canSwitchDefender:false,possessionTeam:0});assert.equal(f.node('team-control-label').textContent,'패스');
+ const html=readFileSync(new URL('../site/index.html',import.meta.url),'utf8');assert.doesNotMatch(html,/id="(?:team-readout|team-switch)"/,'Court-obscuring helper panel returned');
+ f.key('keydown','KeyE');assert.equal(f.window.ufInput.switchPlayer,true);f.key('keyup','KeyE');assert.equal(f.window.ufInput.switchPlayer,false);
  for(const [w,h,dpr,team] of [[1920,1080,1,true],[3840,2160,2,true],[390,510,3,true],[1920,1080,2,false]]){
   const size=f.run(`canvasSize(${w},${h},${dpr},${team})`);const budget=team?921600:2073600;
   assert.ok(size.width*size.height<=budget+4000,'Fullscreen exceeded pixel budget');assert.ok(Math.abs(size.width/size.height-w/h)<.005,'Render budget stretched the court');
  }
- console.log('TEAM_SWITCH_UI: dedicated control, current role, loose-ball switching, capture cleanup and fullscreen aspect/pixel budget passed');
+ console.log('TEAM_SWITCH_UI: no helper overlay; E and contextual touch, loose-ball switching, capture cleanup and fullscreen budget passed');
 }
 {
  const f=fixture();f.playing();const next={started:true,paused:false,phase:'live',mode:'practice',score:[0,0],seconds:90,owner:0,action:'idle',charge:0,finish:'shot',makes:0,attempts:0};

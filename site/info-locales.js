@@ -45,7 +45,9 @@
  ]]
  };
  const news={
- en:['Turn, square up, fake.','v0.8.4 · Turnaround shots & held-ball fakes',[
+ en:['Keep the court clear.','v0.8.5 · Less HUD over the court',[
+  'Removed the panel covering the court with defender-switch instructions, a duplicate switch button and current-player details. E, the contextual bottom touch switch and the selected-player ring remain. Controls are still available in Help.',
+  'v0.8.4 · Turnaround shots & held-ball fakes:',
   'When shooting while moving away from the hoop or sideways, plant, load the pivot foot, turn the body and receive the other foot before lifting the ball. Refined the sudden release-time turn and the knee transition back into running.',
   'After the dribble ends, use direction inputs for a pivot or jab step. A: pivot fake; Z: turn fake; C: up-and-under; V: held-ball through-the-legs fake; X: pump fake. Keep the pivot foot and possession without restarting a dribble. D shoots; a short tap pump-fakes.',
   'The same moves work for the selected player in AI 3v3, with passing after a fake. Mobile buttons change with ball possession. Character Studio includes six close-up fake previews. Pausing cancels a queued turnaround shot and keeps the ball in hand.',
@@ -70,7 +72,9 @@
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. AI 3v3 is a separate mode without rewards. Online competition and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['振り向いて打つ、軸足でかわす。','v0.8.4・振り向きシュートと持球フェイク',[
+ ja:['コートを広く見渡す。','v0.8.5・コート上の案内パネルを削除',[
+  'コートを覆っていた守備切替ボタン・操作説明・選手情報のパネルを削除しました。Eキー、画面下の状況別タッチ切替、操作選手の足元リングは維持。操作方法はヘルプで確認できます。',
+  'v0.8.4・振り向きシュートと持球フェイク：',
   'リングと反対方向や横に走ってから打つとき、接地して軸足に荷重を移し、体を回して反対の足を受けてからボールを上げます。リリース直前に急旋回する動作と、走りへ戻る際の膝の跳ねを調整しました。',
   'ドリブル終了後は方向入力でピボット・ジャブステップ。Aピボット、Zターン、Cアップアンドアンダー、V股下の持球フェイク、Xポンプフェイク。軸足と持球を維持し、ドリブルは再開しません。Dでシュート、短押しでポンプフェイク。',
   'AI3対3の操作選手とフェイク後のパスにも対応。モバイルボタンは持球状態に合わせて切り替わり、スタジオに6種類の拡大プレビューを追加。中断時は予約シュートを取り消し、ボールを保持します。',
@@ -95,7 +99,9 @@
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。AI3対3は報酬なしの別モードです。オンライン対戦・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['转身出手，轴心脚假动作。','v0.8.4 · 转身投篮与持球假动作',[
+ 'zh-CN':['把球场留给比赛。','v0.8.5 · 移除遮挡球场的提示面板',[
+  '移除了遮挡球场的防守切换按钮、操作说明和当前球员信息面板。保留E键、底部情境触屏切换按钮以及脚下选中光圈，操作方法仍可在帮助中查看。',
+  'v0.8.4 · 转身投篮与持球假动作：',
   '背向篮筐或横向移动后投篮时，先落脚、将重心移到中枢脚、转动身体，再接住另一只脚并抬球。调整出手前突然转身和投篮后恢复跑动时的膝部跳动。',
   '停球后用方向输入转身或试探步。A转身假动作、Z转体假动作、C上下假动作、V持球胯下假动作、X投篮假动作。保持中枢脚和持球，不会重新运球。D投篮，短按为假投。',
   '支持AI3对3当前控制球员和假动作后传球。手机按钮随持球状态切换，角色工作室新增6种放大预览。暂停时取消待执行的转身投篮并保持持球。',
