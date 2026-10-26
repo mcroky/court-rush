@@ -24,3 +24,13 @@
 - 정적 메시 검사: 위치/UV/재질/그림자 보존, 법선 최대 오차0.000121, 코트31메시/공3메시 통과. 웹 수명주기·짧은 입력·반복키·픽셀 예산,659원문×3번역과 정상 패키징 일치 통과.
 - 실제 브라우저에서 슛 후 손목과 팔 회복→첫 달리기,3대3 동료 이동/현재 선수 표시/전체화면 확인.390×844 모바일 뷰포트(스크롤바 제외375px)에서 버튼 높이44px·가로 넘침 없음, 새 UI4개 언어 확인. 실기기 터치 시험은 아니다.
 - 증거: `artifacts/shot-follow-verified.png`, `shot-landing-verified.png`(회복 후 첫 달리기), `team-flow-verified.png`, `team-mobile-verified.png`. 기존 사용자 경기 탭에 초기화/새로고침 입력을 하지 않았다.
+
+## v0.8.3 공개 배포 — 2026-10-26
+
+사용자의 ‘수정한 거 전부 배포’ 요청으로 위 로컬 변경 전체를 공개했다. 소스66d4533, Pages d2c946018a3cb9cf5c3edf1fd577fa23d769d2b8. [GitHub Pages 작업40271752981](https://github.com/mcroky/court-rush/actions/runs/40271752981) completed/success를 확인했다. 고정 주소는 https://mcroky.github.io/court-rush/ 이며 자산 base만v0.8.3으로 전환했다. 이전 버전과 Git 이력은 보존했다.
+
+- Godot4.7.2 웹 재내보내기, 슛 회복48조건과 팀 활동/범위·웹 수명주기·659원문×3번역·패키징 재검사 통과. 공개 전20개 셸 파일이 커밋 소스와 일치함을 확인했다. 임시 프레임probe 파일은 배포하지 않았다.
+- `tools/verify_public_release.mjs 0.8.3` 통과: 고정 루트/최신 피드, 공개10파일과 빌드 일치,138항목/12컬렉션, JS/wasm MIME, 익명profile401·허용origin CORS. 공개game.pck SHA256 `9f5715e5eabcba8b61c7ef7c8d840a98ed276679d714e6396be2083fb6e9d207`이 로컬과 같다.
+- 실제 공개 주소에서 Godot 부팅, AI3대3 이동/슛과 새 수비 전환·현재 선수 표시를 확인했다. 한국어/영어/일본어/간체 중국어 소식에 모두v0.8.3이 표시된다.390×844 모바일 뷰포트의clientWidth=scrollWidth375, 전환 버튼 높이44px, debugProbe=false. 콘솔warning/error0.
+- Roky Studio 공개 홈페이지에 ‘슛을 마치고, 다시 코트로 v0.8.3’ 카드가 자동 반영됐다. 증거는 `artifacts/v083-public-release.png`, `v083-public-team.png`, `v083-public-mobile.png`, `v083-studio-update.png`, `v083-public-release.json`, `v083-public-locales.json`.
+- 언어/뷰포트를 한국어/1280×720으로 복원하고 자체 임시 탭을 닫았다. 기존 사용자 경기와 서버 데이터·공유Auth는 변경하지 않았다. 실제 계정 재로그인/Android 실기기/Play 배포는 이번 공개 확인 범위 밖이다. 전체화면 끊김의 기존 한계는 위 성능 기록대로 남는다.
