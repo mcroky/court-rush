@@ -25,6 +25,8 @@ create table public.cr_matches (
  id uuid primary key default gen_random_uuid(),
  user_id uuid not null references public.cr_accounts(user_id) on delete cascade,
  stage integer not null check(stage between 1 and 8),
+ game_mode text not null default 'duel' check(game_mode in ('duel','team')),
+ setup jsonb not null default '{}'::jsonb,
  started_at timestamptz not null default now(),
  finished_at timestamptz,
  result jsonb

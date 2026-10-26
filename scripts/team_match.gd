@@ -27,6 +27,14 @@ var passes = 0
 var interceptions = 0
 var rebounds = 0
 var blocks = 0
+var controlled_stats: Dictionary = {}
+var activity_seconds=0.0
+var human_shooter=false
+var pass_by_user=false
+var assist_candidate=-1
+var assist_receiver=-1
+var assist_until=0.0
+var rebound_live=false
 var feint_cooldowns: Array = [0.0,0.0,0.0,0.0,0.0,0.0]
 var offball_cursor: Array=[0,1,2,0,1,2]
 var offball_hold: Array=[0.0,0.0,0.0,0.0,0.0,0.0]
@@ -75,6 +83,8 @@ func start(role: String) -> void:
 	interceptions = 0
 	rebounds = 0
 	blocks = 0
+	controlled_stats={"points":0,"assists":0,"rebounds":0,"blocks":0,"steals":0}
+	activity_seconds=0.0
 	game.clock_left = 180
 	reset(0)
 	game.announce("3 ON 3", "Q 패스 · E 수비 전환 · 11점 또는 3분 · 보상 없는 AI 팀전", 5)
@@ -103,6 +113,8 @@ func reset(next_team: int) -> void:
 	passing_from = -1
 	passing_to = -1
 	pass_caught = false
+	assist_candidate=-1
+	rebound_live=false
 	feint_cooldowns.fill(0.0)
 	offball_cursor=[0,1,2,0,1,2]
 	offball_hold.fill(0.0)
@@ -148,6 +160,9 @@ func defense_kind() -> String:
 
 func tick(delta: float, input: Dictionary) -> void:
 	game.time += delta
+	var active=absf(float(input.get("x",0)))+absf(float(input.get("z",0)))>.15
+	for key in ["shoot","cross","spin","twostep","behind","hesi","steal","guard","pass","switch"]:active=active or bool(input.get(key,false))
+	if active and game.phase!="dead":activity_seconds=minf(600,activity_seconds+delta)
 	game.feedback_timer = maxf(0,game.feedback_timer-delta)
 	game.crossover_cooldown = maxf(0,game.crossover_cooldown-delta)
 	game.steal_cooldown = maxf(0,game.steal_cooldown-delta)
@@ -255,7 +270,9 @@ func tick(delta: float, input: Dictionary) -> void:
 	elif game.phase == "takeoff":
 		game.ball.position = game.players[game.shooter].ball_anchor(game.time)
 		if not try_block() and game.players[game.shooter].action_time >= game.release_at: game.release_ball()
-	elif game.phase == "flight": game.update_flight(delta)
+	elif game.phase == "flight":
+		game.update_flight(delta)
+		if game.phase=="loose":assist_candidate=-1
 	elif game.phase == "loose": update_loose(delta)
 	elif game.phase == "dead":
 		game.reset_timer -= delta
@@ -314,6 +331,8 @@ func begin_pass(sender: int, receiver: int) -> bool:
 	var r = game.players[receiver]
 	if (p.action not in ["idle","fake"] and not (p.action=="held_fake" and p.action_time>=p.held.duration*.6)) or r.action != "idle": return false
 	passing_from = sender
+	pass_by_user=sender==selected and team(sender)==0
+	rebound_live=false
 	passing_to = receiver
 	game.face_target(sender,r.position)
 	game.face_target(receiver,p.position)
@@ -357,6 +376,7 @@ func update_pass(delta: float) -> void:
 			p.steal_resolved = true
 			p.receive_steal(game.ball.position)
 			interceptions += 1
+			record_contribution(i,"steals")
 			claim(i,"INTERCEPTED!")
 			receiver.action = "idle"
 			return
@@ -379,6 +399,9 @@ func update_pass(delta: float) -> void:
 		receiver.transfer_target = game.ball.position
 		receiver.action_time = 0
 		passes += 1
+		assist_candidate=passing_from if pass_by_user else -1
+		assist_receiver=passing_to
+		assist_until=game.time+6.0
 		pass_caught = true
 		claim(passing_to,"NICE PASS")
 		return
@@ -391,6 +414,8 @@ func update_pass(delta: float) -> void:
 
 func claim(index: int, title: String) -> void:
 	var changed = team(index) != possession
+	if changed:assist_candidate=-1
+	rebound_live=false
 	possession = team(index)
 	last_touch = index
 	game.ball_owner = index
@@ -530,6 +555,7 @@ func resolve_steals() -> void:
 			p.steal_resolved = true
 			if game.rng.randf() < .65:
 				p.receive_steal(game.ball.position)
+				record_contribution(i,"steals")
 				claim(i,"INTERCEPTED!")
 				game.court_audio.cue("steal")
 				return
@@ -550,6 +576,8 @@ func try_block() -> bool:
 		game.ball_velocity = p.block_contact_stroke.normalized()*9.2
 		last_touch = i
 		blocks += 1
+		record_contribution(i,"blocks")
+		rebound_live=true
 		game.last_event = "block"
 		game.court_audio.cue("block")
 		game.play_sound("block",-7)
@@ -624,9 +652,11 @@ func update_loose(delta: float) -> void:
 	if not candidates.is_empty():
 		candidates.sort_custom(func(a,b): return a.distance < b.distance if a.distance != b.distance else a.id < b.id)
 		var winner = candidates[0]
+		if rebound_live:
+			record_contribution(winner.id,"rebounds")
+			rebounds+=1
 		if winner.air:
 			game.players[winner.id].capture_rebound(game.ball.position,game.ball_velocity)
-			rebounds += 1
 			game.court_audio.cue("rebound")
 		else:game.players[winner.id].begin_pickup(game.ball.position)
 		if team(winner.id) == possession: game.shot_clock = maxf(game.shot_clock,12)
@@ -645,6 +675,11 @@ func contest(shooter: int) -> float:
 func register_score() -> void:
 	if game.last_scored_event == game.event_id: return
 	game.last_scored_event = game.event_id
+	if team(game.shooter)==0:
+		if human_shooter:controlled_stats.points+=game.flight_points
+		if assist_candidate>=0 and assist_receiver==game.shooter and game.time<=assist_until:controlled_stats.assists+=1
+	assist_candidate=-1
+	rebound_live=false
 	game.scores[team(game.shooter)] += game.flight_points
 	if team(game.shooter) == 0: game.makes += 1
 	game.phase = "dead"
@@ -703,3 +738,12 @@ func decorate_state(state: Dictionary) -> void:
 	state["teamInterceptions"] = interceptions
 	state["teamRebounds"] = rebounds
 	state["teamBlocks"] = blocks
+	state["careerStats"]=controlled_stats.duplicate()
+	state.careerStats["activeSeconds"]=floori(activity_seconds)
+
+func record_contribution(index: int, key: String, amount: int=1) -> void:
+	if index==selected and team(index)==0:controlled_stats[key]+=amount
+
+func capture_shot(index: int) -> void:
+	human_shooter=index==selected and team(index)==0
+	rebound_live=true

@@ -65,3 +65,43 @@ export function rewardPlayer(original,stage,won){
  p.wardrobe.coins+=coins;
  return {player:p,reward:{xp,coins,firstClear:first,won,stage}};
 }
+
+export const TEAM_CAREER={seconds:180,target:11,minPlayed:20,minActive:12,baseXP:40,winXP:35,baseCoins:25,winCoins:20,maxContribution:45};
+export function teamOpponents(player){
+ const level=Math.min(10,Math.max(1,player.level));
+ return Object.keys(ROLES).map(role=>{
+  const p=newPlayer(role,ROLES[role].name);p.level=level;
+  for(const key of Object.keys(p.stats))p.stats[key]=Math.min(14,(level-1));
+  const {appearance,...athlete}=attributes(p);return athlete;
+ });
+}
+export function validateTeamResult(score,seconds,input,elapsed){
+ if(!Array.isArray(score)||score.length!==2||score.some(n=>!Number.isInteger(n)||n<0||n>13)||score[0]===score[1]||!Number.isInteger(seconds)||seconds<0||seconds>180)reject('경기 결과를 확인하세요.');
+ const played=180-seconds;
+ if(!Number.isFinite(elapsed)||elapsed<TEAM_CAREER.minPlayed||elapsed>86400||played<TEAM_CAREER.minPlayed||elapsed+3<played||(Math.max(...score)<11&&seconds>0))reject('경기 시간과 결과를 확인하세요.');
+ if(!input||typeof input!=='object'||Array.isArray(input))reject('팀전 기여 기록을 확인하세요.');
+ const stats={};
+ for(const key of ['points','assists','rebounds','blocks','steals','activeSeconds']){
+  const n=input[key];if(!Number.isSafeInteger(n)||n<0)reject('팀전 기여 기록을 확인하세요.');stats[key]=n;
+ }
+ const actions=Math.min(40,Math.ceil(played/2));
+ if(stats.points>score[0]||stats.assists>Math.floor(score[0]/2)||['rebounds','blocks','steals'].some(k=>stats[k]>actions)||stats.activeSeconds>(seconds===0?Math.min(600,elapsed+1):played+1))reject('팀전 기여 기록을 확인하세요.');
+ return stats;
+}
+export function rewardTeamPlayer(original,won,stats){
+ const p=normalizePlayer(original),eligible=stats.activeSeconds>=TEAM_CAREER.minActive;
+ let contribution=stats.points*2+stats.assists*5+stats.rebounds*3+stats.blocks*5+stats.steals*4;
+ if(p.role==='guard')contribution+=stats.assists*2+stats.steals*2;
+ if(p.role==='forward')contribution+=stats.points;
+ if(p.role==='center')contribution+=stats.rebounds*2+stats.blocks*2;
+ contribution=eligible?Math.min(TEAM_CAREER.maxContribution,contribution):0;
+ const xp=eligible?TEAM_CAREER.baseXP+(won?TEAM_CAREER.winXP:0)+contribution:0;
+ const coins=eligible?TEAM_CAREER.baseCoins+(won?TEAM_CAREER.winCoins:0)+Math.floor(contribution/3):0;
+ p.xp+=xp;
+ while(p.level<20&&p.xp>=xpNeeded(p.level)){p.xp-=xpNeeded(p.level);p.level++;p.statPoints+=3;p.skillPoints++;}
+ if(p.level===20)p.xp=Math.min(p.xp,xpNeeded(20)-1);
+ p.wardrobe.coins+=coins;
+ const record=p.teamRecord||{games:0,wins:0,losses:0};
+ p.teamRecord={games:record.games+1,wins:record.wins+Number(won),losses:record.losses+Number(!won)};
+ return {player:p,reward:{mode:'team',xp,coins,won,contribution,eligible,stats:{...stats}}};
+}

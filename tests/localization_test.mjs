@@ -11,6 +11,7 @@ const I=window.CourtI18n,keys=new Set();
 for(const row of window.CourtMessages){assert.equal(row.length,4);assert.ok(!keys.has(row[0]),'Duplicate key: '+row[0]);keys.add(row[0]);for(const value of row.slice(1)){assert.equal(typeof value,'string');assert.ok(value.trim());assert.doesNotMatch(value,/[가-힣]/,'Untranslated: '+row[0]);}}
 const labels=[...Object.values(ROLES).flatMap(r=>[r.name,r.tag]),...Object.values(STAT_NAMES),...Object.values(SKILLS).flatMap(s=>[s.name,s.description]),...STAGES.map(s=>s.name)];
 const dynamic=[
+ 'v0.9.0 · AI 1대1·3대3 육성 · 계정과 선수 기록은 서버에 저장됩니다.',
  '코트 준비 중 42%','공격 제한 15초','내 슛 3/7 성공 · 한 판 더 도전해 보세요.',
  '다음 레벨 25 / 100 XP','센터 · 204cm / 103kg · Lv.1','COURT 03 · 센터 Lv.3',
  '리바운드 기술 훈련 1포인트','✓ 클리어 · 다시 도전 / 100 XP','드리브 인 도전 시작'.replace('드리브','드라이브'),

@@ -108,20 +108,24 @@ function renderPlayer(){
  content.querySelectorAll('[data-train]').forEach(b=>b.onclick=()=>run(async()=>{const r=await api('train',{kind:b.dataset.train,key:b.dataset.key});player=r.player;panel();renderPlayer();notice('훈련을 저장했습니다. 다음 도전부터 적용됩니다.');}));
  content.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>confirmStart(Number(b.dataset.stage)));
  $('career-account').onclick=renderAccount;
+ const team=document.createElement('section');team.className='career-team';
+ team.innerHTML='<h3>내 선수로 AI 3대3</h3><p>AI 동료 2명과 함께 11점 또는 3분. 완주 경험치·승리 보너스와 직접 조작한 득점·어시스트·리바운드·블록·스틸 기여 보상을 받습니다.</p><p>내 선수를 포함한 아군의 직접 조작 기록을 합산합니다. 중도 종료·참여 부족·일반 팀전에는 성장 보상이 없으며, 1대1 코트 해금은 별도입니다.</p><button id="career-team-start" class="primary">성장 팀전 시작 →</button>';
+ content.querySelector('.growth-columns').after(team);$('career-team-start').onclick=()=>confirmStart('team');
  const shop=document.createElement('button');shop.id='career-shop';shop.className='primary';shop.textContent='의상 상점 · '+wardrobeOf(player).coins+' 코인';shop.onclick=openShop;content.querySelector('.career-heading').after(shop);
 }
 function confirmStart(stage){
+ if(pending?.score){notice('저장 대기 중인 경기 보상을 먼저 받아 주세요.',true);claim();return;}
  const s=window.CourtGame?.getState();
  if(s?.started&&s.phase!=='ended'){
-  frame(`<h2>새 코트로 들어갈까요?</h2><p>현재 경기는 종료되며 진행 중인 경기의 보상은 받을 수 없습니다.</p><button id="career-start-confirm" class="primary">${escape(STAGES[stage-1].name)} 도전 시작</button><button id="career-start-cancel">돌아가기</button>`);
+  frame(`<h2>새 코트로 들어갈까요?</h2><p>현재 경기는 종료되며 진행 중인 경기의 보상은 받을 수 없습니다.</p><button id="career-start-confirm" class="primary">${stage==='team'?'성장 팀전 시작 →':escape(STAGES[stage-1].name)+' 도전 시작'}</button><button id="career-start-cancel">돌아가기</button>`);
   $('career-start-confirm').onclick=()=>startStage(stage);$('career-start-cancel').onclick=renderPlayer;
  }else startStage(stage);
 }
 function startStage(stage){run(async()=>{
  if(!window.CourtGame?.getState()?.ready)throw Error('코트가 준비되는 동안 잠시 기다려 주세요.');
  if(!startRequest||startRequest.stage!==stage)startRequest={stage,id:crypto.randomUUID()};
- const data=await api('start',{stage,requestId:startRequest.id});startRequest=null;
- pending={matchId:data.matchId,stage,username};saveResult();dialog.close();window.CourtGame.startCareer(data);
+ const data=await api('start',{...(stage==='team'?{mode:'team'}:{stage}),requestId:startRequest.id});startRequest=null;
+ pending={matchId:data.matchId,stage,mode:stage==='team'?'team':'duel',username};saveResult();dialog.close();window.CourtGame.startCareer(data);
  });}
 function renderAccount(){
  frame(`<span class="eyebrow">ACCOUNT / ${escape(username)}</span><h2>계정 관리</h2><p>이메일은 수집하지 않습니다. 비밀번호를 잊으면 가입 때 받은 복구 코드로 복구할 수 있습니다.</p><form id="account-form"><label>현재 비밀번호<input name="password" type="password" required autocomplete="current-password" minlength="12" maxlength="72"></label><div class="career-account-actions"><button name="operation" value="recovery">복구 코드 새로 받기</button><button name="operation" value="delete" class="danger">계정 영구 삭제</button></div><p>영구 삭제하면 선수와 모든 성장·경기 기록을 되돌릴 수 없습니다.</p></form><button id="career-back">선수로 돌아가기</button><button id="career-logout">로그아웃</button>`);
@@ -136,11 +140,22 @@ async function run(fn){if(busy)return;busy=true;content.setAttribute('aria-busy'
 async function claim(){
  if(!pending?.score||claiming||!session||pending.username!==username)return;claiming=true;
  $('career-reward').textContent='경기 보상을 저장하고 있습니다…';
- try{const r=await api('finish',{matchId:pending.matchId,score:pending.score,seconds:pending.seconds});player=r.player;pending=null;saveResult();panel();if(shopping)renderShop();$('career-reward').textContent=`${r.reward.won?'승리!':'다음 코트에서 다시!'} +${r.reward.xp} XP · Lv.${player.level} · 스탯 ${player.statPoints}P / 기술 ${player.skillPoints}P${r.reward.coins?' · +'+r.reward.coins+' 코인':''}`;$('career-retry').hidden=true;}
+ try{const r=await api('finish',{matchId:pending.matchId,score:pending.score,seconds:pending.seconds,...(pending.mode==='team'?{stats:pending.stats}:{})});player=r.player;pending=null;saveResult();panel();if(shopping)renderShop();$('career-reward').textContent=`${r.reward.won?'승리!':'다음 코트에서 다시!'} +${r.reward.xp} XP · Lv.${player.level} · 스탯 ${player.statPoints}P / 기술 ${player.skillPoints}P${r.reward.coins?' · +'+r.reward.coins+' 코인':''}`;if(r.reward.mode==='team'){showTeamSummary(r.reward.stats,r.reward.eligible);}$('career-retry').hidden=true;}
  catch(e){$('career-reward').textContent='보상 저장 대기 · '+e.message;$('career-retry').hidden=false;}
  finally{claiming=false;}
 }
-window.addEventListener('court-state',e=>{const s=e.detail;if(pending&&s.careerMatchId===pending.matchId&&s.phase==='ended'&&!pending.score){pending={...pending,score:s.score,seconds:s.seconds};saveResult();claim();}});
+function showTeamSummary(stats,eligible=true){
+ const target=$('career-team-summary');if(!target||!stats)return;
+ target.hidden=false;target.replaceChildren();
+ for(const [key,label] of Object.entries({points:'득점',assists:'어시스트',rebounds:'리바운드',blocks:'블록',steals:'스틸'})){
+  if(target.childNodes.length)target.append(document.createTextNode(' · '));
+  const span=document.createElement('span');span.textContent=label+' ';const value=document.createElement('b');value.textContent=String(stats[key]||0);value.translate=false;span.append(value);target.append(span);
+ }
+ if(!eligible){const p=document.createElement('span');p.textContent='직접 조작 시간이 부족해 이번 경기는 성장 보상이 없습니다.';target.append(p);}
+}
+window.addEventListener('court-state',e=>{const s=e.detail;if(pending&&s.careerMatchId===pending.matchId&&s.phase==='ended'&&!pending.score){pending={...pending,score:s.score,seconds:s.seconds,...(pending.mode==='team'?{stats:s.careerStats}:{})};saveResult();if(pending.mode==='team')showTeamSummary(s.careerStats);claim();}});
+$('result-rematch').addEventListener('click',e=>{const s=window.CourtGame?.getState();if(s?.careerMode==='team'&&s.careerMatchId){e.stopImmediatePropagation();if(session&&player)confirmStart('team');else open();}},true);
+$('team-career-open').onclick=()=>open();
 $('career-open').onclick=()=>open();$('career-menu').onclick=()=>open();$('entry-career').onclick=()=>open();$('career-result-open').onclick=()=>open();$('career-retry').onclick=claim;
 $('wardrobe-menu').onclick=openShop;$('wardrobe-open').onclick=openShop;dialog.addEventListener('close',leaveShop);
 window.addEventListener('court-state',()=>{if(shopping&&!previewReady)previewShop();});

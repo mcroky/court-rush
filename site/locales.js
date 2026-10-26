@@ -543,3 +543,121 @@ window.CourtMessages = [
 ["잽 스텝","Jab step","ジャブステップ","试探步"],
 ["펌프 페이크","Pump fake","ポンプフェイク","投篮假动作"],
 ];
+
+// Career team play.
+window.CourtMessages.push(...[
+  [
+    "경기 모드를 확인하세요.",
+    "Check the match mode.",
+    "試合モードを確認してください。",
+    "请检查比赛模式。"
+  ],
+  [
+    "팀전 기여 기록을 확인하세요.",
+    "Check the team contribution record.",
+    "チーム戦の貢献記録を確認してください。",
+    "请检查团队赛贡献记录。"
+  ],
+  [
+    "내 선수로 AI 3대3",
+    "AI 3v3 with My Player",
+    "自分の選手でAI 3対3",
+    "使用我的球员参加 AI 3 对 3"
+  ],
+  [
+    "AI 동료 2명과 함께 11점 또는 3분. 완주 경험치·승리 보너스와 직접 조작한 득점·어시스트·리바운드·블록·스틸 기여 보상을 받습니다.",
+    "Play with two AI teammates: 11 points or three minutes. Earn completion XP, a win bonus, and contribution rewards for directly controlled points, assists, rebounds, blocks and steals.",
+    "AIの味方2人と11点先取または3分。完走経験値・勝利ボーナスと、直接操作した得点・アシスト・リバウンド・ブロック・スティールの貢献報酬を獲得します。",
+    "与两名 AI 队友比赛，先得 11 分或限时三分钟。可获得完赛经验、胜利加成及直接操作产生的得分、助攻、篮板、盖帽和抢断贡献奖励。"
+  ],
+  [
+    "내 선수를 포함한 아군의 직접 조작 기록을 합산합니다. 중도 종료·참여 부족·일반 팀전에는 성장 보상이 없으며, 1대1 코트 해금은 별도입니다.",
+    "Directly controlled actions across your team count, including My Player. Quitting, insufficient participation and regular team matches grant no growth rewards. 1v1 court unlocks are separate.",
+    "自分の選手を含む味方の直接操作記録を合算します。途中終了・参加不足・通常チーム戦には育成報酬がなく、1対1コートの解放は別です。",
+    "统计包括我的球员在内的我方直接操作记录。中途退出、参与不足及普通团队赛不提供成长奖励，1 对 1 球场解锁单独计算。"
+  ],
+  [
+    "성장 팀전 시작 →",
+    "Start career team match →",
+    "育成チーム戦を開始 →",
+    "开始成长团队赛 →"
+  ],
+  [
+    "저장 대기 중인 경기 보상을 먼저 받아 주세요.",
+    "Claim the pending match reward first.",
+    "保存待ちの試合報酬を先に受け取ってください。",
+    "请先领取待保存的比赛奖励。"
+  ],
+  [
+    "성장 팀전 · 직접 조작한 기여 기록",
+    "Career team match · Direct control contributions",
+    "育成チーム戦・直接操作の貢献記録",
+    "成长团队赛 · 直接操作贡献记录"
+  ],
+  [
+    "득점",
+    "Points",
+    "得点",
+    "得分"
+  ],
+  [
+    "어시스트",
+    "Assists",
+    "アシスト",
+    "助攻"
+  ],
+  [
+    "직접 조작 시간이 부족해 이번 경기는 성장 보상이 없습니다.",
+    "Not enough direct participation: no growth reward for this match.",
+    "直接操作時間が不足したため、この試合の育成報酬はありません。",
+    "直接操作时间不足，本场不提供成长奖励。"
+  ],
+  [
+    "일반 AI 팀전은 성장 보상이 없습니다. 내 선수로 성장하려면 성장 팀전을 시작하세요.",
+    "Regular AI team matches grant no growth rewards. Start a career team match to grow My Player.",
+    "通常AIチーム戦には育成報酬がありません。自分の選手を育てるには育成チーム戦を開始してください。",
+    "普通 AI 团队赛不提供成长奖励。请开始成长团队赛来培养我的球员。"
+  ],
+  [
+    "내 선수로 성장 팀전 →",
+    "Career team match with My Player →",
+    "自分の選手で育成チーム戦 →",
+    "我的球员成长团队赛 →"
+  ],
+  [
+    "1대1·3대3으로 성장하고 스탯과 기술을 훈련하세요.",
+    "Grow through 1v1 and 3v3; train stats and skills.",
+    "1対1・3対3で育ち、能力とスキルを鍛えましょう。",
+    "通过 1 对 1 和 3 对 3 成长，训练属性与技能。"
+  ],
+  [
+    "성장 팀전 · 직접 조작하며 완주하면 경험치와 코인을 받아요.",
+    "Career team match · Play directly and finish to earn XP and coins.",
+    "育成チーム戦・直接操作で完走すると経験値とコインを獲得。",
+    "成长团队赛 · 直接操作并完赛可获得经验和金币。"
+  ],
+  [
+    "3대3 성장 경기의 점수와 직접 조작한 득점·어시스트·리바운드·블록·스틸·참여 시간도 경기 결과에 저장합니다.",
+    "Career 3v3 results also store the score and directly controlled points, assists, rebounds, blocks, steals and participation time.",
+    "3対3育成試合のスコアと直接操作した得点・アシスト・リバウンド・ブロック・スティール・参加時間も結果に保存します。",
+    "3 对 3 成长赛比分及直接操作的得分、助攻、篮板、盖帽、抢断和参与时间也保存在结果中。"
+  ],
+  [
+    "현재 육성은 AI 1대1 코트 도전과 AI 3대3 성장 팀전입니다. 로그인한 내 선수로 시작한 경기만 성장 보상이 있으며, 일반 팀전과 연습에는 보상이 없습니다. 서버는 보상 중복과 포인트 소비·기록 범위를 검사하지만 경기 시뮬레이션은 기기에서 실행됩니다. 사람끼리의 온라인 경쟁전이나 서버가 모든 입력을 검증하는 경기로 제공하지 않습니다. 유료 재화·현금 결제·공개 순위는 없습니다.",
+    "Career play includes AI 1v1 challenges and AI 3v3 career team matches. Only matches started with a signed-in My Player grant growth rewards; regular team matches and practice do not. The server checks duplicate rewards, point spending and record bounds, while simulation runs on your device. This is not online competitive play or full server validation of every input. There are no paid currencies, cash payments or public rankings.",
+    "育成はAI1対1コート挑戦とAI3対3育成チーム戦です。ログインした自分の選手で開始した試合だけが育成報酬の対象で、通常チーム戦と練習には報酬がありません。サーバーは報酬重複・ポイント消費・記録範囲を検査しますが、試合は端末で実行します。対人オンライン競争や全入力を検証する試合ではありません。有料通貨・現金決済・公開順位はありません。",
+    "成长玩法包括 AI 1 对 1 球场挑战和 AI 3 对 3 成长团队赛。仅登录后使用我的球员开始的比赛提供成长奖励，普通团队赛及练习不提供。服务器检查重复奖励、点数消耗及记录范围，但比赛在设备上模拟。这不是在线竞技或由服务器验证全部输入的比赛，不提供付费货币、现金支付及公开排名。"
+  ],
+  [
+    "내 선수 키우기 · 1대1·3대3 성장 →",
+    "My Player · 1v1 & 3v3 career →",
+    "マイ選手・1対1と3対3育成 →",
+    "我的球员 · 1对1及3对3成长 →"
+  ],
+  [
+    "모바일에서 먼 외곽으로 이동할 때 카메라의 7% 단계 줌을 없애고 확대·축소를 연속적으로 연결했습니다.",
+    "Mobile camera zoom now changes continuously when moving far beyond the arc, replacing the old 7% steps.",
+    "モバイルで外側へ移動した際の7%刻みのズームをなくし、拡大・縮小を滑らかにつなぎました。",
+    "移动到远离三分线的位置时，手机镜头改为连续缩放，移除了原来的7%阶梯变化。"
+  ]
+]);

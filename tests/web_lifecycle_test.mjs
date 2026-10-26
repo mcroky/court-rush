@@ -14,7 +14,7 @@ function fixture(raw=null,failWrite=false){
     const n={id,tagName:'BUTTON',style:{},classList:classes(),dataset:{},open:false,hidden:false,textContent:'',lastElementChild:{},
       addEventListener:(name,cb)=>{if(!handlers.has(name))handlers.set(name,[]);handlers.get(name).push(cb)},
       fire:(name,e={})=>(handlers.get(name)||[]).forEach(cb=>cb(e)),
-      click:()=>n.fire('click'),setAttribute:()=>{},focus:()=>document.activeElement=n,
+      click:()=>n.fire('click'),setAttribute:()=>{},focus:()=>document.activeElement=n,scrollIntoView:()=>{},
       showModal:()=>{n.open=true;node('close-dialog').focus()},close:()=>{n.open=false;n.fire('close')},
       setPointerCapture:()=>{},getBoundingClientRect:()=>({left:0,top:0,width:100,height:100})};
     watchText(n);watchText(n.lastElementChild);nodes.set(id,n);return n;
@@ -165,3 +165,13 @@ function fixture(raw=null,failWrite=false){
  console.log('TEAM_INPUT_EDGES: quick taps retained, repeated holds suppressed, lifecycle reset invalidates stale input');
 }
 console.log('WEB_LIFECYCLE: focus/visibility, pause, repeat keys, touch cancel, manual resume, shot-meter, audio, team Q/E, contextual touch and team rematch passed');
+{
+ const f=fixture();f.run('ready=true');
+ f.node('career-reward').textContent='old reward';f.node('career-team-summary').textContent='old stats';
+ f.window.CourtGame.startCareer({mode:'team',matchId:'11111111-1111-4111-8111-111111111111'});
+ assert.equal(f.window.ufInput.command,'career');assert.equal(f.node('team-option').classList.contains('selected'),true);
+ assert.equal(f.node('career-reward').textContent,'');assert.equal(f.node('career-team-summary').textContent,'');assert.equal(f.node('career-team-summary').hidden,true);
+ const result={started:true,paused:false,phase:'ended',mode:'team',careerMode:'team',careerMatchId:'11111111-1111-4111-8111-111111111111',score:[3,6],seconds:0,owner:-1,action:'idle',charge:0,finish:'shot',makes:1,attempts:3};
+ f.window.ufUpdate(result);assert.equal(f.node('mode-badge').textContent,'MY TEAM');assert.equal(f.node('result-detail').textContent,'성장 팀전 · 직접 조작한 기여 기록');
+ console.log('TEAM_CAREER_UI: career command, team selection, result cleanup, growth badge and contribution heading passed');
+}

@@ -1,5 +1,5 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.118.0';
-import {ROLES,STAGES,newPlayer,attributes,opponentAthlete,trainPlayer,rewardPlayer,normalizePlayer,buyClothing,equipClothing} from './rules.mjs';
+import {ROLES,STAGES,newPlayer,attributes,opponentAthlete,trainPlayer,rewardPlayer,normalizePlayer,buyClothing,equipClothing,teamOpponents,validateTeamResult,rewardTeamPlayer} from './rules.mjs';
 
 const url=Deno.env.get('SUPABASE_URL')!;
 const service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -110,11 +110,22 @@ Deno.serve(async(req:Request)=>{
    if(!changed.length)fail('선수가 다른 창에서 변경됐습니다. 다시 불러와 주세요.',409);return send({player});
   }
   if(action==='start'){
+   if(b.mode!==undefined&&!['duel','team'].includes(b.mode))fail('경기 모드를 확인하세요.');
+   const mode=b.mode||'duel';
+   if(mode==='team'){
+    if(!/^[0-9a-f-]{36}$/.test(b.requestId||''))fail('경기 요청을 확인하세요.');
+    const prior=checked(await admin.from('cr_matches').select('*').eq('id',b.requestId).eq('user_id',a.user_id).maybeSingle());
+    if(prior){if(prior.game_mode!=='team'||prior.finished_at)fail('새 경기를 시작해 주세요.');return send({matchId:prior.id,...prior.setup});}
+    await limit('start:'+a.user_id,40,3600);
+    const setup={mode:'team',athlete:attributes(row.data),opponents:teamOpponents(row.data)};
+    checked(await admin.from('cr_matches').insert({id:b.requestId,user_id:a.user_id,stage:1,game_mode:'team',setup}));
+    return send({matchId:b.requestId,...setup});
+   }
    const stage=b.stage;
    if(!Number.isInteger(stage)||stage<1||stage>STAGES.length||stage>row.data.cleared+1)fail('아직 도전할 수 없는 코트입니다.');
    if(!/^[0-9a-f-]{36}$/.test(b.requestId||''))fail('경기 요청을 확인하세요.');
    const prior=checked(await admin.from('cr_matches').select('*').eq('id',b.requestId).eq('user_id',a.user_id).maybeSingle());
-   if(prior){if(prior.stage!==stage||prior.finished_at)fail('새 경기를 시작해 주세요.');return send({matchId:prior.id,stage,athlete:attributes(row.data),opponent:{...STAGES[stage-1],athlete:opponentAthlete(stage)}});}
+   if(prior){if(prior.game_mode!=='duel'||prior.stage!==stage||prior.finished_at)fail('새 경기를 시작해 주세요.');return send({matchId:prior.id,stage,athlete:attributes(row.data),opponent:{...STAGES[stage-1],athlete:opponentAthlete(stage)}});}
    await limit('start:'+a.user_id,40,3600);
    checked(await admin.from('cr_matches').insert({id:b.requestId,user_id:a.user_id,stage}));
    return send({matchId:b.requestId,stage,athlete:attributes(row.data),opponent:{...STAGES[stage-1],athlete:opponentAthlete(stage)}});
@@ -124,6 +135,14 @@ Deno.serve(async(req:Request)=>{
    const m=checked(await admin.from('cr_matches').select('*').eq('id',b.matchId).eq('user_id',a.user_id).maybeSingle());
    if(!m)fail('경기를 찾을 수 없습니다.',404);
    if(m.finished_at)return send({player:normalizePlayer(row.data),reward:m.result});
+   if(m.game_mode==='team'){
+    const elapsed=(Date.now()-Date.parse(m.started_at))/1000;
+    const stats=validateTeamResult(b.score,b.seconds,b.stats,elapsed);
+    const result=rewardTeamPlayer(row.data,b.score[0]>b.score[1],stats);
+    const saved=await admin.rpc('cr_finish_match',{p_user:a.user_id,p_match:m.id,p_revision:row.revision,p_data:result.player,p_result:result.reward});
+    if(saved.error?.code==='40001')fail('선수가 다른 창에서 변경됐습니다. 보상 받기를 다시 눌러 주세요.',409);
+    return send(checked(saved));
+   }
    if(!Array.isArray(b.score)||b.score.length!==2||b.score.some((n:any)=>!Number.isInteger(n)||n<0||n>13)||b.score[0]===b.score[1]||!Number.isFinite(b.seconds)||b.seconds<0||b.seconds>90)fail('경기 결과를 확인하세요.');
    const elapsed=(Date.now()-Date.parse(m.started_at))/1000;
    if(elapsed<15||elapsed>86400||(Math.max(...b.score)<11&&b.seconds>0)||elapsed+3<90-b.seconds)fail('경기 시간과 결과를 확인하세요.');

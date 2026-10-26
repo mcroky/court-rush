@@ -149,19 +149,25 @@ func frame_mobile_court(delta: float, aspect: float, viewport_size: Vector2) -> 
 		targets.append(players[1].position + Vector3.UP * 2.15)
 	if ball != null and phase in ["takeoff", "flight", "loose"]:
 		targets.append(ball.position)
+	# Solve the perspective bounds continuously; the old 7% search snapped at
+	# every distance threshold. All targets share the same fixed viewing angle.
+	camera.position = focus + offset
+	camera.look_at(focus)
+	var projection = camera.get_camera_projection()
+	var distance = offset.length()
 	var zoom = 1.0
-	for attempt in range(14):
-		camera.position = focus + offset * zoom
-		camera.look_at(focus)
-		var fits = true
-		for target in targets:
-			var screen = camera.unproject_position(target) / viewport_size
-			if camera.is_position_behind(target) or screen.x < .06 or screen.x > .94 or screen.y < .14 or screen.y > .67:
-				fits = false
-		if fits: break
-		zoom *= 1.07
-	# Pull back as soon as the ball needs room; return to the close view gradually.
-	camera_mobile_zoom = maxf(zoom, lerpf(camera_mobile_zoom, zoom, 1 - exp(-delta * 3))) if delta > 0 else zoom
+	for target in targets:
+		var relative: Vector3 = target - focus
+		var horizontal = absf(relative.dot(camera.basis.x)) * projection.x.x / .88
+		var vertical = relative.dot(camera.basis.y)
+		vertical *= projection.y.y / (.72 if vertical >= 0 else -.34)
+		var depth = maxf(.1, maxf(horizontal, vertical))
+		zoom = maxf(zoom, (depth + relative.dot(camera.basis.z)) / distance)
+	# Both directions ease in real time. A small framing reserve gives the
+	# pull-back room to catch a running player without exposing each fit step.
+	zoom = maxf(1.0, zoom * 1.025)
+	var rate = 7.0 if zoom > camera_mobile_zoom else 3.0
+	camera_mobile_zoom = lerpf(camera_mobile_zoom, zoom, 1 - exp(-delta * rate)) if delta > 0 else zoom
 	camera.position = focus + offset * camera_mobile_zoom
 	camera.look_at(focus)
 var native_hud: Label
@@ -397,6 +403,20 @@ func start_mode(next_mode: String) -> void:
 	send_state()
 
 func start_career(data: Dictionary) -> void:
+	if data.get("mode","")=="team":
+		if not data.get("athlete",null) is Dictionary or not data.get("opponents",null) is Array or data.opponents.size()!=3 or str(data.get("matchId","")).length()!=36:return
+		if str(data.athlete.get("role","")) not in ["guard","forward","center"]:return
+		for opponent in data.opponents:
+			if not opponent is Dictionary or str(opponent.get("role","")) not in ["guard","forward","center"]:return
+		players[0].court_role=str(data.athlete.role)
+		start_mode("team")
+		career_match_id=str(data.matchId)
+		players[0].apply_athlete(data.athlete)
+		for i in 3:players[i+3].apply_athlete(data.opponents[i])
+		team_match.reset(0)
+		announce("MY TEAM", "성장 팀전 · 직접 조작하며 완주하면 경험치와 코인을 받아요.",4)
+		send_state()
+		return
 	if not data.get("athlete",null) is Dictionary or not data.get("opponent",null) is Dictionary:return
 	var opponent=data.opponent.get("athlete",{})
 	if not opponent is Dictionary or opponent.is_empty() or str(data.get("matchId","")).length()!=36:return
@@ -1336,6 +1356,7 @@ func launch_shot(index: int) -> void:
 		announce("RISING UP" if finish_kind == "shot" else ("FINGER ROLL" if finish_kind == "layup" else "TAKE FLIGHT"), "정점에서 손목을 끝까지." if finish_kind == "shot" else ("한 발 도약, 손끝으로 부드럽게." if finish_kind == "layup" else "속도를 힘으로. 림 위로 올라갑니다."), 1.4)
 
 func release_ball() -> void:
+	if mode=="team":team_match.capture_shot(shooter)
 	var player = players[shooter]
 	# Release from the rendered hand after takeoff, never from a fixed world height.
 	flight_start = ball.position
@@ -1711,6 +1732,7 @@ func send_state() -> void:
 	state["held"] = players[0].has_ball and players[0].dribble_ended
 	state["courtRole"] = players[0].court_role
 	state["careerMatchId"]=career_match_id
+	state["careerMode"]="team" if mode=="team" and not career_match_id.is_empty() else "duel" if not career_match_id.is_empty() else ""
 	state["careerStage"]=career_stage
 	state["canChangeRole"] = not started or phase == "ended" or (mode == "practice" and phase == "live" and players[0].action == "idle")
 	if not career_match_id.is_empty():state["canChangeRole"]=false

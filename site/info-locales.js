@@ -161,6 +161,15 @@
   '目前成长模式为单人 AI 1 对 1 PvE。AI 3 对 3 是独立的无奖励模式。在线对战及移动商店发布为后续计划。服务器校验奖励及点数消费，但不验证每次游戏输入。'
  ]]
  };
+ const latest_en=["Grow with your team.", "v0.9.0 · AI 3v3 career & mobile camera", "Start a career team match from My Player. Finish an 11-point or 3-minute game with two AI teammates to earn XP and coins, plus contribution rewards for directly controlled points, assists, rebounds, blocks and steals. Train the same stats and skills and buy clothing with the shared wallet. Regular team matches grant no growth rewards.", "Current career includes AI 1v1 and AI 3v3 PvE. Online competition and a mobile store release remain future work. Server checks cover reward duplication, point spending and result bounds; simulation runs on your device."];
+ news["en"][2].unshift(latest_en[2],"Mobile camera zoom now changes continuously when moving far beyond the arc, replacing the old 7% steps.",news["en"][1]);news["en"][0]=latest_en[0];news["en"][1]=latest_en[1];news["en"][2][news["en"][2].length-1]=latest_en[3];
+ help["en"][1][help["en"][1].length-2]="My Player offers 8 AI 1v1 courts and AI 3v3 career team matches, sharing XP, stat and skill training and wardrobe coins. Start career team play from My Player. Regular modes and practice grant no growth rewards. Q passes and E switches players in 3v3. Online competition is planned.";
+ const latest_ja=["チームで走り、一緒に育つ。", "v0.9.0・AI3対3育成とモバイルカメラ", "マイ選手から育成チーム戦を開始。AI仲間2人と11点または3分で対戦し、完走すると経験値・コインと直接操作した得点・アシスト・リバウンド・ブロック・スティールの貢献報酬を獲得。同じ選手の能力・技術を育成し、共通の財布で衣装を購入できます。通常チーム戦には育成報酬がありません。", "現在の育成はAI1対1とAI3対3のPvE。オンライン対戦とモバイルストア公開は今後の予定です。サーバーは報酬重複・ポイント消費・結果の範囲を検査しますが、試合は端末で実行します。"];
+ news["ja"][2].unshift(latest_ja[2],"モバイルで外側へ移動した際の7%刻みのズームをなくし、拡大・縮小を滑らかにつなぎました。",news["ja"][1]);news["ja"][0]=latest_ja[0];news["ja"][1]=latest_ja[1];news["ja"][2][news["ja"][2].length-1]=latest_ja[3];
+ help["ja"][1][help["ja"][1].length-2]="マイ選手はAI1対1コート8段階とAI3対3育成チーム戦で経験値・能力・技術・衣装コインを共有。育成チーム戦はマイ選手から開始します。通常モードと練習には育成報酬がありません。3対3はQパス・E選手切替。オンライン対戦は今後の予定です。";
+ const latest_zh_CN=["一起上场，一起成长。", "v0.9.0 · AI 3对3成长与手机镜头", "在我的球员页面开启成长团队赛。与两名AI队友完成11分或3分钟的比赛，可获得经验、金币以及直接操作的得分、助攻、篮板、盖帽、抢断贡献奖励。与1对1共用同一球员的属性、技能和衣橱金币。普通团队赛没有成长奖励。", "目前成长包括AI 1对1及AI 3对3 PvE。在线竞技及移动商店发布仍为后续计划。服务器检查重复奖励、点数消费及结果范围，但比赛在设备上模拟。"];
+ news["zh-CN"][2].unshift(latest_zh_CN[2],"移动到远离三分线的位置时，手机镜头改为连续缩放，移除了原来的7%阶梯变化。",news["zh-CN"][1]);news["zh-CN"][0]=latest_zh_CN[0];news["zh-CN"][1]=latest_zh_CN[1];news["zh-CN"][2][news["zh-CN"][2].length-1]=latest_zh_CN[3];
+ help["zh-CN"][1][help["zh-CN"][1].length-2]="我的球员提供8个AI 1对1球场及AI 3对3成长团队赛，共用经验、属性技能训练和衣橱金币。在我的球员页面开启成长团队赛。普通模式及练习无成长奖励。3对3中Q传球、E切换球员。在线竞技为后续计划。";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;
