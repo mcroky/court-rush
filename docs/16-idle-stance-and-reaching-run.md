@@ -21,4 +21,12 @@
 - 실제 로컬 브라우저 연습에서 달리기→크로스오버/턴→정지 복귀, 캐릭터 스튜디오의 측면 달리기를 느린 보기로 확인했다.390×844 브라우저에서는 비하인드 후 서 있는 발과 터치 UI를 확인했다. 콘솔 warning/error0. artifacts/v089-cross-idle-gameplay.png, v089-run-side.png, v089-mobile-stance.png. 사용자 메인 경기는 초기화하지 않았다.
 - 엔진 웹 export·셸 생성,678원문×3번역·웹 입력/수명주기 검사 통과. 의상 패키징의 첫 실패는 셸 생성 전에 검사해0.8.8 파일과 비교한 순서 오류이며 build_web 후 일치·통과했다.
 
-실제 Android 기기·Play 출시·전체화면60fps 또는 모션의 미적 완성을 검증했다는 뜻은 아니다. 공개 결과는 배포 후 이어 기록한다.
+실제 Android 기기·Play 출시·전체화면60fps 또는 모션의 미적 완성을 검증했다는 뜻은 아니다.
+
+## 공개 완료
+
+- 소스 cb3b9f4, Pages281bfe1f9cb8b099a73b2200d1053161f6e5b80f. GitHub Pages 실행40300195812 success. 고정 주소 https://mcroky.github.io/court-rush/ 에0.8.9를 게시했다.
+- 공개10개 핵심 파일과 최신 버전 일치,138항목/12컬렉션·익명 선수401·CORS/WASM MIME 검사 통과. game.pck SHA256:7aac5834fa07a7486a25a0dc723b255a4d151bdf6723a9424ffe30dbc1aa2a1d. artifacts/v089-public-release.json. 게시 전20개 웹 셸 파일도 커밋 소스와 일치했다.
+- 실제 공개 브라우저에서 연습 시작→달리기→Z 턴→입력 해제→대기 복귀 확인. console warning/error0. artifacts/v089-public-skill-recovery.png, v089-public-standing.png.
+-0.8.9 업데이트 제목·설명을 ko/en/ja/zh-CN으로 전환 확인 후 한국어로 복원. artifacts/v089-public-updates.png. Roky Studio 최신 카드와 요약·기존 게임 주소도 확인했다. artifacts/v089-studio-update.png.
+- 검증용 탭은 닫고 임시 viewport를 복원했다. 사용자 경기·계정 저장·공유 인증 설정에는 변경을 가하지 않았다.
