@@ -1,5 +1,9 @@
 /* Source text stays Korean; identifiers, player names and saved data never change. */
 window.CourtMessages = [
+["훅슛","Hook shot","フックシュート","勾手投篮"],
+["페이더웨이","Fadeaway","フェイダウェイ","后仰跳投"],
+["옆으로 몸을 보호하고 한 손으로 높게","Protect the ball side-on; release high with one hand","横向きで守り、片手で高く放つ","侧身护球，单手高点出手"],
+["뒤로 공간을 만들고 손목으로 마무리","Create space backwards and finish with the wrist","後ろに空間を作り、手首で仕上げる","向后拉开空间，手腕完成出手"],
 ["버킷햇","Bucket hat","バケットハット","渔夫帽"],
 ["모자","Hats","帽子","帽子"],
 ["헤어","Hair","ヘア","发型"],
