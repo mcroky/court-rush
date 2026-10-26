@@ -1106,6 +1106,8 @@ func begin_gather(index: int) -> void:
 	players[index].gather_ball_valid=true
 	players[index].approach_velocity = players[index].motion
 	players[index].finish_kind = Rules.finish_type(players[index].position, players[index].motion)
+	players[index].shot_gather_turn = players[index].finish_kind=="shot" and players[index].motion.length()>1.2
+	players[index].shot_gather_yaw = players[index].rotation.y
 	players[index].finish_running = not players[index].dribble_ended and players[index].finish_kind != "shot" and players[index].motion.length() > 1.2
 	players[index].gather_step_start = players[index].step_serial
 	players[index].dribble_ended = true

@@ -45,7 +45,9 @@
  ]]
  };
  const news={
- en:['Push off. Land soft. Play your style.','v0.8.1 · Jump shots & clothing shapes',[
+ en:['Plant, rise, release.','v0.8.2 · Running shots & arm alignment',[
+  'Running pull-ups now recover one foot and close the other before takeoff. Fixed crossed legs after sideways or backward runs, carried the last closing step through quick shots, and connected the trailing-foot push-off to the jump.',
+  'The guide arm now supports the ball in front of the face instead of flaring beside the head. Elbows stack below the palms, the hands follow the head during turns, and the upper body settles into the shot. Character Studio adds a Running pull-up loop.',
   'Jump shots now connect knee loading, forefoot push-off, airborne ankle extension and knee movement, then forefoot landing and impact absorption. Pump fakes keep the loaded pose without snapping upright.',
   '138 cosmetic items across five slots: tops, bottoms, shoes, hats and hair. New T-shirts, hoodies, varsity jackets, joggers and cargo pants use actual skinned shapes. Four hat shapes and six hair shapes including the original, hat-fit hair, shape filters and existing purchase records are supported.',
   'v0.8.0 · 94 clothing items: 32 jerseys, 31 shorts and 31 shoes. Buy and equip individual pieces with court coins. Nine new themes, court-clear unlocks, matching outfit previews, rotation and ownership filters. Clothing is cosmetic and saved with your account.',
@@ -59,7 +61,9 @@
   'v0.7.0: ID/password accounts without email, recovery codes and account deletion; Guard 178 cm, Forward 190 cm and Center 204 cm; eight AI courts with saved XP and stat/skill training.',
   'Current career is solo AI 1v1 PvE. AI 3v3 is a separate mode without rewards. Online competition and a mobile store release are future work. The server checks rewards and point spending, but does not verify every gameplay input.'
  ]],
- ja:['踏み切って、自分らしく。','v0.8.1・ジャンプシュートと新しいウェア形状',[
+ ja:['足をそろえ、顔の前からシュート。','v0.8.2・移動シュートと腕の姿勢',[
+  '横・後ろへ走ってからシュートすると脚が交差する不具合を修正。回収する足と引き寄せる足を順につなぎ、素早いリリースでも最後の一歩を踏み切り前に完了。後ろの足で押し出す動作も調整しました。',
+  '補助の腕が頭の横に開かず、顔の前でボールを支えるように肘と前腕を整列。ターン中も手が頭の動きに追従し、上体の構えと肘の回収を調整。スタジオに「ランニングからシュート」を追加しました。',
   '膝で荷重を受け、前足部で踏み切り、空中で足首と膝を動かして、前足部から着地し衝撃を吸収するシュートへ調整。短いフェイクでも準備姿勢から急に跳ね上がらないようにしました。',
   'トップス・ボトムス・シューズ・帽子・ヘアの5部位で計138項目。Tシャツ・パーカー・バーシティジャケット・ジョガー・カーゴを実際のスキンメッシュで追加。帽子4形状、基本を含むヘア6形状、帽子用ヘア・形状フィルターと購入記録の引き継ぎに対応。',
   'v0.8.0 · トップス32・ショーツ31・シューズ31、計94点。コートコインで部位別に購入・着用。新規9テーマ、コート進行による解放、一式試着・回転・所持フィルターを追加。能力値には影響せずアカウントに保存されます。',
@@ -73,7 +77,9 @@
   'v0.7.0：メール不要のID登録・復旧コード・アカウント削除。ガード178cm、フォワード190cm、センター204cm。AIコート8段階と経験値・能力・スキルのサーバー保存。',
   '現在の育成はソロAI 1対1 PvEです。AI3対3は報酬なしの別モードです。オンライン対戦・モバイルストア公開は今後の予定。サーバーは報酬とポイント消費を検証しますが、すべての試合入力を検証するものではありません。'
  ]],
- 'zh-CN':['自然起跳，穿出风格。','v0.8.1 · 投篮起跳与新服装款式',[
+ 'zh-CN':['稳稳落脚，从面前出手。','v0.8.2 · 急停跳投与手臂姿势',[
+  '修复横向或向后跑动后投篮时双腿交叉的问题。依次收回摆动脚、并入另一只脚，快速出手时也会在起跳前衔接最后一步，并改善后脚蹬地离地的连接。',
+  '辅助手臂改为在脸前托球，肘部位于手掌下方，避免前臂向头部侧面张开。转身时双手随头部移动，并调整上身准备及肘部回收。角色工作室新增急停跳投循环预览。',
   '投篮衔接膝部蓄力、前脚掌蹬地、空中脚踝伸展与屈膝，再以前脚掌落地并吸收冲击。短按假投篮也会延续准备姿态，避免突然弹起。',
   '上衣、下装、鞋、帽子、发型五部位共138项。短袖、连帽衫、棒球夹克、束脚裤及工装裤使用实际蒙皮模型。新增4种帽型、含默认款的6种发型、戴帽适配发型及款式筛选，保留已有购买记录。',
   'v0.8.0 · 共94件：32件球衣、31条短裤、31双球鞋。使用球场金币分别购买装备。新增9个主题、球场通关解锁、整套试穿、旋转、拥有状态筛选和收集进度。服装不影响属性，记录保存在账号中。',

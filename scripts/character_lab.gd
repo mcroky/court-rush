@@ -69,7 +69,7 @@ func _physics_process(delta):
 		if view=="back":facing=facing+PI if mode in ["cut","cross"] else (PI-.28 if i==0 else PI+.28)
 		var presentation_turn=view!=previous_view
 		actor.facing=facing
-		if mode not in ["cut","cross"]:actor.rotation.y=facing
+		if mode not in ["cut","cross","pullup"]:actor.rotation.y=facing
 		# A camera presentation turn is not a basketball cut: rebuild its contacts.
 		if presentation_turn or mode_changed:
 			actor.rotation.y=facing
@@ -78,7 +78,7 @@ func _physics_process(delta):
 			actor.motion=Vector2.ZERO
 			actor.action="idle"
 			actor.animate(.016,elapsed)
-		actor.has_ball=mode in ["dribble","handle","hold","shot","cross","cut"]
+		actor.has_ball=mode in ["dribble","handle","hold","shot","cross","cut","pullup"]
 		actor.dribble_ended=mode=="hold"
 		var defensive_preview=mode in ["guard","shuffle","boxout"]
 		var defense_time=fposmod(elapsed,8.4)
@@ -102,6 +102,24 @@ func _physics_process(delta):
 				actor.has_ball=actor.action_time<.22
 		var stopping=mode=="cut" and fposmod(elapsed,8.4)>=7.2
 		var velocity=Vector2(sin(facing),cos(facing))*(4.7 if mode not in ["idle","handle","hold","shot"] and not stopping else 0)
+		if mode=="pullup":
+			var t=fposmod(elapsed,3.0)
+			var next_action="idle" if t<.55 or t>=1.98 else ("gather" if t<1.10 else "shot")
+			actor.finish_kind="shot"
+			if next_action=="gather" and actor.action!="gather":
+				actor.approach_velocity=actor.motion
+				actor.shot_gather_yaw=actor.rotation.y
+				actor.shot_gather_turn=true
+				actor.gather_step_start=actor.step_serial
+			actor.action=next_action
+			actor.action_time=maxf(0,t-(.55 if next_action=="gather" else 1.10))
+			actor.dribble_ended=t>=.55
+			actor.facing=facing if t<.55 else facing+PI*.5
+			if next_action=="gather":velocity=actor.gather_velocity()
+			elif t>=.55:velocity=Vector2.ZERO
+			if next_action=="shot":
+				actor.jump=Actor.shot_height(actor.action_time)
+				actor.has_ball=actor.action_time<.22
 		if defensive_preview:
 			var slide=0.0
 			if mode!="guard":
@@ -111,6 +129,7 @@ func _physics_process(delta):
 			var direction=actor.global_basis.x*slide
 			velocity=Vector2(direction.x,direction.z)*(1.2 if mode=="boxout" else 2.7)
 		actor.steer_motion(velocity,24,delta)
+		if mode=="pullup" and actor.action=="gather":actor.motion=velocity
 		if mode!="cross" and actor.action=="cross":actor.finish_cross()
 		if mode=="cross" and actor.action=="idle" and fposmod(elapsed,2.4)<.09:
 			actor.prepare_cross(actor.ball_anchor(elapsed))
@@ -136,9 +155,9 @@ func _physics_process(delta):
 	previous_view=view
 	var aspect=get_viewport().get_visible_rect().size.aspect()
 	camera.projection=Camera3D.PROJECTION_ORTHOGONAL
-	camera.size=(.72 if view=="face" else (3.6 if mode=="shot" else 2.8))*maxf(1,1.1/maxf(.35,aspect))
-	camera.position=Vector3(-.80,1.94,4) if view=="face" else Vector3(0,2.45 if mode=="shot" else 2.15,6)
-	camera.look_at(Vector3(-.80,1.64,0) if view=="face" else Vector3(0,1.20 if mode=="shot" else .94,0))
+	camera.size=(.72 if view=="face" else (3.6 if mode in ["shot","pullup"] else 2.8))*maxf(1,1.1/maxf(.35,aspect))
+	camera.position=Vector3(-.80,1.94,4) if view=="face" else Vector3(0,2.45 if mode in ["shot","pullup"] else 2.15,6)
+	camera.look_at(Vector3(-.80,1.64,0) if view=="face" else Vector3(0,1.20 if mode in ["shot","pullup"] else .94,0))
 	if view=="jersey":
 		camera.size=1.30*maxf(1,1.1/maxf(.35,aspect))
 		camera.position=Vector3(-.8,1.7,4)

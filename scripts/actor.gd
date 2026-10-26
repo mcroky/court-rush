@@ -209,6 +209,8 @@ var turn_origin = 0.0
 var turn_sign = 1.0
 var finish_running = false
 var gather_step_start = 0
+var shot_gather_turn = false
+var shot_gather_yaw = 0.0
 var gather_ball_valid=false
 var gather_ball_from=Vector3.ZERO
 var finish_ball_valid=false
@@ -1434,6 +1436,12 @@ func animate(delta: float, _time: float) -> void:
 	if brake_state != "" or brake_weight > .05: yaw_step = clampf(yaw_step,-delta*7,delta*7)
 	if crossing() or cross_exit_left > 0: yaw_step = clampf(yaw_step,-delta*6,delta*6)
 	rotation.y += yaw_step
+	# A running pull-up plants in its approach heading. Turning the hips to the
+	# rim over the old sprint contacts winds the two legs across one another.
+	if shot_gather_turn and action in ["gather","shot"]:
+		rotation.y = shot_gather_yaw if action=="gather" else lerp_angle(shot_gather_yaw,facing,smoothstep(SHOT_PLANT_TIME+.008,.30,action_time))
+	elif action not in ["gather","shot"]:
+		shot_gather_turn = false
 	if action == "spin": rotation.y = turn_origin + turn_sign * TAU * smoothstep(0, 1, action_time / .64)
 	update_footwork(delta, velocity)
 	update_landing_push(delta)
