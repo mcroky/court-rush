@@ -37,3 +37,10 @@
 최종 `held_ball_test.gd`는40조건 실패0: 회전 속도 최대6.50001rad/s, 접지 이후 보이는 축발 오차 최대0.000001513m. 세 체형을 섞은5가지 페이크, 방향 잽/반전과 키 유지 시 반복 억제,3대3의0번/2번 선택 선수와 페이크 후 Q 패스, 공 상실 시 상태 해제 포함. 기존 이동 슛/회복 테스트는`held-shot-entry-verified.txt`와`held-shot-recovery-checked.txt`, 기본 경기/일시정지는`held-game-regression.txt`와`held-pause-safety-final.txt`에 보존했다.
 
 실제 브라우저에서는 림 반대 방향을 계속 누른 채 D를 누르는 장면을 느린 연습으로 확인했다. 확대 스튜디오의 다리 사이 페이크와 실제 경기의 펌프→V, 모바일 팀전의 펌프→터치 C 업앤언더 발동을 확인했다.390×844 뷰포트의clientWidth=scrollWidth375, 여섯 작은 버튼44×44/슛66×66, 버튼 간 겹침0. 보유 중 새 버튼 이름의4개 언어 전환과 콘솔warning/error0을 확인했다. 증거: `artifacts/turnaround-grounded.png`, `held-through-close.png`, `held-mobile-team-controls.png`, `held-mobile-locales.json`. 언어/뷰포트는한국어/1280×720으로 복원하고 자체 탭을 닫았다. 기존 사용자 경기는 초기화하지 않았다.
+
+
+## 공개 배포 기록과 후속 수정
+
+- v0.8.4: 소스3055fe8, Pages6079d026c9171318c371b719a41a3ca99b95e5c7, GitHub Pages 작업40280094374 성공. v0.8.5: 소스c55c993e7e2cd834d0283ad11867574d2e8d497a, Pagese4e8aabe38c03175b3b0161c46e64fc2a86b9407, 작업40280596800 성공. 두 버전의 공개 game.pck SHA256은13073db8c6cdff7ec76180747c9c116183158f6cc0996f69a7349dc61c806e0b로 같고0.8.5는 웹 도우미 패널 제거다.
+- 공개 검증 JSON: artifacts/v084-public-release.json, v085-public-release.json. 네 언어 소식 확인 및 v0.8.5 실제 연습 슛 시도 증가/펌프→C 업앤언더 발동, 콘솔 warning/error0, 삭제한 상단 패널 요소0개 확인. 기존 사용자 탭은 유지했다.
+- 이후 사용자는 지상에서 회전을 끝내는 슛과 작은 페이크를 다시 지적했다. 이 문서의 지상 회전 전용 설명은0.8.4 당시 구현 이력이다. 현재 이동 턴·확대 페이크·훅슛·페이더웨이·루즈볼 수정은 [13번 문서](13-readable-fakes-and-shot-skills.md)의0.8.6 기록을 따른다.
