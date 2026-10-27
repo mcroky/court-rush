@@ -666,3 +666,5 @@ window.CourtMessages.push(...[
     "移动到远离三分线的位置时，手机镜头改为连续缩放，移除了原来的7%阶梯变化。"
   ]
 ]);
+
+window.CourtMessages.push(...[["CHECK BALL · 자리로 복귀","CHECK BALL · Returning to position","CHECK BALL · 位置に戻る","CHECK BALL · 返回位置"],["자리로 돌아와 체크볼을 이어갑니다.","Back in position. Play resumes with a check ball.","位置に戻り、チェックボールで再開します。","返回位置，以发球继续比赛。"],["우리 팀 체크볼 · 자리로 돌아와 공을 받습니다.","Our check ball · Return to position and receive.","味方のチェックボール・位置に戻って受け取ります。","我方发球 · 返回位置接球。"],["상대 팀 체크볼 · 자리로 돌아와 수비를 준비합니다.","Rival check ball · Return to position and defend.","相手のチェックボール・位置に戻って守備を準備。","对方发球 · 返回位置准备防守。"]]);

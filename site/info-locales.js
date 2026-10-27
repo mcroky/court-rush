@@ -197,6 +197,9 @@
  news["en"][2].unshift("Blocks send the ball firmly away, with a brief escape period before anyone can gather it. The swat favors open court; if the defender sends it out, the shooting team keeps the check ball. Applies to 1v1 and 3v3.",news["en"][1]);news["en"][0]="Swat it clear.";news["en"][1]="v0.9.6 · Block into loose-ball play";
  news["ja"][2].unshift("ブロック直後はボールを強く弾き出し、少し離れてから再び争奪します。空いたコート内の方向を優先し、守備のブロックで外に出た場合は攻撃側のチェックボール。1対1・3対3共通です。",news["ja"][1]);news["ja"][0]="はっきり弾き出すブロック。";news["ja"][1]="v0.9.6・ブロック後のルーズボール争い";
  news["zh-CN"][2].unshift("盖帽会有力地将球拍开，短暂离开身体后才能重新争抢。优先拍向场内的空位；若防守方盖出界，由投篮方继续发球。1对1和3对3均适用。",news["zh-CN"][1]);news["zh-CN"][0]="盖帽，把球拍开。";news["zh-CN"][1]="v0.9.6 · 盖帽后争抢球权";
+ news["en"][2].unshift("Players anticipate the bounce, slow down and gather the ball into the chest before resuming the dribble. An out-of-bounds whistle now leads to a visible jog back and ball return instead of teleporting everyone into the next possession. Applies to 1v1 and 3v3.",news["en"][1]);news["en"][0]="Chase it down.";news["en"][1]="v0.9.7 · Loose-ball chase and check ball";
+ news["ja"][2].unshift("バウンドを予測して追い、減速して胸に抱え、ドリブルへつなぎます。アウト時は瞬間移動で次の攻撃に切り替えず、選手が位置に戻ってボールを受け取ってから再開します。1対1・3対3共通です。",news["ja"][1]);news["ja"][0]="弾いたボールを最後まで追う。";news["ja"][1]="v0.9.7・ルーズボール追走とチェックボール";
+ news["zh-CN"][2].unshift("球员预判弹跳路线、减速并将球收至胸前，再衔接运球。出界后会跑回位置，接球后重新开始，不再瞬间切换到下一次持球画面。1对1与3对3均适用。",news["zh-CN"][1]);news["zh-CN"][0]="追到底，抢回球。";news["zh-CN"][1]="v0.9.7 · 争抢地板球与重新发球";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;

@@ -97,7 +97,7 @@ func stop() -> void:
 	for actor in game.players: actor.marker.visible = true
 	legacy.clear()
 
-func reset(next_team: int) -> void:
+func reset(next_team: int, preserve_pose: bool = false) -> void:
 	possession = next_team
 	last_touch = next_team*3
 	game.ball_owner = next_team*3
@@ -127,9 +127,11 @@ func reset(next_team: int) -> void:
 	for i in 6:
 		var p = game.players[i]
 		var attacking = team(i) == next_team
-		var slot = i%3
-		var spots = [Vector3(0,0,1.9),Vector3(-4.3,0,-1.8),Vector3(2.7,0,-3.8)]
-		p.position = spots[slot]+(Vector3.ZERO if attacking else Vector3(.45,0,-1.05))
+		if preserve_pose:
+			p.has_ball = i == game.ball_owner
+			goals[i] = p.position
+			continue
+		p.position = game.CheckBall.spot(i,next_team,true)
 		p.motion = Vector2.ZERO
 		p.jump = 0
 		p.action = "idle"
@@ -229,6 +231,7 @@ func tick(delta: float, input: Dictionary) -> void:
 	for i in 6:
 		if i == selected: continue
 		var actor = game.players[i]
+		if game.phase=="loose":goals[i]=game.loose_chase_target(actor)
 		var offset: Vector3 = goals[i]-actor.position
 		offset.y = 0
 		var speed = float(actor.athletic_profile().speed)
@@ -236,6 +239,7 @@ func tick(delta: float, input: Dictionary) -> void:
 		if actor.chase_recovery: velocity *= .68
 		move_actor(i,velocity,delta)
 		if actor.defending and game.ball_owner >= 0: game.face_target(i,game.players[marks[i]].position)
+		elif actor.action=="pickup":actor.facing=actor.pickup_facing
 		elif offset.length() > .2 and actor.action == "idle": actor.facing = atan2(offset.x,offset.z)
 	update_boxouts(input.guard)
 	separate()
@@ -292,7 +296,7 @@ func move_actor(index: int, desired: Vector3, delta: float) -> void:
 	var p = game.players[index]
 	if p.action=="shot":p.shot_exit_intent=Vector2(desired.x,desired.z)
 	var velocity = Vector2(desired.x,desired.z)*p.landing_speed_scale()
-	if p.action=="pickup":velocity*=.45
+	if p.action=="pickup":velocity*=p.pickup_speed_scale()
 	if p.action in ["gather","shot","layup","dunk","block","rebound","pass","receive","fake"] or game.phase == "dead": velocity = Vector2.ZERO
 	if p.defensive_jump() and p.action_time >= p.defense_land_time()+.115:
 		velocity = Vector2(desired.x,desired.z)*p.landing_speed_scale()*.4
@@ -448,9 +452,10 @@ func decide() -> void:
 		var p = game.players[i]
 		p.defending = false if i != selected else p.defending
 		if game.phase in ["flight","loose"]:
+			if game.phase=="loose":target=game.loose_chase_target(p)
 			# Guards protect the outlet; the closest two on each team contest the glass.
 			var role_offset = Vector3(-.65 if i%2 == 0 else .65,0,.4)
-			goals[i] = target+role_offset if p.court_role != "guard" or p.position.distance_to(target) < 2.2 else Vector3(-3.3 if team(i) == 0 else 3.3,0,-.2)
+			goals[i] = (target if game.phase=="loose" else target+role_offset) if game.phase=="loose" or p.court_role != "guard" or p.position.distance_to(target) < 2.2 else Vector3(-3.3 if team(i) == 0 else 3.3,0,-.2)
 			if i != selected and game.phase == "loose" and p.action == "idle" and not rebound_blocked(i) and game.ball_velocity.y < -.25:
 				var ahead: Vector3 = game.ball.position+game.ball_velocity*.26+Vector3.DOWN*4.9*.26*.26
 				if ahead.y > 1.65 and ahead.y < 2.15+p.athletic_profile().rebound_jump and Vector2(ahead.x-p.position.x,ahead.z-p.position.z).length() < .9: game.start_defensive_jump(i,"rebound")
@@ -631,7 +636,7 @@ func update_loose(delta: float) -> void:
 	game.ball.position += game.ball_velocity*delta
 	if game.ball.position.y < Actor.DRIBBLE_FLOOR:
 		game.ball.position.y = Actor.DRIBBLE_FLOOR
-		game.ball_velocity = Vector3(game.ball_velocity.x*.76,absf(game.ball_velocity.y)*.56,game.ball_velocity.z*.76)
+		game.ball_velocity = Vector3(game.ball_velocity.x*game.loose_floor_damping(),absf(game.ball_velocity.y)*.56,game.ball_velocity.z*game.loose_floor_damping())
 		game.play_sound("bounce",-15)
 	if Rules.ball_outside(game.ball.position):
 		turnover("OUT OF BOUNDS", "체크볼로 다시 시작합니다.",1-team(last_touch))
@@ -654,7 +659,7 @@ func update_loose(delta: float) -> void:
 		if winner.air:
 			game.players[winner.id].capture_rebound(game.ball.position,game.ball_velocity)
 			game.court_audio.cue("rebound")
-		else:game.players[winner.id].begin_pickup(game.ball.position)
+		else:game.players[winner.id].begin_pickup(game.ball.position,game.ball_velocity)
 		if team(winner.id) == possession: game.shot_clock = maxf(game.shot_clock,12)
 		claim(winner.id,"AIR CATCH!" if winner.air else "LOOSE BALL")
 	elif game.loose_timer > 8: turnover("CHECK BALL", "체크볼로 다시 시작합니다.",1-possession)
@@ -687,6 +692,9 @@ func register_score() -> void:
 	if game.finish_kind == "dunk": game.play_sound("slam",-5)
 
 func turnover(title: String, subtitle: String, next_team: int) -> void:
+	if title in ["OUT OF BOUNDS","CHECK BALL"]:
+		game.check_ball.begin(game,next_team,title,subtitle)
+		return
 	reset(next_team)
 	game.announce(title,subtitle,2)
 	game.last_event = "turnover"

@@ -71,6 +71,12 @@ func run():
 			g.ball.position=Vector3(7.6,1,-3);g.ball_velocity=Vector3.RIGHT
 			if mode=="team":g.team_match.last_touch=0 if event=="block" else 3;g.team_match.update_loose(1.0/60)
 			else:g.update_loose(1.0/60)
+			check(g.phase=="check" and g.ball_owner<0,"Out-of-bounds skipped its visible stoppage")
+			for frame in 1200:
+				if g.phase!="check":break
+				g.check_ball.tick(g,1.0/60)
+			if g.phase=="check":
+				for id in g.players.size():print("CHECK_WAIT ",mode," ",event," id=",id," action=",g.players[id].action," offset=",g.players[id].position.distance_to(g.CheckBall.spot(id,g.check_ball.next_side,mode=="team"))," motion=",g.players[id].motion)
 			check(g.ball_owner==((1 if event=="block" else 0) if mode=="duel" else (3 if event=="block" else 0)),"Wrong check-ball ownership after %s %s went out"%[mode,event])
 	g.last_event="block";g.phase="loose";g.loose_timer=0;g.shooter=4
 	g.start_mode("practice");g.set_drill("rebound")

@@ -27,20 +27,46 @@ func apply_appearance(ids: Dictionary) -> void:
 var transfer_target = Vector3.ZERO
 var transfer_from = Vector3.ZERO
 var transfer_caught = false
-var pickup_from=Vector3.ZERO
+var pickup_from=Vector3.ZERO # Local entry retained only for the rig's height test.
+var pickup_world=Vector3.ZERO
+var pickup_incoming=Vector3.ZERO
+var pickup_facing=0.0
 var pickup_height=0.0
 var pickup_velocity=0.0
+var loose_reach=0.0
+var loose_reach_target=Vector3.ZERO
 
-func begin_pickup(point: Vector3) -> void:
+func update_loose_reach(point: Vector3, active: bool, delta: float) -> void:
+	var offset=point-global_position
+	var desired=(1-smoothstep(.55,1.65,Vector2(offset.x,offset.z).length()))*(1-smoothstep(1.25,1.95,offset.y)) if active and action=="idle" else 0.0
+	loose_reach=move_toward(loose_reach,desired,delta*6)
+	loose_reach_target=point
+
+func begin_pickup(point: Vector3, incoming: Vector3 = Vector3.ZERO) -> void:
 	pickup_from=to_local(point)
+	pickup_world=point
+	pickup_incoming=incoming.limit_length(10)
+	pickup_facing=facing
 	pickup_height=jump
 	pickup_velocity=clampf(body_vertical_velocity,-4,3) if jump>.05 else 0.0
 	action="pickup";action_time=0;dribble_phase=0;dribble_ended=false
 	held.reset()
 
+func pickup_speed_scale() -> float:
+	return lerpf(.60,.30,smoothstep(0,.18,action_time))+.35*smoothstep(.24,.40,action_time)
+
 func pickup_center() -> Vector3:
-	var pocket=Vector3(0,1.16*height_ratio+jump,.30*height_ratio)
-	return to_global(pickup_from.lerp(pocket,smoothstep(.025,.24,action_time)))
+	var pocket=to_global(Vector3(0,1.16*height_ratio+jump,.30*height_ratio))
+	var receive=smoothstep(0,.30,action_time)
+	# The entry point stays in world space while the shoulders turn. Absorb a
+	# small amount of incoming flight before drawing the ball to the chest.
+	return pickup_world.lerp(pocket,receive)+pickup_incoming*minf(action_time,.07)*(1-receive)*.32
+
+func finish_pickup() -> void:
+	rebound_release_from=pickup_center()
+	rebound_release_left=.20
+	dribble_phase=0
+	action="idle";action_time=0
 
 func transfer_pose(index: int) -> Vector3:
 	var side = -1.0 if index == 0 else 1.0
@@ -1302,7 +1328,7 @@ func crossing() -> bool:
 	return action == "cross" and cross_valid
 
 func locomotion_pose() -> bool:
-	return action == "idle" or crossing()
+	return action in ["idle","pickup"] or crossing()
 
 func cross_phase() -> float:
 	return clampf((action_time-cross_wait)/CROSS_TIME,0,1)
@@ -1520,6 +1546,7 @@ func animate(delta: float, _time: float) -> void:
 		dribble_phase += delta*dribble_rate(speed)*resume_bounce
 	ball_side = move_toward(ball_side, dribble_hand, delta * 12)
 	var turn_target = brake_yaw if brake_state in ["plant","load"] else facing
+	if action=="pickup":turn_target=lerp_angle(pickup_facing,turn_target,smoothstep(.20,.40,action_time))
 	if crossing(): turn_target = lerp_angle(cross_yaw,turn_target,smoothstep(.35,.95,cross_phase()))
 	var turn_rate = 10.0 if brake_state != "" or brake_weight > .05 else lerpf(18,10,defense_weight)
 	var yaw_step = angle_difference(rotation.y,turn_target)*(1-exp(-delta*turn_rate))

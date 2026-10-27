@@ -1,5 +1,7 @@
 extends Node3D
 
+const CheckBall = preload("res://scripts/check_ball.gd")
+var check_ball = CheckBall.new()
 const Actor = preload("res://scripts/actor.gd")
 const TeamMatch = preload("res://scripts/team_match.gd")
 var team_match
@@ -433,9 +435,9 @@ func start_career(data: Dictionary) -> void:
 func opponent_enabled() -> bool:
 	return mode == "duel" or (mode == "practice" and practice_drill in ["boxout","block","steal","rim","recovery"])
 
-func reset_positions(next_owner: int) -> void:
+func reset_positions(next_owner: int, preserve_pose: bool = false) -> void:
 	if mode == "team" and team_match != null and not team_match.legacy.is_empty():
-		team_match.reset(0)
+		team_match.reset(0,preserve_pose)
 		return
 	ball_owner = next_owner
 	shooter = next_owner
@@ -450,9 +452,12 @@ func reset_positions(next_owner: int) -> void:
 	crossover_cooldown = 0
 	steal_cooldown = 0
 	last_shoot = true # A held button across a restart must not trigger a shot.
-	players[0].position = Vector3(-1.3, 0, 1.9) if ball_owner == 0 else Vector3(0.4, 0, -0.3)
-	players[1].position = Vector3(-0.5, 0, -0.1) if ball_owner == 0 else Vector3(-1.1, 0, 2.5)
+	if not preserve_pose:
+		for i in 2: players[i].position = CheckBall.spot(i,next_owner,false)
 	for i in range(2):
+		if preserve_pose:
+			players[i].has_ball = i == ball_owner
+			continue
 		players[i].motion = Vector2.ZERO
 		players[i].jump = 0
 		players[i].action = "idle"
@@ -470,7 +475,7 @@ func reset_positions(next_owner: int) -> void:
 		players[i].facing = PI
 		players[i].animate(0.016, time)
 	players[1].visible = opponent_enabled()
-	if mode == "practice" and practice_drill in ["layup", "dunk"]:
+	if not preserve_pose and mode == "practice" and practice_drill in ["layup", "dunk"]:
 		players[0].position = Vector3(0.75, 0, -3.2) if practice_drill == "layup" else Vector3(0, 0, -2.55)
 		face_target(0, HOOP)
 	ball.position = players[ball_owner].ball_anchor(time)
@@ -834,6 +839,11 @@ func _physics_process(delta: float) -> void:
 		update_ball_visual()
 		last_shoot = input.shoot
 		return
+	if phase == "check":
+		check_ball.tick(self,delta)
+		update_ball_visual()
+		last_shoot = input.shoot
+		return
 	if mode == "team":
 		team_match.tick(delta,input)
 		return
@@ -865,7 +875,7 @@ func _physics_process(delta: float) -> void:
 	held_ball_controls(0,input,desired,delta)
 	if players[0].action=="shot":players[0].shot_exit_intent=Vector2(desired.x,desired.z)*players[0].athletic_profile().speed
 	var speed: float = players[0].athletic_profile().speed if not input.guard else 2.7
-	if players[0].action=="pickup":speed*=.45
+	if players[0].action=="pickup":speed*=players[0].pickup_speed_scale()
 	if input.guard and players[0].boxing_out: speed = 1.7
 	if players[0].action in ["gather", "shot", "layup", "dunk", "fake", "block", "rebound"]:
 		speed *= 0.16
@@ -1032,10 +1042,11 @@ func update_actions(delta: float) -> void:
 		var cross_bounce = player.cross_wait+.19 if player.crossing() else .19
 		if player.action == "cross" and player.action_time < cross_bounce and player.action_time + delta >= cross_bounce:
 			play_sound("bounce", -10)
+		player.update_loose_reach(ball.position,phase=="loose",delta)
 		player.action_time += delta
 		if player.action=="pickup":
 			player.jump=maxf(0,player.pickup_height+player.pickup_velocity*player.action_time-4.9*player.action_time*player.action_time)
-			if player.action_time>=.28 and player.jump<=.001:player.action="idle";player.action_time=0
+			if player.action_time>=.40 and player.jump<=.001:player.finish_pickup()
 		elif player.action=="square" and player!=controlled_player() and player.held.square_ready(player):
 			begin_gather(players.find(player),true)
 		elif player.action=="held_fake" and player.action_time>=player.held.duration:
@@ -1096,6 +1107,27 @@ func move_player(index: int, delta: float) -> void:
 func face_target(index: int, target: Vector3) -> void:
 	var direction = target - players[index].position
 	players[index].facing = atan2(direction.x, direction.z)
+
+func loose_floor_damping() -> float:
+	return .42 if last_event=="block" else .76
+
+func loose_chase_target(player) -> Vector3:
+	# Predict the same gravity and bounces as the visible ball, stopping at the
+	# earliest reachable sample instead of chasing a moving point behind it.
+	var point = ball.position
+	var velocity = ball_velocity
+	var speed = float(player.athletic_profile().speed)*.90
+	for step in 18:
+		var t = (step+1)*.04
+		velocity.y -= 9.8*.04
+		point += velocity*.04
+		if point.y<Actor.DRIBBLE_FLOOR:
+			point.y=Actor.DRIBBLE_FLOOR
+			velocity=Vector3(velocity.x*loose_floor_damping(),absf(velocity.y)*.56,velocity.z*loose_floor_damping())
+		var ground=Rules.clamp_to_court(Vector3(point.x,0,point.z))
+		if Vector2(ground.x-player.position.x,ground.z-player.position.z).length()<speed*t+.32 and point.y<1.75:
+			return ground
+	return Rules.clamp_to_court(Vector3(point.x,0,point.z))
 
 func rebound_target() -> Vector3:
 	if phase == "loose":
@@ -1486,6 +1518,7 @@ func begin_block_deflection(defender: Node3D) -> void:
 	trail_positions.clear()
 	loose_timer = 0
 	last_event = "block"
+	ai_freeze = 0 # The practice setup holds the shooter only until the swat.
 	court_audio.cue("block")
 	announce("GET THAT OUT!", "손바닥으로 쳐냈습니다! 튕겨 나간 공을 따라가세요.")
 	play_sound("block", -7)
@@ -1576,8 +1609,8 @@ func update_loose(delta: float) -> void:
 		ball.position.y = Actor.DRIBBLE_FLOOR
 		if absf(ball_velocity.y) > 0.8: play_sound("bounce", -12)
 		ball_velocity.y = absf(ball_velocity.y) * 0.56
-		ball_velocity.x *= 0.76
-		ball_velocity.z *= 0.76
+		ball_velocity.x *= loose_floor_damping()
+		ball_velocity.z *= loose_floor_damping()
 	if Rules.ball_outside(ball.position):
 		# A swat was last touched by the defender; the original shooting side
 		# keeps the check ball when that swat goes out.
@@ -1596,15 +1629,15 @@ func update_loose(delta: float) -> void:
 	if not candidates.is_empty():
 		candidates.sort_custom(func(a, b): return a.distance < b.distance if a.distance != b.distance else a.id < b.id)
 		claim_ball(candidates[0].id)
-	elif mode == "practice" and loose_timer > 2.5:
-		reset_positions(0)
+	elif mode == "practice" and loose_timer > (6.0 if last_event=="block" else 2.5):
+		turnover("CHECK BALL", "자리로 돌아와 체크볼을 이어갑니다.",0)
 	elif loose_timer > 10:
 		turnover("CHECK BALL", "경기를 다시 이어갑니다.", 1 - shooter)
 
 func claim_ball(index: int) -> void:
 	var just_blocked = last_event == "block" and loose_timer < .75
 	if players[index].action == "rebound": players[index].capture_rebound(ball.position,ball_velocity)
-	else:players[index].begin_pickup(ball.position)
+	else:players[index].begin_pickup(ball.position,ball_velocity)
 	ball_owner = index
 	phase = "live"
 	needs_clear = mode == "duel" and index != shooter and not Rules.is_clear(players[index].position)
@@ -1687,11 +1720,12 @@ func update_ai(delta: float) -> void:
 	if mode == "practice" and practice_drill == "steal":
 		ai.motion = Vector2.ZERO
 		return
+	if phase == "loose": ai_goal = loose_chase_target(ai)
 	ai_decision -= delta
 	if ai_decision <= 0:
 		ai_decision = rng.randf_range(0.16, 0.29)
 		if phase == "loose":
-			ai_goal = rebound_target()
+			ai_goal = loose_chase_target(ai)
 		elif phase == "flight":
 			var target = rebound_target()
 			var attacker_side = (players[0].position-target).normalized()
@@ -1715,9 +1749,11 @@ func update_ai(delta: float) -> void:
 	var speed = 3.7 if ball_owner != 1 else 3.35
 	if not career_match_id.is_empty():speed=ai.athletic_profile().speed*(.80 if ball_owner!=1 else .74)
 	if ai.boxing_out: speed = 1.6
-	if ai_freeze > 0 or ai.action != "idle": speed = 0.35
+	if ai_freeze > 0 or ai.action not in ["idle","pickup"]: speed = 0.35
+	if ai.action=="pickup":speed*=ai.pickup_speed_scale()
 	speed *= ai.landing_speed_scale()
 	var movement = Vector2(offset.x, offset.z).limit_length() * speed if offset.length() > 0.16 else Vector2.ZERO
+	if phase=="loose":movement*=clampf(offset.length()/.85,0,1)
 	if ball_owner == 0: movement *= clampf(offset.length() / .8, 0, 1)
 	if ai_reaction > 0 and ai_freeze <= 0 and ai.action == "idle" and not ai.chase_recovery: movement = ai_reaction_velocity
 	if ai.chase_recovery or (behind and ball_owner == 0):
@@ -1726,7 +1762,9 @@ func update_ai(delta: float) -> void:
 	if ai.has_ball and ai.dribble_ended:
 		ai.motion = ai.gather_velocity() if ai.action == "gather" else Vector2.ZERO
 	if not (phase == "takeoff" and shooter == 1): move_player(1, delta)
-	if not ai.defensive_jump() and not ai.chase_recovery and not (behind and ball_owner == 0): face_target(1, players[0].position if ball_owner == 0 else HOOP)
+	if phase=="loose" and movement.length()>.15:ai.facing=atan2(movement.x,movement.y)
+	elif ai.action=="pickup":ai.facing=ai.pickup_facing
+	elif not ai.defensive_jump() and not ai.chase_recovery and not (behind and ball_owner == 0): face_target(1, players[0].position if ball_owner == 0 else HOOP)
 	if ai.action == "idle" and ai_rebound_ready(1):
 		start_defensive_jump(1,"rebound")
 	if ball_owner == 1 and phase == "live":
@@ -1740,6 +1778,9 @@ func turnover(title: String, subtitle: String, next_owner: int = -1) -> void:
 	var who = next_owner
 	if who < 0: who = 1 - maxi(ball_owner, 0)
 	if mode == "practice": who = 0
+	if title in ["OUT OF BOUNDS","CHECK BALL"]:
+		check_ball.begin(self,who,title,subtitle)
+		return
 	reset_positions(who)
 	last_event = "turnover"
 	announce(title, subtitle)
@@ -1788,8 +1829,10 @@ func send_state() -> void:
 	}
 	if frame_probe:
 		state["profile"]={"processMs":Performance.get_monitor(Performance.TIME_PROCESS)*1000,"physicsMs":Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)*1000,"drawCalls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"primitives":Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),"objects":Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),"adapter":RenderingServer.get_video_adapter_name()}
-		if mode == "duel":
+		if mode in ["duel","practice","team"]:
 			state["contactProbe"]={"player":state.player,"opponent":[players[1].position.x,players[1].position.z],"opponentAction":players[1].action,"opponentTime":players[1].action_time,"owner":ball_owner,"phase":phase,"hoop":[HOOP.x,HOOP.z]}
+			state.contactProbe["actors"]=players.map(func(p):return {"position":[p.position.x,p.position.z],"action":p.action,"reach":p.loose_reach,"speed":p.motion.length()})
+			state.contactProbe["simTime"]=time
 			var defender=players[0]
 			state.contactProbe["block"]={"action":defender.action,"time":defender.action_time,"hit":defender.block_contact,"lane":block_lane_open(defender),"distance":hand_ball_distance(defender.hand_world,defender.previous_hand_world),"palmDown":defender.palm_frame(1 if defender.dribble_hand>0 else 0).z.dot(Vector3.DOWN),"ball":state.ball,"palm":[defender.hand_world.x,defender.hand_world.y,defender.hand_world.z],"relative":(defender.hand_world.y-defender.previous_hand_world.y)/maxf(defender.pose_delta,.0001)-defender.body_vertical_velocity}
 	state["finish"] = (players[0].shot_style if players[0].shot_style!="jumper" else players[0].finish_kind) if players[0].action in ["gather","shot"] else Rules.finish_type(players[0].position, players[0].motion)

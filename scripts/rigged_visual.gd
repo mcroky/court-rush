@@ -742,7 +742,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	action_entry_time+=delta
 	if actor.action=="gather":shot_gather_clock=actor.action_time
 	was_crossing=actor.crossing()
-	var action_pose = actor.action not in ["idle","cross","spin","twostep","behind","hesi","showcase"] or actor.jump>.05
+	var action_pose = actor.action not in ["idle","pickup","cross","spin","twostep","behind","hesi","showcase"] or actor.jump>.05
 	var guard_weight: float=actor.defense_weight if not actor.has_ball and actor.action=="idle" and not actor.chase_recovery else 0.0
 	var guard_active=guard_weight>.5
 	if guard_active and not guard_was_active and initialized:
@@ -822,7 +822,8 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		height_target=lerpf(action_entry_height,height_target,smoothstep(0,.12,actor.action_time))
 	if actor.action in ["shot","layup"]:height_target=finish_root(actor)
 	if actor.held.owns(actor):height_target=lerpf(action_entry_height,-actor.held.pose(actor).drop,smoothstep(0,.16,actor.held.entry_time))
-	if actor.action=="pickup":height_target-=.30*sin(clampf(actor.action_time/.28,0,1)*PI)*(1-smoothstep(.35,.8,actor.pickup_from.y))
+	if actor.action=="pickup":height_target-=.25*sin(clampf(actor.action_time/.40,0,1)*PI)*(1-smoothstep(.35,.8,actor.pickup_from.y))
+	height_target-=actor.loose_reach*.12
 	if actor.defensive_jump():height_target=lerpf(action_entry_height,height_target,smoothstep(0,actor.defense_plant_time(),action_entry_time))
 	root_height = move_toward(root_height,height_target,delta*1.8) if initialized and not action_pose else height_target
 	model.position = Vector3(0,root_height,-.255*render_scale)
@@ -876,7 +877,8 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			layer.y=actor.dribble_hand*.08*sin(clampf(actor.action_time/.82,0,1)*PI)
 			layer.z=-actor.dribble_hand*.035*sin(clampf(actor.action_time/.82,0,1)*PI)
 	if actor.stealing():layer.x+=.55*actor.steal_reach()+actor.body.rotation.x
-	if actor.action=="pickup":layer.x+=.38*sin(clampf(actor.action_time/.28,0,1)*PI)*(1-smoothstep(.35,.8,actor.pickup_from.y))
+	if actor.action=="pickup":layer.x+=.30*sin(clampf(actor.action_time/.40,0,1)*PI)*(1-smoothstep(.35,.8,actor.pickup_from.y))
+	layer.x+=actor.loose_reach*.16
 	shot_posture_time=shot_posture_time+delta if shooting_pose else 0.0
 	if shooting_pose:
 		var axis=actor.global_basis.inverse()*(bone_world(arms[0][0]).origin+bone_world(arms[1][0]).origin-bone_world(feet[0][0]).origin-bone_world(feet[1][0]).origin)*.5
@@ -1161,7 +1163,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		# running swing and the standing guard; never drop the free arm back
 		# to an unrelated source-clip wrist while the player brakes.
 		var driven = actor.has_ball
-		driven = driven or contact_mode or actor.crossing() or athletic_arm or stationary_guard or actor.action in ["pass","receive"]
+		driven = driven or actor.loose_reach>.01 or contact_mode or actor.crossing() or athletic_arm or stationary_guard or actor.action in ["pass","receive"]
 		arm_weight[i] = move_toward(arm_weight[i],1.0 if driven else 0.0,delta*10)
 		var chain: Array = arms[i]
 		var source_palm=bone_world(chain[2])*palm_offsets[i]
@@ -1288,12 +1290,20 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 			var fingers=(Vector3.UP*.90+anatomical_chest.x*side*.25).normalized()
 			var normal=anatomical_chest.z
 			frame=frame.slerp(Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized(),guard_weight)
+		if actor.loose_reach>.01 and actor.action=="idle" and not actor.has_ball:
+			var reach_target=actor.loose_reach_target+actor.global_basis.x*side*.16
+			target=target.lerp(reach_target,actor.loose_reach*.72)
+			guide=bone_world(chain[0]).origin+actor.global_basis*Vector3(side*.20,-.30,.10)
 		if actor.action=="pickup":
 			target=actor.pickup_center()+actor.global_basis.x*side*.125
 			var normal=actor.global_basis.x*-side
 			var fingers=(Vector3.UP*.65+actor.global_basis.z*.76).normalized()
 			frame=Basis(fingers.cross(normal).normalized(),fingers,normal).orthonormalized()
 			guide=bone_world(chain[0]).origin+actor.global_basis*Vector3(side*.18,-.30,.10)
+			if initialized:
+				var receive=smoothstep(0,.075,actor.action_time)
+				target=actor.to_global(entry_palms[i]).lerp(target,receive)
+				frame=entry_frames[i].slerp(frame,receive)
 		if (actor.ordinary_dribble() and not free_dribble_arm) or actor.crossing():
 			frame = Basis(actor.global_basis.x,actor.global_basis.z,Vector3.DOWN).orthonormalized()
 			if actor.ordinary_dribble() and side==actor.dribble_hand:
