@@ -27,7 +27,7 @@ func sample(player) -> void:
 			for chain in [rig.feet[i],rig.arms[i]]:
 				for segment in 2:
 					var actual=rig.bone_world(chain[segment]).origin.distance_to(rig.bone_world(chain[segment+1]).origin)
-					var expected=rig.skeleton.get_bone_pose_position(chain[segment+1]).length()*rig.render_scale
+					var expected=rig.skeleton.get_bone_rest(chain[segment+1]).origin.length()*rig.render_scale
 					error=maxf(error,absf(actual-expected))
 			worst_error=maxf(worst_error,error)
 			if error>.0002:failures+=1
