@@ -166,6 +166,16 @@ function fixture(raw=null,failWrite=false){
 }
 console.log('WEB_LIFECYCLE: focus/visibility, pause, repeat keys, touch cancel, manual resume, shot-meter, audio, team Q/E, contextual touch and team rematch passed');
 {
+ const f=fixture();f.playing();const event={pointerId:8,preventDefault(){}};
+ f.node('shoot-touch').fire('pointerdown',event);f.node('shoot-touch').fire('pointerup',event);
+ assert.equal(f.window.ufInput.shoot,false);assert.equal(f.window.ufInput.shootSeq,1,'Quick touch was not retained for the next game tick');
+ f.key('keydown','KeyD');f.key('keydown','KeyD',true);assert.equal(f.window.ufInput.shootSeq,2,'Key repeat created a second press');f.key('keyup','KeyD');
+ f.node('shoot-touch').fire('pointerdown',event);f.node('shoot-touch').fire('pointercancel',event);
+ assert.equal(f.window.ufInput.shootCancelSeq,3,'Cancelled touch was not marked as cancelled');
+ const reset=f.window.ufInput.controlReset;f.node('shoot-touch').fire('pointerdown',event);f.events.get('blur')();assert.ok(f.window.ufInput.controlReset>reset,'Pause did not invalidate pending press');
+ console.log('DEFENSIVE_JUMP_INPUT: quick touch and keyboard edges retained; repeat, cancel and blur handled');
+}
+{
  const f=fixture();f.run('ready=true');
  f.node('career-reward').textContent='old reward';f.node('career-team-summary').textContent='old stats';
  f.window.CourtGame.startCareer({mode:'team',matchId:'11111111-1111-4111-8111-111111111111'});

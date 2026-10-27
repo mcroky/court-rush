@@ -66,7 +66,7 @@ func run() -> void:
 					caught_dribble = p.dribble_phase
 					check(p.action == "rebound" and p.defense_caught,"Air catch failed to retain rebound animation")
 					check(p.jump > .18,"Rebound possession was awarded on the ground")
-					for h in p.hands: check(h.global_position.distance_to(game.ball.position) < .34,"Rebound awarded before both hands reached ball")
+					for i in 2: check(p.palm_position(i).distance_to(game.ball.position) < .34,"Rebound awarded before both visible hands reached ball")
 					check(game.ball.position.distance_to(p.rebound_anchor()) < .30,"Caught ball was outside hands")
 					worst_ball_snap = maxf(worst_ball_snap,game.ball.position.distance_to(old_ball))
 				if p.action == "rebound" and p.defense_caught:
@@ -164,7 +164,9 @@ func run() -> void:
 	var defender = game.players[0]
 	defender.position = Vector3(0,0,-4.6)
 	defender.rotation.y = 0
+	defender.facing = 0
 	defender.prepare_defense("block",Vector3(0,2.5,-4))
+	defender.body_vertical_velocity = 0
 	defender.action_time = .30
 	defender.hand_world = Vector3(0,2.5,-4)
 	defender.previous_hand_world = defender.hand_world

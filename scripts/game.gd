@@ -20,10 +20,11 @@ var audio_index = 0
 var court_audio: Node
 var audio_settings: Dictionary = {}
 var audio_settings_json = ""
-var web_input: JavaScriptObject
+var web_input: Variant # JavaScriptObject in web builds; a dictionary may supply the same controls in tests.
 var frame_probe=false
 var web_switch_seq=0
 var web_pass_seq=0
+var web_shoot_seq=0
 var web_control_reset=-1
 var rng = RandomNumberGenerator.new()
 var time = 0.0
@@ -606,7 +607,7 @@ func announce(title: String, subtitle: String = "", duration: float = 2.0) -> vo
 	feedback_timer = duration
 
 func read_controls() -> Dictionary:
-	var controls = {"x": 0.0, "z": 0.0, "shoot": false, "cross": false, "spin": false, "twostep": false, "behind": false, "hesi": false, "steal": false, "guard": false, "pause": false,"pass":false,"switch":false}
+	var controls = {"x": 0.0, "z": 0.0, "shoot": false, "shoot_pressed":false, "cross": false, "spin": false, "twostep": false, "behind": false, "hesi": false, "steal": false, "guard": false, "pause": false,"pass":false,"switch":false}
 	if web_input != null:
 		var appearance_text=str(web_input.appearance)
 		if appearance_text!=web_appearance:
@@ -631,11 +632,14 @@ func read_controls() -> Dictionary:
 		var reset=int(web_input.controlReset)
 		var switch_seq=int(web_input.switchSeq)
 		var pass_seq=int(web_input.passSeq)
+		var shoot_seq=int(web_input.shootSeq)
 		var cancelled=reset!=web_control_reset
+		controls.shoot_pressed = not cancelled and shoot_seq!=web_shoot_seq and shoot_seq!=int(web_input.shootCancelSeq)
 		controls["switch"] = not cancelled and (bool(web_input.switchPlayer) or switch_seq!=web_switch_seq)
 		controls["pass"] = not cancelled and (bool(web_input.passBall) or pass_seq!=web_pass_seq)
 		web_switch_seq=switch_seq
 		web_pass_seq=pass_seq
+		web_shoot_seq=shoot_seq
 		web_control_reset=reset
 		var command = int(web_input.commandId)
 		if command != last_command:
@@ -732,14 +736,14 @@ func set_paused(value: bool,reason: String = "잠시 쉬었다가 직접 이어�
 func gate_resumed_input(input: Dictionary) -> void:
 	if not resume_input_lock or paused: return
 	var neutral = absf(input.x)+absf(input.z) < .01
-	for action in ["shoot","cross","spin","twostep","behind","hesi","steal","guard","pass","switch"]:
+	for action in ["shoot","shoot_pressed","cross","spin","twostep","behind","hesi","steal","guard","pass","switch"]:
 		neutral = neutral and not input[action]
 	if neutral:
 		resume_input_lock = false
 	else:
 		input.x = 0.0
 		input.z = 0.0
-		for action in ["shoot","cross","spin","twostep","behind","hesi","steal","guard","pass","switch"]: input[action] = false
+		for action in ["shoot","shoot_pressed","cross","spin","twostep","behind","hesi","steal","guard","pass","switch"]: input[action] = false
 
 func _physics_process(delta: float) -> void:
 	var input = read_controls()
@@ -923,7 +927,7 @@ func _physics_process(delta: float) -> void:
 		elif input.hesi and not last_hesi:
 			start_dribble_skill("hesi", desired)
 	elif phase in ["live", "takeoff", "flight", "loose"]:
-		if input.shoot and not last_shoot and players[0].action == "idle":
+		if ((input.shoot and not last_shoot) or input.get("shoot_pressed",false)) and players[0].action == "idle":
 			start_defensive_jump(0,defense_kind(0))
 		if input.steal and not last_steal and steal_cooldown <= 0 and phase == "live" and ball_owner == 1 and players[0].action == "idle":
 			attempt_steal()

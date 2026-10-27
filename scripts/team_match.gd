@@ -216,7 +216,7 @@ func tick(delta: float, input: Dictionary) -> void:
 					dribble(selected,kind,desired)
 					break
 	elif game.phase in ["live","takeoff","flight","loose"]:
-		if pressed(input,"shoot") and p.action == "idle": game.start_defensive_jump(selected,defense_kind())
+		if (pressed(input,"shoot") or input.get("shoot_pressed",false)) and p.action == "idle": game.start_defensive_jump(selected,defense_kind())
 		if pressed(input,"steal") and game.steal_cooldown <= 0 and game.phase == "live" and possession == 1 and p.action == "idle":
 			steal(selected)
 			game.steal_cooldown = 1.1

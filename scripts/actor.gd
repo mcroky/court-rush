@@ -720,7 +720,9 @@ func prepare_defense(kind: String, target: Vector3) -> void:
 	defense_start = global_position
 	var travel = target-global_position
 	travel.y = 0
-	var reach_travel: float = athletic_profile().rebound_travel if kind == "rebound" else .34
+	# A short plant-and-reach closes a little more of a legal frontal contest;
+	# the palm still has to meet the ball and body shielding remains active.
+	var reach_travel: float = athletic_profile().rebound_travel if kind == "rebound" else .42
 	defense_end = defense_start+travel.limit_length(reach_travel)+Vector3(motion.x,0,motion.y).limit_length(2)*.065
 	defense_start_feet = [shoes[0].global_position,shoes[1].global_position]
 	defense_start_hands = [palm_position(0),palm_position(1)]

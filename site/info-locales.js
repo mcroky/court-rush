@@ -170,6 +170,12 @@
  const latest_zh_CN=["一起上场，一起成长。", "v0.9.0 · AI 3对3成长与手机镜头", "在我的球员页面开启成长团队赛。与两名AI队友完成11分或3分钟的比赛，可获得经验、金币以及直接操作的得分、助攻、篮板、盖帽、抢断贡献奖励。与1对1共用同一球员的属性、技能和衣橱金币。普通团队赛没有成长奖励。", "目前成长包括AI 1对1及AI 3对3 PvE。在线竞技及移动商店发布仍为后续计划。服务器检查重复奖励、点数消费及结果范围，但比赛在设备上模拟。"];
  news["zh-CN"][2].unshift(latest_zh_CN[2],"移动到远离三分线的位置时，手机镜头改为连续缩放，移除了原来的7%阶梯变化。",news["zh-CN"][1]);news["zh-CN"][0]=latest_zh_CN[0];news["zh-CN"][1]=latest_zh_CN[1];news["zh-CN"][2][news["zh-CN"][2].length-1]=latest_zh_CN[3];
  help["zh-CN"][1][help["zh-CN"][1].length-2]="我的球员提供8个AI 1对1球场及AI 3对3成长团队赛，共用经验、属性技能训练和衣橱金币。在我的球员页面开启成长团队赛。普通模式及练习无成长奖励。3对3中Q传球、E切换球员。在线竞技为后续计划。";
+ const block_en=["Reach for the block.", "v0.9.1 · Responsive block jumps", "Quick defensive jump taps are kept until the game reads them. A small forward plant helps a frontal contest; the visible palm must still contact the ball to swat it down. Face the shooter between them and the rim as they raise the ball."];
+ news["en"][2].unshift(block_en[2],news["en"][1]);news["en"][0]=block_en[0];news["en"][1]=block_en[1];
+ const block_ja=["手のひらで止める。", "v0.9.1・ブロック入力と踏み込み", "短い守備ジャンプの入力をゲームが読み取るまで保持。正面では足で少し踏み込み、実際に手のひらがボールに触れたときに下へ叩きます。相手とゴールの間でボールを上げる瞬間にジャンプ。"];
+ news["ja"][2].unshift(block_ja[2],news["ja"][1]);news["ja"][0]=block_ja[0];news["ja"][1]=block_ja[1];
+ const block_zh_CN=["伸手完成盖帽。", "v0.9.1 · 盖帽输入与正面起跳", "短促的防守起跳输入会保留到游戏读取。正面防守时小幅踏步接近，手掌实际碰到球才向下扇出。站在对手与篮筐之间，在对方举球时起跳。"];
+ news["zh-CN"][2].unshift(block_zh_CN[2],news["zh-CN"][1]);news["zh-CN"][0]=block_zh_CN[0];news["zh-CN"][1]=block_zh_CN[1];
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;
