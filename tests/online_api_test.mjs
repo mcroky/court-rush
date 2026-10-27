@@ -19,7 +19,7 @@ async function connect(user){
  socket.on('message',d=>messages.push(JSON.parse(String(d))));
  await new Promise((resolve,reject)=>{socket.once('open',resolve);socket.once('error',reject);});
  const send=m=>socket.send(JSON.stringify({protocolVersion:1,...m}));
- const next=async(type)=>{const start=Date.now();while(Date.now()-start<15000){const i=messages.findIndex(m=>m.type===type);if(i>=0)return messages.splice(i,1)[0];const error=messages.find(m=>m.type==='error');if(error)throw Error('Socket error: '+error.code);await new Promise(r=>setTimeout(r,20));}throw Error('Timeout '+type);};
+ const next=async(type,timeout=15000)=>{const start=Date.now();while(Date.now()-start<timeout){const i=messages.findIndex(m=>m.type===type);if(i>=0)return messages.splice(i,1)[0];const error=messages.find(m=>m.type==='error');if(error)throw Error('Socket error: '+error.code);await new Promise(r=>setTimeout(r,20));}throw Error('Timeout '+type);};
  send({type:'authenticate',ticket:ticket.ticket});await next('authenticated');return {socket,send,next,messages};
 }
 try{
@@ -42,8 +42,17 @@ try{
  check(foundA.participants.every(p=>!p.id&&!p.userId&&!p.session),'roster does not disclose account/session identifiers');
  const envelope={matchId:foundA.matchId,serverEpoch:foundA.serverEpoch};
  a.send({...envelope,type:'match.ready'});b.send({...envelope,type:'match.ready'});await Promise.all([a.next('match.started'),b.next('match.started')]);
- a.send({...envelope,type:'match.leave'});
- const [resultA,resultB]=await Promise.all([a.next('match.ended'),b.next('match.ended')]);
+ let inputTimer,commands=0,receivedBytes=0;
+ if(process.argv.includes('--full-match')){
+  const started=Date.now();for(const c of [a,b])c.socket.on('message',d=>{receivedBytes+=d.length;});
+  inputTimer=setInterval(()=>{const t=(Date.now()-started)/1000;for(const [slot,c] of [a,b].entries()){
+   c.send({...envelope,type:'input',seq:commands++,x:Math.sin(t*.3+slot*3)*.6,z:Math.cos(t*.3+slot*3)*.6,shoot:false,shoot_pressed:false,cross:false,spin:false,twostep:false,behind:false,hesi:false,steal:false,guard:false});
+   c.messages.splice(0,c.messages.findLastIndex(m=>m.type==='snapshot'));
+  }},33);
+ }else a.send({...envelope,type:'match.leave'});
+ let resultA,resultB;
+ try{[resultA,resultB]=await Promise.all([a.next('match.ended',240000),b.next('match.ended',240000)]);}finally{clearInterval(inputTimer);}
+ if(process.argv.includes('--full-match')){check(resultA.result.reason==='draw'&&resultA.result.seconds===0,'real Render server completes regulation and bounded overtime without a leave command');console.log('FULL_MATCH receivedBytes='+receivedBytes+' inputCommands='+commands);}
  check(JSON.stringify(resultA.result)===JSON.stringify(resultB.result)&&resultA.result.saved,'same result stored by the restricted server API');
  a.socket.close();b.socket.close();
  for(const user of users){const p=(await expect('profile',{},user.session)).player;check(p.xp===user.player.xp&&p.wardrobe.coins===user.player.wardrobe.coins,'online result does not change growth XP or coins');}

@@ -12,6 +12,7 @@ var snapshots: Array=[]
 var current: Dictionary={}
 var render_time=0.0
 var labels: Array=[]
+var nicknames: Array=[]
 var event_seen=-1
 var commands: Array=[]
 
@@ -27,7 +28,8 @@ func start(data: Dictionary) -> void:
 		game.players[i].apply_appearance(data.participants[i].appearance)
 		game.players[i].marker.visible=i==slot
 		var label=Label3D.new(); game.add_child(label)
-		label.text=str(data.participants[i].nickname); label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+		nicknames.append(str(data.participants[i].nickname))
+		label.text=""; label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 		label.font_size=36; label.pixel_size=.005; label.outline_size=8; label.no_depth_test=true
 		labels.append(label)
 	push(data.state)
@@ -109,6 +111,12 @@ func hud() -> Dictionary:
 	var scores_local=[current.score[slot],current.score[1-slot]]
 	var defense="rebound" if current.phase=="loose" or current.phase=="flight" else "block"
 	var state={"ready":true,"started":true,"paused":false,"mode":"online","online":true,"phase":current.phase,"owner":0 if own==slot else 1 if own>=0 else -1,"score":scores_local,"seconds":ceili(float(current.seconds)),"shotClock":ceili(float(current.shotClock)),"clear":current.clear,"attempts":0,"makes":0,"headline":"","detail":"","feedback":false,"charge":current.charge if own==slot else 0,"crossReady":true,"event":current.event,"player":[player.position[0],player.position[2]],"ball":current.ball,"action":player.action,"sound":game.sound_enabled,"finish":player.style if player.style!="jumper" else player.finish,"sweet":Rules.release_bonus(game.shot_hold)>0 and player.action=="gather","drill":"free","slowPractice":false,"boxout":player.boxout,"guard":player.guard,"secured":player.action=="rebound","inspecting":false,"closeup":false,"motionPreview":0,"held":player.held,"courtRole":"forward","canChangeRole":false,"careerMatchId":"","careerMode":"","careerStage":0,"defenseAction":defense if own!=slot else "","reboundWindow":defense=="rebound","onlineMatchId":match_id,"onlineSlot":slot,"onlineTick":current.tick}
+	var viewport_size=game.get_viewport().get_visible_rect().size
+	var names: Array=[]
+	for i in 2:
+		var screen=game.camera.unproject_position(labels[i].position)
+		names.append({"name":nicknames[i],"x":screen.x/maxf(1,viewport_size.x),"y":screen.y/maxf(1,viewport_size.y),"self":i==slot})
+	state["onlineNames"]=names
 	return state
 
 static func vector(value: Array) -> Vector3:

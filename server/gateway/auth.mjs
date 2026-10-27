@@ -13,6 +13,11 @@ export class AccountAPI {
   }
   redeem(ticket, requestId, epoch) { return this.call('online-redeem', { ticket, requestId, epoch }); }
   register(room, epoch) { return this.call('online-register', { matchId: room.id, epoch, players: room.members.map(m => ({ userId: m.user.id, ticketId: m.user.ticketId })) }); }
-  finish(room, epoch, result) { return this.call('online-finish', { matchId: room.id, epoch, result }); }
+  async finish(room, epoch, result) {
+    for(let attempt=0;attempt<3;attempt++){
+      try{return await this.call('online-finish', { matchId: room.id, epoch, result });}
+      catch(error){if(attempt===2||error.message==='authentication_failed')throw error;await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));}
+    }
+  }
   check(members, epoch) { return this.call('online-check-sessions', { epoch, participants: members.map(m => ({ userId: m.user.id, ticketId: m.user.ticketId })) }); }
 }

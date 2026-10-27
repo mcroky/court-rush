@@ -132,6 +132,11 @@ export class Gateway {
     if (!this.worker.send({ type: 'create', roomId: room.id, appearances: room.members.map(p => p.user.appearance) })) this.abort('worker_unavailable');
   }
   workerMessage(message) {
+    if(message.type==='health'){
+      this.metrics={tickP95us:message.tickP95us||0,tickP99us:message.tickP99us||0,workerStaticBytes:message.memoryBytes||0};
+      if(Date.now()-(this.lastMetricsLog||0)>30000){this.lastMetricsLog=Date.now();console.log(JSON.stringify({event:'online_health',...this.metrics,nodeRSS:process.memoryUsage().rss,rooms:this.room?1:0,queued:this.queue.length,sentBytes:this.totalBytes}));}
+      return;
+    }
     if (message.type === 'overload') { this.abort('server_overload'); return; }
     const room = this.room;
     if (!room || message.roomId !== room.id) return;

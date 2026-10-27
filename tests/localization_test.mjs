@@ -6,7 +6,7 @@ const source=name=>readFileSync(new URL('../site/'+name,import.meta.url),'utf8')
 const storage=new Map();
 const window={navigator:{language:'ko-KR'},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)}};
 const context=vm.createContext({window});
-for(const name of ['locales.js','wardrobe-locales.js','i18n.js','info-locales.js'])vm.runInContext(source(name),context);
+for(const name of ['locales.js','wardrobe-locales.js','online-locales.js','i18n.js','info-locales.js'])vm.runInContext(source(name),context);
 const I=window.CourtI18n,keys=new Set();
 for(const row of window.CourtMessages){assert.equal(row.length,4);assert.ok(!keys.has(row[0]),'Duplicate key: '+row[0]);keys.add(row[0]);for(const value of row.slice(1)){assert.equal(typeof value,'string');assert.ok(value.trim());assert.doesNotMatch(value,/[가-힣]/,'Untranslated: '+row[0]);}}
 const labels=[...Object.values(ROLES).flatMap(r=>[r.name,r.tag]),...Object.values(STAT_NAMES),...Object.values(SKILLS).flatMap(s=>[s.name,s.description]),...STAGES.map(s=>s.name)];

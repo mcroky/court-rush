@@ -8,6 +8,7 @@
  const dialog=document.createElement('dialog');dialog.className='online-dialog';dialog.setAttribute('aria-labelledby','online-title');
  dialog.innerHTML='<h2 id="online-title">온라인 1대1</h2><p>기존 선수 외형 · 균등 능력치 · 성장 보상 없음</p><p id="online-status" role="status" aria-live="polite"></p><button id="online-find" class="primary">상대 찾기</button><button id="online-cancel">취소</button>';document.body.append(dialog);
  const panel=document.createElement('section');panel.className='online-panel';panel.innerHTML='<h3>온라인 1대1</h3><p>다른 이용자와 자동 매칭 · 90초 · 11점 승부</p><button id="online-open" class="primary">온라인 1대1</button><p id="online-connection" role="status" aria-live="polite"></p><button id="online-leave" hidden>온라인 경기 떠나기</button>';document.querySelector('.mode-panel').append(panel);
+ const names=[0,1].map(()=>{const name=document.createElement('span');name.className='online-player-name';name.setAttribute('translate','no');name.hidden=true;$('arena').append(name);return name;});
  const locked=new Map(),active=()=>['loading','countdown','playing','reconnecting','ended'].includes(status);
  function setStatus(next,message=''){
   panel.dataset.onlineStatus=next;
@@ -16,7 +17,7 @@
  }
  function send(m){if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify({protocolVersion:1,serverEpoch:epoch,...m}));}
  function snapshot(s){lastState=s;if(room)commandHistory=commandHistory.filter(c=>c.seq>(s.acks?.[room.slot]??-1));input.onlineState=JSON.stringify(s);input.onlineSeq++;}
- function stopView(){room=null;lastState=null;window.CourtGame.endOnline();}
+ function stopView(){room=null;lastState=null;names.forEach(n=>n.hidden=true);window.CourtGame.endOnline();}
  function close(){clearTimeout(retryTimer);generation++;const old=socket;socket=null;old?.close();}
  function fail(message){close();if(room)stopView();setStatus('error',message);if(!dialog.open)dialog.showModal();}
  function cancel(){send({type:'queue.cancel'});close();if(room)stopView();setStatus('idle');dialog.close();}
@@ -74,7 +75,7 @@
  $('online-find').onclick=begin;$('online-cancel').onclick=cancel;dialog.addEventListener('cancel',e=>{e.preventDefault();cancel();});
  $('online-leave').onclick=()=>{if(status!=='ended'&&!confirm(t('온라인 경기를 떠나면 기권 처리됩니다. 계속할까요?')))return;if(status==='playing')send({type:'match.leave',matchId:room.matchId});else{close();stopView();setStatus('idle');}};
  $('result-rematch').addEventListener('click',e=>{if(!room)return;e.preventDefault();e.stopImmediatePropagation();close();stopView();setStatus('idle');dialog.showModal();begin();},true);
- window.addEventListener('court-state',e=>{const s=e.detail;if(s.online&&room&&status==='loading'){send({type:'match.ready',matchId:room.matchId});setStatus('countdown','상대의 준비를 기다리고 있어요.');}if(s.online){$('mode-badge').textContent='ONLINE 1V1';$('pause-button').disabled=true;if(result){$('result-title').textContent=t(result.reason==='aborted'?'경기 무효':result.winner===null?'무승부':result.winner===room.slot?'승리':'패배');$('result-detail').textContent=t(result.saved?'온라인 경기 · 성장 보상 없음':'결과 저장이 지연됩니다. 성장 보상은 없습니다.');}}else $('pause-button').disabled=false;});
+ window.addEventListener('court-state',e=>{const s=e.detail;names.forEach((name,i)=>{const p=s.onlineNames?.[i];name.hidden=!s.online||!p||p.x<0||p.x>1||p.y<0||p.y>1;if(!name.hidden){name.textContent=p.name;name.classList.toggle('self',p.self);name.style.left=(p.x*100)+'%';name.style.top=(p.y*100)+'%';}});if(s.online&&room&&status==='loading'){send({type:'match.ready',matchId:room.matchId});setStatus('countdown','상대의 준비를 기다리고 있어요.');}if(s.online){$('mode-badge').textContent='ONLINE 1V1';$('pause-button').disabled=true;if(result){$('result-title').textContent=t(result.reason==='aborted'?'경기 무효':result.winner===null?'무승부':result.winner===room.slot?'승리':'패배');$('result-detail').textContent=t(result.saved?'온라인 경기 · 성장 보상 없음':'결과 저장이 지연됩니다. 성장 보상은 없습니다.');}}else $('pause-button').disabled=false;});
  setInterval(()=>{if(socket?.readyState===WebSocket.OPEN)send({type:'ping',sent:Date.now()});},10000);setInterval(()=>sendInput(),33);
  window.CourtOnline={inputChanged:()=>sendInput(true),resetForLocal(){if(status==='ended'){close();room=null;lastState=null;setStatus('idle');}},get active(){return active();},get status(){return status;}};setStatus('idle');
 })();

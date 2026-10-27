@@ -4,6 +4,7 @@ import {resolve} from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 const files=['index.html','style.css','app.js','motion-lab.html','motion-lab.js','character-lab.html','character-lab.js','career.css','career.js','career-config.js','language.css','locales.js','i18n.js','info-locales.js','privacy.html','updates.json','career-rules.mjs','wardrobe.css','wardrobe-locales.js','wardrobe-catalog.mjs'];
 const normalize=value=>value.replace(/^\uFEFF/,'').replace(/\r\n/g,'\n');
+files.push('online-config.js','online.js','online.css','online-locales.js');
 for(const name of files){
  let source=normalize(execFileSync('git',['show',`HEAD:site/${name}`],{cwd:root,encoding:'utf8'}));
  if(name==='career-rules.mjs')source=source.replaceAll('./wardrobe-catalog.mjs','./wardrobe-catalog.js');
