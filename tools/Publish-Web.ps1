@@ -35,7 +35,7 @@ Set-Content -LiteralPath (Join-Path $pagesRoot '.nojekyll') -Value '' -Encoding 
 & $releaseNode (Join-Path $projectRoot 'tools/prepare_stable_pages.mjs') $buildRoot $pagesRoot $Version
 if ($LASTEXITCODE -ne 0) { throw 'Stable page preparation failed.' }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'site/career.css') -Destination (Join-Path $pagesRoot 'career.css') -Force
-foreach ($languageFile in @('language.css','locales.js','i18n.js')) {
+foreach ($languageFile in @('language.css','locales.js','i18n.js','online-locales.js')) {
  Copy-Item -LiteralPath (Join-Path $projectRoot "site/$languageFile") -Destination (Join-Path $pagesRoot $languageFile) -Force
 }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'site/privacy.html') -Destination (Join-Path $pagesRoot 'privacy.html') -Force
