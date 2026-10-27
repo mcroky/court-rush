@@ -37,7 +37,7 @@ func run():
 			g._physics_process(1.0/60)
 			if g.phase=="live" and g.ball_owner>=0:
 				recovered=true
-				check(g.feedback.begins_with("BLOCK! · "),mode+" immediate recovery hid the block feedback")
+				check(g.feedback.begins_with("블록 성공!"),mode+" immediate recovery hid the block feedback")
 				break
 		check(recovered,mode+" fixture failed to exercise immediate physical recovery after the block")
 		# An input released by lifecycle reset or pointer cancellation must not jump.
@@ -60,10 +60,10 @@ func run():
 			g.web_input=null;g.start_mode(mode);g.phase="loose";g.last_event="block";g.loose_timer=.1
 			if mode=="team":g.team_match.claim(0 if owner==0 else 3,"LOOSE BALL")
 			else:g.claim_ball(owner)
-			check(g.feedback==("BLOCK! · YOUR BALL" if owner==0 else "BLOCK! · RIVAL BALL"),mode+" wrong block/recovery owner")
+			check(g.feedback==("블록 성공! · 우리 공" if owner==0 else "블록 성공! · 상대 공"),mode+" wrong block/recovery owner")
 		g.start_mode(mode);g.phase="loose";g.last_event="block";g.loose_timer=.9
 		if mode=="team":g.team_match.claim(0,"LOOSE BALL")
 		else:g.claim_ball(0)
-		check(not g.feedback.begins_with("BLOCK!"),mode+" stale block replaced a later rebound")
+		check(not g.feedback.begins_with("블록 성공!"),mode+" stale block replaced a later rebound")
 	print("BLOCK_QUICK_INPUT practice+team, real contact, immediate/late possession, cancelled/paused inputs failures=",failures)
 	g.web_input=null;g.queue_free();await process_frame;quit(1 if failures else 0)

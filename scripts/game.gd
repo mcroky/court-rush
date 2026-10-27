@@ -1556,7 +1556,7 @@ func claim_ball(index: int) -> void:
 	var air_catch = players[index].action == "rebound" and players[index].defense_caught
 	if air_catch: court_audio.cue("rebound")
 	if just_blocked:
-		announce("BLOCK! · YOUR BALL" if index == 0 else "BLOCK! · RIVAL BALL", "블록 성공! 내가 공을 확보했습니다." if index == 0 else "블록 성공! 상대가 공을 다시 잡았습니다.",1.8)
+		announce("블록 성공! · 우리 공" if index == 0 else "블록 성공! · 상대 공", "블록 성공! 내가 공을 확보했습니다." if index == 0 else "블록 성공! 상대가 공을 다시 잡았습니다.",1.8)
 	else:
 		announce("AIR CATCH!" if index == 0 and air_catch else ("YOUR REBOUND" if index == 0 else "RIVAL REBOUND"), "양손 확보 → 가슴으로 당기기 → 착지" if air_catch else ("외곽선 밖으로 공을 빼세요." if needs_clear and index == 0 else "다음 공격을 이어가세요."))
 	play_sound("block", -18) # Short hand/ball impact, not a floor bounce at an air catch.

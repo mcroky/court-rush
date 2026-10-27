@@ -546,6 +546,8 @@ window.CourtMessages = [
 
 // Career team play.
 window.CourtMessages.push(...[
+  ["블록 성공! · 우리 공","BLOCK! · YOUR BALL","ブロック成功！ · 味方ボール","盖帽成功！ · 我方球权"],
+  ["블록 성공! · 상대 공","BLOCK! · RIVAL BALL","ブロック成功！ · 相手ボール","盖帽成功！ · 对方球权"],
   ["블록 성공! 내가 공을 확보했습니다.","Block! You secured the ball.","ブロック成功！自分がボールを確保しました。","盖帽成功！你拿到了球。"],
   ["블록 성공! 우리 팀이 공을 확보했습니다.","Block! Your team secured the ball.","ブロック成功！味方がボールを確保しました。","盖帽成功！我方拿到了球。"],
   ["블록 성공! 상대가 공을 다시 잡았습니다.","Block! The opponent recovered the ball.","ブロック成功！相手がボールを取り直しました。","盖帽成功！对手重新拿到了球。"],

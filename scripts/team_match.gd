@@ -432,7 +432,7 @@ func claim(index: int, title: String) -> void:
 	game.ball.position = game.players[index].ball_anchor(game.time)
 	game.previous_ball_position = game.ball.position
 	if just_blocked:
-		game.announce("BLOCK! · YOUR BALL" if team(index)==0 else "BLOCK! · RIVAL BALL", "블록 성공! 우리 팀이 공을 확보했습니다." if team(index)==0 else "블록 성공! 상대가 공을 다시 잡았습니다.",1.8)
+		game.announce("블록 성공! · 우리 공" if team(index)==0 else "블록 성공! · 상대 공", "블록 성공! 우리 팀이 공을 확보했습니다." if team(index)==0 else "블록 성공! 상대가 공을 다시 잡았습니다.",1.8)
 	else:
 		game.announce(title,"외곽선 밖으로 공을 빼세요." if game.needs_clear else "공격을 이어가세요.",1.4)
 	game.last_event = "pass" if title == "NICE PASS" else ("steal" if title == "INTERCEPTED!" else "rebound")

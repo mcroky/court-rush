@@ -182,6 +182,12 @@
  news["ja"][2].unshift(block_feedback_ja[2],news["ja"][1]);news["ja"][0]=block_feedback_ja[0];news["ja"][1]=block_feedback_ja[1];
  const block_feedback_zh_CN=["让盖帽成功清晰可见。", "v0.9.2 · 盖帽与球权提示", "盖帽后球被立即拿到时，同时显示盖帽成功与获得球权的一方。球碰到身体即可拾取的规则保持不变。"];
  news["zh-CN"][2].unshift(block_feedback_zh_CN[2],news["zh-CN"][1]);news["zh-CN"][0]=block_feedback_zh_CN[0];news["zh-CN"][1]=block_feedback_zh_CN[1];
+ const block_readable_en=["Block, then see possession.", "v0.9.3 · Readable block results", "Block success and the team recovering the ball are now displayed in the selected language, including on mobile. Quick defensive jump input and improved frontal reach remain included."];
+ news["en"][2].unshift(block_readable_en[2],news["en"][1]);news["en"][0]=block_readable_en[0];news["en"][1]=block_readable_en[1];
+ const block_readable_ja=["ブロックから球権まで、一目で。", "v0.9.3・見やすいブロック結果", "ブロック成功とボールを確保したチームを、モバイルでも選択言語で表示。素早い守備ジャンプ入力と正面の踏み込みも引き続き適用します。"];
+ news["ja"][2].unshift(block_readable_ja[2],news["ja"][1]);news["ja"][0]=block_readable_ja[0];news["ja"][1]=block_readable_ja[1];
+ const block_readable_zh_CN=["盖帽与球权，一眼看清。", "v0.9.3 · 清晰的盖帽结果", "盖帽成功及获得球权的一方会以所选语言显示，手机上也清晰可见。快速防守起跳输入和正面上步改进继续保留。"];
+ news["zh-CN"][2].unshift(block_readable_zh_CN[2],news["zh-CN"][1]);news["zh-CN"][0]=block_readable_zh_CN[0];news["zh-CN"][1]=block_readable_zh_CN[1];
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;
