@@ -3,7 +3,7 @@ var failures=0
 func _init():call_deferred("run")
 func check(ok:bool,message:String):
 	if not ok:failures+=1;push_error(message)
-func web() -> Dictionary:
+static func web() -> Dictionary:
 	return {"appearance":"{}","sound":false,"reduced":false,"x":0,"z":0,"shoot":false,"shootSeq":0,"shootCancelSeq":0,"cross":false,"spin":false,"twostep":false,"behind":false,"hesi":false,"steal":false,"guard":false,"passBall":false,"switchPlayer":false,"controlReset":0,"switchSeq":0,"passSeq":0,"commandId":0,"command":"","suspended":false,"pauseReason":"","audio":"{}","audioSuspended":false,"compactCamera":false}
 func run():
 	var g=load("res://scenes/main.tscn").instantiate();root.add_child(g);g.set_physics_process(false);g.sound_enabled=false

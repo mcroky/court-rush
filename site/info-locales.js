@@ -188,6 +188,9 @@
  news["ja"][2].unshift(block_readable_ja[2],news["ja"][1]);news["ja"][0]=block_readable_ja[0];news["ja"][1]=block_readable_ja[1];
  const block_readable_zh_CN=["盖帽与球权，一眼看清。", "v0.9.3 · 清晰的盖帽结果", "盖帽成功及获得球权的一方会以所选语言显示，手机上也清晰可见。快速防守起跳输入和正面上步改进继续保留。"];
  news["zh-CN"][2].unshift(block_readable_zh_CN[2],news["zh-CN"][1]);news["zh-CN"][0]=block_readable_zh_CN[0];news["zh-CN"][1]=block_readable_zh_CN[1];
+ news["en"][2].unshift("The block plant and arm extension start sooner, using the visible skeleton. A rising ball meeting a downward-facing palm now counts as a real block and continues into a swat and landing. Stay close and press D or Block as the opponent raises the ball.",news["en"][1]);news["en"][0]="React to the shot.";news["en"][1]="v0.9.4 · Reactive blocks in 1v1";
+ news["ja"][2].unshift("踏み込みと腕の伸展を早め、表示リグで実際に接触判定。下向きの手のひらに上昇中のボールが当たれば、叩き落としから腕の回収と着地につながります。近くで相手がボールを上げる瞬間にDかブロックを押してください。",news["ja"][1]);news["ja"][0]="シュートを見て、ブロック。";news["ja"][1]="v0.9.4・1対1のブロック反応";
+ news["zh-CN"][2].unshift("提前起跳蹬地和伸臂，并使用可见骨骼判断接触。上升的球碰到朝下的手掌时也可盖帽，接续下拍、收臂和落地。贴近对手，在其举球时按D或盖帽。",news["zh-CN"][1]);news["zh-CN"][0]="看准出手，起跳封盖。";news["zh-CN"][1]="v0.9.4 · 1对1盖帽反应";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;

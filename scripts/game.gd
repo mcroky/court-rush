@@ -999,7 +999,15 @@ func start_defensive_jump(index: int,kind: String) -> void:
 	var player = players[index]
 	if player.action != "idle" or player.has_ball: return
 	var target = ball.position
-	if kind == "block": target.y = maxf(2.30,target.y)
+	if kind == "block":
+		var attacker = players[ball_owner if ball_owner >= 0 else shooter]
+		if attacker != player and attacker.finish_running and attacker.action in ["gather","layup","dunk"] and phase in ["live","takeoff"]:
+			# Meet a driving finish instead of stepping out toward its old gather
+			# pocket as the shooter travels past the defender toward the rim.
+			var landing = Vector3(HOOP.x,0,HOOP.z+.52)
+			var travel = (takeoff_target-attacker.position)*.65 if phase == "takeoff" else (landing-attacker.position).limit_length(.60)
+			target += travel.limit_length(.60)
+		target.y = maxf(2.30,target.y)
 	var direction = target-player.position
 	direction.y = 0
 	if direction.length() > .10: player.facing = atan2(direction.x,direction.z)
@@ -1429,14 +1437,7 @@ func try_block() -> bool:
 	if not opponent_enabled() or phase not in ["takeoff","flight"]: return false
 	var defender = players[1 - shooter]
 	if defender.action != "block" or defender.action_time < .13 or defender.action_time > .52: return false
-	if defender.defensive_jump():
-		if not block_lane_open(defender) or defender.action_time < .16 or defender.action_time > .40: return false
-		# A downward palm stroke can still rise in world space during takeoff.
-		# Measure the arm against the jumping torso; keep windup and recovery
-		# inactive and require the same swept, visible palm/ball contact below.
-		var palm_velocity = (defender.hand_world.y-defender.previous_hand_world.y)/maxf(defender.pose_delta,.0001)
-		if palm_velocity-defender.body_vertical_velocity >= -.12: return false
-	if hand_ball_distance(defender.hand_world,defender.previous_hand_world) >= .28: return false
+	if not block_palm_contact(defender): return false
 	phase = "loose"
 	ball_owner = -1
 	players[shooter].has_ball = false
@@ -1449,6 +1450,20 @@ func try_block() -> bool:
 	announce("GET THAT OUT!", "손바닥으로 쳐냈습니다! 튕겨 나간 공을 따라가세요.")
 	play_sound("block", -7)
 	return true
+
+func block_palm_contact(defender: Node3D) -> bool:
+	if defender.defensive_jump():
+		if not block_lane_open(defender) or defender.action_time < .13 or defender.action_time > .46: return false
+		var normal = defender.palm_frame(1 if defender.dribble_hand > 0 else 0).z
+		if normal.dot(Vector3.DOWN) < .55: return false
+		var hand_velocity = (defender.hand_world-defender.previous_hand_world)/maxf(defender.pose_delta,.0001)
+		var downward_stroke = hand_velocity.y-defender.body_vertical_velocity < -.12
+		var incoming = ((ball.position-previous_ball_position)/maxf(defender.pose_delta,.0001)-hand_velocity).dot(normal) < -.25
+		# A rising ball can meet a downward-facing palm while the blocking arm
+		# is still extending. Do not discard that real contact merely because
+		# its wrist is rising; contact starts the same downward follow-through.
+		if not downward_stroke and not incoming: return false
+	return hand_ball_distance(defender.hand_world,defender.previous_hand_world) < .28
 
 func block_lane_open(defender: Node3D) -> bool:
 	var offset = ball.position-defender.position
@@ -1726,6 +1741,10 @@ func send_state() -> void:
 	}
 	if frame_probe:
 		state["profile"]={"processMs":Performance.get_monitor(Performance.TIME_PROCESS)*1000,"physicsMs":Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)*1000,"drawCalls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"primitives":Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),"objects":Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),"adapter":RenderingServer.get_video_adapter_name()}
+		if mode == "duel":
+			state["contactProbe"]={"player":state.player,"opponent":[players[1].position.x,players[1].position.z],"opponentAction":players[1].action,"opponentTime":players[1].action_time,"owner":ball_owner,"phase":phase,"hoop":[HOOP.x,HOOP.z]}
+			var defender=players[0]
+			state.contactProbe["block"]={"action":defender.action,"time":defender.action_time,"hit":defender.block_contact,"lane":block_lane_open(defender),"distance":hand_ball_distance(defender.hand_world,defender.previous_hand_world),"palmDown":defender.palm_frame(1 if defender.dribble_hand>0 else 0).z.dot(Vector3.DOWN),"ball":state.ball,"palm":[defender.hand_world.x,defender.hand_world.y,defender.hand_world.z],"relative":(defender.hand_world.y-defender.previous_hand_world.y)/maxf(defender.pose_delta,.0001)-defender.body_vertical_velocity}
 	state["finish"] = (players[0].shot_style if players[0].shot_style!="jumper" else players[0].finish_kind) if players[0].action in ["gather","shot"] else Rules.finish_type(players[0].position, players[0].motion)
 	if players[0].has_ball and players[0].dribble_ended and players[0].action not in ["gather","shot"]:state["finish"]="shot"
 	state["sweet"] = Rules.release_bonus(shot_hold) > 0 and players[0].action == "gather"

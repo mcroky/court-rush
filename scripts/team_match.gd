@@ -569,9 +569,7 @@ func try_block() -> bool:
 	for i in 6:
 		if team(i) == team(game.shooter): continue
 		var p = game.players[i]
-		if p.action != "block" or p.action_time < .16 or p.action_time > .40 or not game.block_lane_open(p): continue
-		var relative_speed = (p.hand_world.y-p.previous_hand_world.y)/maxf(p.pose_delta,.0001)-p.body_vertical_velocity
-		if relative_speed >= -.12 or game.hand_ball_distance(p.hand_world,p.previous_hand_world) >= .28: continue
+		if p.action != "block" or p.action_time < .13 or p.action_time > .46 or not game.block_lane_open(p) or not game.block_palm_contact(p): continue
 		p.record_block_contact()
 		game.players[game.shooter].has_ball = false
 		game.ball_owner = -1

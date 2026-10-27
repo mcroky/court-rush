@@ -45,8 +45,9 @@ func run() -> void:
 					low_pitch = minf(low_pitch,p.upper.rotation.x)
 					high_pitch = maxf(high_pitch,p.upper.rotation.x)
 					if p.action_time >= .125 and p.action_time <= .15:
-						var local = p.upper.to_local(hand.global_position)
-						check(local.y>2.25 and local.z<.16,"Block did not cock its arm above/behind the head before swinging")
+						var palm=p.palm_position(1 if p.dribble_hand>0 else 0)
+						var shoulder=p.skinned.bone_world(p.skinned.arms[1 if p.dribble_hand>0 else 0][0]).origin
+						check(palm.y>shoulder.y+.30,"Visible blocking arm did not extend above the shoulder before contact")
 						windups += 1
 				if p.block_contact and not before:
 					contacts += 1

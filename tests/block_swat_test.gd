@@ -3,6 +3,7 @@ extends SceneTree
 var failures = 0
 var contacts = 0
 var fastest_separation = 0.0
+var struck_velocity = Vector3.ZERO
 func _init() -> void: call_deferred("run")
 func check(ok: bool,message: String) -> void:
 	if not ok:
@@ -32,6 +33,7 @@ func run() -> void:
 			var origin = Vector3.ZERO
 			var outgoing = Vector3.ZERO
 			var checked_departure = false
+			var physical_recovery = false
 			for f in range(int(fps*.9)):
 				var before = p.block_contact
 				game._physics_process(1.0/fps)
@@ -40,10 +42,17 @@ func run() -> void:
 					contact_t = p.action_time
 					origin = game.ball.position
 					outgoing = game.ball_velocity
+					struck_velocity = outgoing
 					check(game.phase == "loose" and game.ball_owner == -1,"Block did not knock the ball free")
 					check(outgoing.length()>8.5 and outgoing.y < -5.0,"Block let the ball drop weakly instead of swatting it away")
-				if contact_t >= 0 and not checked_departure and p.action_time-contact_t >= .10:
+				if contact_t >= 0 and game.phase == "live" and game.ball_owner >= 0:
+					physical_recovery = true
+					check(game.feedback.begins_with("블록 성공!"),"Immediate physical recovery hid the block")
+				if contact_t >= 0 and not checked_departure and (physical_recovery or p.action_time-contact_t >= .10):
 					checked_departure = true
+					# A real body/hand touch must collect a loose ball immediately,
+					# so only an uncollected swat can be checked for 100 ms of flight.
+					if physical_recovery: continue
 					var travel = game.ball.position-origin
 					fastest_separation = maxf(fastest_separation,travel.length())
 					check(travel.length()>.65,"Swatted ball remained beside the palm after impact")
@@ -52,6 +61,19 @@ func run() -> void:
 			check(checked_departure,"Missing a timed swat contact")
 			check(game.scores == [0,0],"Swatted shot scored")
 			key(false)
+	# Check the unobstructed flight separately from the real contact fixtures,
+	# where the shooter's touching body is required to recover the ball at once.
+	for fps in [30,60,120]:
+		game.start_mode("duel");game.phase="loose";game.ball_owner=-1;game.last_event="block";game.loose_timer=0
+		for i in 2:
+			game.players[i].position=Vector3(-4 if i==0 else 4,0,2);game.players[i].has_ball=false
+		game.ball.position=Vector3(0,3,-3);game.previous_ball_position=game.ball.position;game.ball_velocity=struck_velocity
+		var origin=game.ball.position
+		for f in ceili(.1*fps):game.update_loose(1.0/fps)
+		var travel=game.ball.position-origin
+		fastest_separation=maxf(fastest_separation,travel.length())
+		check(game.phase=="loose" and travel.length()>.85,"Unobstructed swat failed to leave the contact point")
+		check(travel.normalized().dot(struck_velocity.normalized())>.9,"Unobstructed swat changed its impact direction")
 	# Even perfect spatial overlap cannot block outside the timing window.
 	for t in [.05,.60]:
 		game.start_mode("duel")

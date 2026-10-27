@@ -823,7 +823,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	if actor.action in ["shot","layup"]:height_target=finish_root(actor)
 	if actor.held.owns(actor):height_target=lerpf(action_entry_height,-actor.held.pose(actor).drop,smoothstep(0,.16,actor.held.entry_time))
 	if actor.action=="pickup":height_target-=.30*sin(clampf(actor.action_time/.28,0,1)*PI)*(1-smoothstep(.35,.8,actor.pickup_from.y))
-	if actor.defensive_jump():height_target=lerpf(action_entry_height,height_target,smoothstep(0,actor.DEFENSE_PLANT_TIME,action_entry_time))
+	if actor.defensive_jump():height_target=lerpf(action_entry_height,height_target,smoothstep(0,actor.defense_plant_time(),action_entry_time))
 	root_height = move_toward(root_height,height_target,delta*1.8) if initialized and not action_pose else height_target
 	model.position = Vector3(0,root_height,-.255*render_scale)
 	model.position.x=cross_pose.shift*actor.cross_from*cross_weight
@@ -1234,6 +1234,12 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		if actor.action=="rebound" and actor.defense_target_valid:
 			var pose=rebound_pose(actor,i,bone_world(chain[0]).origin)
 			target=pose.target;frame=pose.frame;guide=pose.guide
+		if actor.action=="block" and actor.defense_target_valid:
+			# Solve the visible skeleton against the authored contact curve itself.
+			# The hidden prototype arm has already clamped that curve to a different
+			# shoulder/limb length; retargeting its wrist clamps the reach twice.
+			target=actor.body.to_global(actor.defense_hand(i))
+			guide=bone_world(chain[0]).origin+global_basis*Vector3(side*.18,.20,.08)
 		if initialized and actor.action in ["gather","rebound","block","dunk","steal"]:
 			var entry=smoothstep(0,.10,action_entry_time)
 			target=actor.to_global(entry_palms[i]).lerp(target,entry)
@@ -1333,7 +1339,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 		var wrist_target = target-desired_hand*palm_offsets[i]*render_scale
 		var rear_axis = anatomical_chest.z if actor.ordinary_dribble() else Vector3.ZERO
 		var rear_limit = (.28 if source_run_arm else .105)*actor.height_ratio
-		if contact_hand or actor.crossing() or actor.action in ["layup","rebound"] or (actor.stealing() and i==actor.steal_hand):
+		if contact_hand or actor.crossing() or actor.action in ["layup","rebound","block"] or (actor.stealing() and i==actor.steal_hand):
 			# A bounded scapula reach lets the shoulder help the dribble, not a longer arm.
 			var collar = skeleton.get_bone_parent(chain[0])
 			var collar_pose = skeleton.get_bone_global_pose(collar)

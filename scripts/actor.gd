@@ -85,7 +85,7 @@ func guard_contact_extra(opponent) -> float:
 	return BasketballRules.guard_contact_extra(position,opponent.position,rotation.y,defense_weight)
 
 func defense_jump_peak() -> float:
-	return athletic_profile().rebound_jump if action == "rebound" else .62
+	return athletic_profile().rebound_jump if action == "rebound" else .82
 
 var body: Node3D
 var upper: Node3D
@@ -677,6 +677,9 @@ func finish_defense() -> void:
 func defensive_jump() -> bool:
 	return action in ["rebound", "block"] and defense_target_valid
 
+func defense_plant_time() -> float:
+	return .06 if action == "block" else DEFENSE_PLANT_TIME
+
 func defense_land_time() -> float:
 	return .76 if action == "rebound" else .68
 
@@ -691,14 +694,16 @@ func defense_landing_load() -> float:
 	return smoothstep(0,.095,t)*(1-smoothstep(.095,.26,t))
 
 func defense_shoe_pitch(index: int) -> float:
-	if action_time <= DEFENSE_PLANT_TIME:
-		return .28*smoothstep(.035,DEFENSE_PLANT_TIME,action_time)
-	var release = 1-smoothstep(DEFENSE_PLANT_TIME,DEFENSE_PLANT_TIME+.10,action_time)
+	var plant = defense_plant_time()
+	if action_time <= plant:
+		return .28*smoothstep(plant*.35,plant,action_time)
+	var release = 1-smoothstep(plant,plant+.10,action_time)
 	var touchdown = .22*(1-smoothstep(defense_touch_time(index),defense_touch_time(index)+.055,action_time))
 	return maxf(.28*release,touchdown)
 
 func defense_height() -> float:
-	var t = clampf((action_time-DEFENSE_PLANT_TIME)/(defense_land_time()-DEFENSE_PLANT_TIME),0,1)
+	var plant = defense_plant_time()
+	var t = clampf((action_time-plant)/(defense_land_time()-plant),0,1)
 	return 4*defense_jump_peak()*t*(1-t)
 
 func prepare_defense(kind: String, target: Vector3) -> void:
@@ -740,24 +745,28 @@ func prepare_defense(kind: String, target: Vector3) -> void:
 	swinging = [false,false]
 
 func defense_position() -> Vector3:
-	return defense_start.lerp(defense_end,smoothstep(DEFENSE_PLANT_TIME,defense_land_time(),action_time))
+	var t = clampf((action_time-defense_plant_time())/(defense_land_time()-defense_plant_time()),0,1)
+	return defense_start.lerp(defense_end,1-pow(1-t,2) if action == "block" else smoothstep(0,1,t))
 
 func defense_body_height() -> float:
-	if action_time < DEFENSE_PLANT_TIME:
+	var plant = defense_plant_time()
+	if action_time < plant:
 		# Preserve the incoming crouch, load, then extend into the jump's velocity.
-		if action_time < .035: return -defense_load-.035*smoothstep(0,.035,action_time)
-		var t = (action_time-.035)/(DEFENSE_PLANT_TIME-.035)
-		var push = 4*defense_jump_peak()/(defense_land_time()-DEFENSE_PLANT_TIME)
-		return (2*t*t*t-3*t*t+1)*(-defense_load-.035)+(-2*t*t*t+3*t*t)*-.045+(t*t*t-t*t)*.065*push
+		var load_time = plant*.35
+		if action_time < load_time: return -defense_load-.035*smoothstep(0,load_time,action_time)
+		var t = (action_time-load_time)/(plant-load_time)
+		var push = 4*defense_jump_peak()/(defense_land_time()-plant)
+		return (2*t*t*t-3*t*t+1)*(-defense_load-.035)+(-2*t*t*t+3*t*t)*-.045+(t*t*t-t*t)*(plant-load_time)*push
 	var land = defense_land_time()
 	if action_time <= land: return jump-.045
 	var elapsed = action_time-land
+	var compression = -.27 if action == "block" else -.22
 	if elapsed < .095:
 		# Feet touch first. Continue the downward velocity into bent knees.
 		var t = elapsed/.095
-		var incoming = -4*defense_jump_peak()/(land-DEFENSE_PLANT_TIME)
-		return (2*t*t*t-3*t*t+1)*-.045+(t*t*t-2*t*t+t)*.095*incoming+(-2*t*t*t+3*t*t)*-.22
-	return lerpf(-.22,-.08 if defense_caught else -.035,smoothstep(.095,.26,elapsed))
+		var incoming = -4*defense_jump_peak()/(land-plant)
+		return (2*t*t*t-3*t*t+1)*-.045+(t*t*t-2*t*t+t)*.095*incoming+(-2*t*t*t+3*t*t)*compression
+	return lerpf(compression,-.08 if defense_caught else -.035,smoothstep(.095,.26,elapsed))
 
 func defense_landing_contact(index: int) -> Vector3:
 	var side = -1.0 if index == 0 else 1.0
@@ -775,12 +784,13 @@ func defense_foot(index: int) -> Vector3:
 	var pivot = LAYUP_TOE-Basis(Vector3.RIGHT,pitch)*LAYUP_TOE
 	contact += Basis(Vector3.UP,defense_yaw)*pivot*VISUAL_SCALE
 	var foot = body.to_local(contact)
-	var tuck = sin(clampf((action_time-DEFENSE_PLANT_TIME)/(defense_land_time()-DEFENSE_PLANT_TIME),0,1)*PI)
+	var plant = defense_plant_time()
+	var tuck = sin(clampf((action_time-plant)/(defense_land_time()-plant),0,1)*PI)
 	var tucked = Vector3(side*.21,.10+tuck*(.14 if index == defense_land_first else .22),-.13-tuck*.16)
-	foot = foot.lerp(tucked,smoothstep(DEFENSE_PLANT_TIME,DEFENSE_PLANT_TIME+.13,action_time))
+	foot = foot.lerp(tucked,smoothstep(plant,plant+.13,action_time))
 	var landing = defense_landing_contact(index)+Basis(Vector3.UP,defense_landing_yaw)*pivot*VISUAL_SCALE
 	var result = body.to_global(foot.lerp(body.to_local(landing),smoothstep(defense_touch_time(index)-.14,defense_touch_time(index),action_time)))
-	if action_time > DEFENSE_PLANT_TIME:
+	if action_time > plant:
 		var clearance = .035*(1-smoothstep(defense_touch_time(index)-.070,defense_touch_time(index),action_time))
 		result.y = maxf(result.y,.105+pivot.y*VISUAL_SCALE+clearance)
 	return body.to_local(result)
@@ -824,17 +834,21 @@ func defense_hand(index: int) -> Vector3:
 		return rest.lerp(Vector3(side*.46,1.58,-.065),lift).lerp(rest,smoothstep(.48,defense_duration(),action_time))
 	if block_contact:
 		var elapsed = action_time-block_contact_time
-		var stroke = block_contact_stroke
+		var stroke = block_contact_stroke-global_basis.z*.26
 		var t = clampf(elapsed/.16,0,1)
 		# Preserve the strike velocity at contact instead of restarting from rest.
 		var follow = body.to_local(block_contact_hand+stroke*(-2*t*t*t+3*t*t)+block_contact_velocity*.16*(t*t*t-2*t*t+t))
+		# Fold the reaching arm back under its shoulder as it comes down. A
+		# fixed point far in front becomes unreachable while the torso rises,
+		# leaving the visible wrist hanging high despite the downward curve.
+		follow -= body.global_basis.inverse()*global_basis.z*.40*smoothstep(.025,.16,elapsed)
 		var folded = Vector3(side*.39,1.75,.40)
 		return follow.lerp(folded,smoothstep(.16,.36,elapsed)).lerp(rest,smoothstep(.36,.52,elapsed))
-	var strike = smoothstep(.16,.34,action_time)
+	var strike = smoothstep(.12,.30,action_time)
 	var world = defense_target+Vector3.UP*lerpf(.43,-.17,strike)+global_basis.z*lerpf(-.08,.07,strike)
 	var start = body.to_local(defense_start_hands[index]) if defense_start_hands.size() == 2 else rest
 	var windup = upper.transform*Vector3(side*.26,2.60,-.08)
-	var swing = windup.lerp(body.to_local(world),smoothstep(.15,.25,action_time))
+	var swing = windup.lerp(body.to_local(world),smoothstep(.08,.18,action_time))
 	return start.lerp(swing,smoothstep(0,.13,action_time)).lerp(rest,smoothstep(.45,defense_duration(),action_time))
 
 func capture_rebound(ball_position: Vector3,incoming_velocity: Vector3 = Vector3.ZERO) -> void:
@@ -1127,7 +1141,7 @@ func movement_step(delta: float) -> Vector3:
 func settle_guard_support(delta: float) -> void:
 	# Turning and loading the hips also consume reach. Bend the planted knee
 	# slightly more instead of moving the shoe or changing either bone length.
-	var planting_jump = defensive_jump() and action_time <= DEFENSE_PLANT_TIME
+	var planting_jump = defensive_jump() and action_time <= defense_plant_time()
 	var run_contacts = locomotion_pose() and not dribble_ended and jump < .05 and defense_weight < .5
 	if not run_contacts and not planting_jump and not stealing() and restart_left <= 0 and brake_state == "" and landing_recovery_left <= 0 and landing_push_left <= 0 and (has_ball or action != "idle" or jump > .05 or defense_weight < .5):
 		landing_support_drop = move_toward(landing_support_drop,0,delta*.9)
@@ -1712,7 +1726,7 @@ func animate(delta: float, _time: float) -> void:
 		if (athletic_stance > .01 or stealing() or defense_weight > .5 or brake_state != "" or brake_weight > .01 or landing_recovery_left > 0 or landing_push_left > 0 or landing_push_pitch[i] > 0) and jump < .05:
 			shoes[i].basis = body.global_basis.inverse() * Basis(Vector3.UP,feet_yaw[i]) * Basis(Vector3.RIGHT,landing_push_pitch[i]) * VISUAL_SCALE
 		if defensive_jump():
-			var shoe_yaw = lerp_angle(defense_yaw,defense_landing_yaw,smoothstep(DEFENSE_PLANT_TIME,DEFENSE_PLANT_TIME+.20,action_time))
+			var shoe_yaw = lerp_angle(defense_yaw,defense_landing_yaw,smoothstep(defense_plant_time(),defense_plant_time()+.20,action_time))
 			shoes[i].basis = body.global_basis.inverse()*Basis(Vector3.UP,shoe_yaw)*Basis(Vector3.RIGHT,defense_shoe_pitch(i))*VISUAL_SCALE
 		if action == "layup" and finish_target_valid and i == layup_plant_index:
 			# Roll about the forefoot in world space, including the body's forward lean.
@@ -1900,7 +1914,7 @@ func animate(delta: float, _time: float) -> void:
 				desired_palm = body.global_basis.orthonormalized().inverse()*Basis(previous_palms[i].slerp(desired_world,wrist_blend))
 			hands[i].basis = desired_palm.scaled_local(Vector3(.10,.145,.075))
 		if action == "block" and defense_target_valid and side == dribble_hand:
-			var palm_pitch = lerpf(.40,1.55,smoothstep(.14,.29,action_time))
+			var palm_pitch = lerpf(.40,1.55,smoothstep(.08,.16,action_time))
 			if block_contact:
 				var elapsed = action_time-block_contact_time
 				palm_pitch = lerpf(1.55,2.05,smoothstep(0,.10,elapsed))

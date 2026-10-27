@@ -47,7 +47,9 @@ func run():
 						contact_height=p.hand_world.y-p.body.global_position.y
 						var velocity=(p.hand_world-p.previous_hand_world)/dt
 						if velocity.y>0:rising_contacts+=1;rising_in_window=true
-						check(velocity.y-p.body_vertical_velocity<-.12,"Palm did not swing down relative to the jumping body")
+						var normal=p.palm_frame(1 if p.dribble_hand>0 else 0).z
+						var incoming=((game.ball.position-game.previous_ball_position)/dt-velocity).dot(normal)
+						check(velocity.y-p.body_vertical_velocity<-.12 or incoming<-.25,"Neither a downward stroke nor an incoming ball met the palm")
 						check(p.palm_frame(1 if p.dribble_hand>0 else 0).z.dot(Vector3.DOWN)>.55,"Visible palm struck edge-on")
 						check(game.phase=="loose" and game.ball_velocity.y<-5 and game.ball_velocity.length()>8.5,"Block did not swat the real ball away")
 					if contact_time>=0 and not follow_checked and p.action_time-contact_time>=.10:

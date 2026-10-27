@@ -168,6 +168,11 @@ func run() -> void:
 	defender.prepare_defense("block",Vector3(0,2.5,-4))
 	defender.body_vertical_velocity = 0
 	defender.action_time = .30
+	defender.jump = defender.defense_height()
+	# This synthetic swept contact starts in an established block pose, not
+	# the first frame of the idle-to-block wrist orientation blend.
+	for frame in 7: defender.animate(1.0/60,0)
+	defender.body_vertical_velocity = 0
 	defender.hand_world = Vector3(0,2.5,-4)
 	defender.previous_hand_world = defender.hand_world
 	game.ball.position = defender.hand_world+Vector3(.45,0,0)
