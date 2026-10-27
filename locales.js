@@ -546,6 +546,9 @@ window.CourtMessages = [
 
 // Career team play.
 window.CourtMessages.push(...[
+  ["블록 성공! 내가 공을 확보했습니다.","Block! You secured the ball.","ブロック成功！自分がボールを確保しました。","盖帽成功！你拿到了球。"],
+  ["블록 성공! 우리 팀이 공을 확보했습니다.","Block! Your team secured the ball.","ブロック成功！味方がボールを確保しました。","盖帽成功！我方拿到了球。"],
+  ["블록 성공! 상대가 공을 다시 잡았습니다.","Block! The opponent recovered the ball.","ブロック成功！相手がボールを取り直しました。","盖帽成功！对手重新拿到了球。"],
   [
     "경기 모드를 확인하세요.",
     "Check the match mode.",

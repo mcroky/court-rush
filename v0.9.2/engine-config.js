@@ -1,0 +1,1 @@
+window.UF_ENGINE_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"game","experimentalVK":false,"fileSizes":{"game.pck":8675624,"game.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
