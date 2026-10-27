@@ -73,6 +73,7 @@ func tick(delta: float) -> void:
 		p.rotation.y=lerp_angle(float(first.yaw),float(second.yaw),blend)
 		p.body.transform=transform_of(first.body).interpolate_with(transform_of(second.body),blend)
 		p.skinned.transform=transform_of(first.rig).interpolate_with(transform_of(second.rig),blend)
+		p.skinned.model.transform=transform_of(first.model).interpolate_with(transform_of(second.model),blend)
 		var skeleton: Skeleton3D=p.skinned.skeleton
 		if first.bones.size()==skeleton.get_bone_count() and second.bones.size()==skeleton.get_bone_count():
 			for j in skeleton.get_bone_count():
@@ -83,6 +84,8 @@ func tick(delta: float) -> void:
 		p.motion=Vector2(second.motion[0],second.motion[1]); p.dribble_ended=bool(second.held)
 		p.jump=float(second.jump); p.defending=bool(second.guard); p.boxing_out=bool(second.boxout)
 		p.has_ball=int(b.owner)==i; p.facing=p.rotation.y
+		for side in 2:p.skinned.palm_world[side]=p.skinned.bone_world(p.skinned.arms[side][2])*p.skinned.palm_offsets[side]
+		p.skinned.initialized=true
 		labels[i].position=p.position+Vector3.UP*2.35
 	game.ball.position=vector(a.ball).lerp(vector(b.ball),blend) if a.possessionRevision==b.possessionRevision else vector(b.ball)
 	var predicted=Movement.replay(current,slot,commands)
@@ -109,8 +112,8 @@ func hud() -> Dictionary:
 	var player=current.players[slot]
 	var own=int(current.owner)
 	var scores_local=[current.score[slot],current.score[1-slot]]
-	var defense="rebound" if current.phase=="loose" or current.phase=="flight" else "block"
-	var state={"ready":true,"started":true,"paused":false,"mode":"online","online":true,"phase":current.phase,"owner":0 if own==slot else 1 if own>=0 else -1,"score":scores_local,"seconds":ceili(float(current.seconds)),"shotClock":ceili(float(current.shotClock)),"clear":current.clear,"attempts":0,"makes":0,"headline":"","detail":"","feedback":false,"charge":current.charge if own==slot else 0,"crossReady":true,"event":current.event,"player":[player.position[0],player.position[2]],"ball":current.ball,"action":player.action,"sound":game.sound_enabled,"finish":player.style if player.style!="jumper" else player.finish,"sweet":Rules.release_bonus(game.shot_hold)>0 and player.action=="gather","drill":"free","slowPractice":false,"boxout":player.boxout,"guard":player.guard,"secured":player.action=="rebound","inspecting":false,"closeup":false,"motionPreview":0,"held":player.held,"courtRole":"forward","canChangeRole":false,"careerMatchId":"","careerMode":"","careerStage":0,"defenseAction":defense if own!=slot else "","reboundWindow":defense=="rebound","onlineMatchId":match_id,"onlineSlot":slot,"onlineTick":current.tick}
+	var defense=str(player.get("defense",""))
+	var state={"ready":true,"started":true,"paused":false,"mode":"online","online":true,"phase":current.phase,"owner":0 if own==slot else 1 if own>=0 else -1,"score":scores_local,"seconds":ceili(float(current.seconds)),"shotClock":ceili(float(current.shotClock)),"clear":current.clear,"attempts":0,"makes":0,"headline":"","detail":"","feedback":false,"charge":current.charge if own==slot else 0,"crossReady":true,"event":current.event,"player":[player.position[0],player.position[2]],"ball":current.ball,"action":player.action,"sound":game.sound_enabled,"finish":(player.style if player.style!="jumper" else player.finish) if player.action in ["gather","shot"] else Rules.finish_type(vector(player.position),Vector2(player.motion[0],player.motion[1])),"sweet":Rules.release_bonus(game.shot_hold)>0 and player.action=="gather","drill":"free","slowPractice":false,"boxout":player.boxout,"guard":player.guard,"secured":player.action=="rebound","inspecting":false,"closeup":false,"motionPreview":0,"held":player.held,"courtRole":"forward","canChangeRole":false,"careerMatchId":"","careerMode":"","careerStage":0,"defenseAction":defense if own!=slot else "","reboundWindow":defense=="rebound","onlineMatchId":match_id,"onlineSlot":slot,"onlineTick":current.tick}
 	var viewport_size=game.get_viewport().get_visible_rect().size
 	var names: Array=[]
 	for i in 2:

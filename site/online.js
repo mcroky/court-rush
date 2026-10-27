@@ -60,7 +60,7 @@
  }
  async function begin(){
   if(!enabled){setStatus('error','온라인 서버를 준비 중입니다.');return;}if(!window.CourtGame.getState()?.ready){setStatus('error','코트가 준비되는 동안 잠시 기다려 주세요.');return;}
-  close();const token=generation;reconnectUntil=0;try{await connect(token);}catch(e){if(token===generation)fail(e.message);}
+  close();const token=generation;reconnectUntil=0;try{await connect(token);}catch(e){if(token===generation){if(e.accountDialog){close();dialog.close();setStatus('idle');}else fail(e.message);}}
  }
  function sendInput(force=false){
   if(!room||status!=='playing')return;const blocked=document.hidden||document.querySelector('dialog[open]');let axes;try{axes=JSON.parse(input.onlineAxes);}catch{axes=[1,0,0,1];}

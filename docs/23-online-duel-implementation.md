@@ -26,6 +26,8 @@
 - 실제 Supabase API: 익명 참가권/공개 서버 호출 차단, 새 테이블 직접 접근 차단, 테스트 계정 매칭·결과 저장, XP/코인 불변(11개 검사).
 - 웹 lifecycle, 기존 블록 반사 회귀 통과. 브라우저는 진행 중 사용자 탭 대신 별도 QA 탭을 사용한다.
 
+15분 실제 시간 반복 실행(Windows): 12경기, 스냅샷 17,942개, 평균 2,768바이트. 누적 틱 과부하 없음. 1초 구간 p95의 95백분위 6.33ms, 가장 느린 구간 p95 12.55ms. Godot static memory 48,597,180→48,599,608바이트(+2.4KiB), Node RSS 54.5MB. 전체 컨테이너 RSS나 Render CPU 측정치로 혼동하지 않는다.
+
 ## 운영
 
 `server/.env`와 `.env.render`는 Git 제외. `.env.render`의 전용 키·공개 Supabase URL/key·서버 ID·허용 origin만 Render에 전달한다. Docker 기본 실행과 PORT를 덮어쓰지 않는다. `render.yaml`은 Free/Singapore/수동 배포/readyz 구성이다. 다른 앱과 workspace 무료 시간을 공유하고 자동 깨우기 작업을 추가하지 않는다.

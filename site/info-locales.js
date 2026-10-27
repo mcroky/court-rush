@@ -200,6 +200,9 @@
  news["en"][2].unshift("Players anticipate the bounce, slow down and gather the ball into the chest before resuming the dribble. An out-of-bounds whistle now leads to a visible jog back and ball return instead of teleporting everyone into the next possession. Applies to 1v1 and 3v3.",news["en"][1]);news["en"][0]="Chase it down.";news["en"][1]="v0.9.7 · Loose-ball chase and check ball";
  news["ja"][2].unshift("バウンドを予測して追い、減速して胸に抱え、ドリブルへつなぎます。アウト時は瞬間移動で次の攻撃に切り替えず、選手が位置に戻ってボールを受け取ってから再開します。1対1・3対3共通です。",news["ja"][1]);news["ja"][0]="弾いたボールを最後まで追う。";news["ja"][1]="v0.9.7・ルーズボール追走とチェックボール";
  news["zh-CN"][2].unshift("球员预判弹跳路线、减速并将球收至胸前，再衔接运球。出界后会跑回位置，接球后重新开始，不再瞬间切换到下一次持球画面。1对1与3对3均适用。",news["zh-CN"][1]);news["zh-CN"][0]="追到底，抢回球。";news["zh-CN"][1]="v0.9.7 · 争抢地板球与重新发球";
+ news["en"][2].unshift("Find another player in Online 1v1. Keep your appearance with equal attributes and no growth rewards. The server runs the 90-second, first-to-11 match. Initial connections may take time to start the server. One match runs at a time; play continues while menus or other tabs are open.",news["en"][1]);news["en"][0]="Meet on the same court.";news["en"][1]="v0.9.8 · Online 1v1 auto matching";
+ news["ja"][2].unshift("オンライン1対1で他のプレイヤーと自動対戦。外見を使い、能力は均等、育成報酬はありません。90秒・11点先取をサーバーが判定します。初回接続は準備に時間がかかる場合があります。1試合ずつ運用し、メニューや別タブを開いても試合は続きます。",news["ja"][1]);news["ja"][0]="同じコートで、オンライン1対1。";news["ja"][1]="v0.9.8・オンライン1対1自動マッチング";
+ news["zh-CN"][2].unshift("在线1对1自动匹配其他玩家。使用现有外观，属性公平，无成长奖励。服务器判定90秒、先得11分的比赛。首次连接可能需要等待服务器启动。目前每次运行一场，打开菜单或其他标签页时比赛仍会继续。",news["zh-CN"][1]);news["zh-CN"][0]="同一球场，在线1对1。";news["zh-CN"][1]="v0.9.8 · 在线1对1自动匹配";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;

@@ -25,6 +25,18 @@ func run() -> void:
 	var error=0.0
 	for i in skeleton.get_bone_count(): error=maxf(error,skeleton.get_bone_pose(i).origin.distance_to(q.skinned.skeleton.get_bone_pose(i).origin))
 	check(error<.0001,"replicated rig uses server bone translations within 0.1 mm")
+	game.web_input=null
+	var controls=[authority.ControlSlot.neutral(),authority.ControlSlot.neutral()]
+	controls[1].x=1.0
+	var palm_error=0.0
+	for frame in 80:
+		if frame==30:controls[1].shoot=true
+		authority.step(1.0/60,controls)
+		var state=JSON.parse_string(JSON.stringify(authority.snapshot()))
+		view.push(state);view.render_time=state.time;view.tick(0)
+		for side in 2:palm_error=maxf(palm_error,game.players[1].palm_position(side).distance_to(authority.players[1].palm_position(side)))
+	print("ONLINE_PALM_ERROR=",palm_error)
+	check(palm_error<.003,"moving and shooting display palms agree with authority within 3 mm")
 	var clock=game.clock_left;game._physics_process(1.0/60)
 	check(game.clock_left==clock,"client never advances the server match clock")
 	game.start_mode("practice")

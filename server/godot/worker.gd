@@ -16,6 +16,7 @@ var last_health=0
 var tick_times: Array=[]
 
 func _initialize() -> void:
+	Engine.max_fps=60 # Headless polling must not spend the Free CPU quota on an uncapped idle loop.
 	var port=int(OS.get_environment("CR_WORKER_PORT"))
 	if port<=0: port=32091
 	if listener.listen(port,"127.0.0.1")!=OK:
@@ -44,6 +45,7 @@ func handle(message: Dictionary) -> void:
 			if match_node==null or message.get("roomId","")!=room_id: return
 			var slot=int(message.get("slot",-1))
 			if slot not in [0,1] or not message.get("input",null) is Dictionary: return
+			message.input["_received"]=Time.get_ticks_msec()
 			if pending[slot].size()<32: pending[slot].append(message.input)
 			received[slot]=Time.get_ticks_msec()
 		"reset_input":
@@ -86,6 +88,8 @@ func _process(delta: float) -> bool:
 				var message=JSON.parse_string(line)
 				if message is Dictionary: handle(message)
 				count+=1
+	if running and delta>.25:
+		send_message({"type":"overload"}); running=false
 	accumulator+=minf(delta,.25)
 	var steps=0
 	while accumulator>=1.0/60.0 and steps<8:
@@ -93,6 +97,7 @@ func _process(delta: float) -> bool:
 		if not running or match_node==null: continue
 		for slot in 2:
 			inputs[slot].shoot_pressed=false
+			while not pending[slot].is_empty() and Time.get_ticks_msec()-int(pending[slot][0].get("_received",0))>250: pending[slot].pop_front()
 			if not pending[slot].is_empty():
 				var command: Dictionary=pending[slot].pop_front()
 				var next=Controls.neutral()

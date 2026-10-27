@@ -25,10 +25,11 @@ async function connect(user){
 try{
  check((await api('online-ticket',{serverId,mode:'duel',protocolVersion:1,rulesVersion:'duel-standard-v1'})).status===401,'ticket requires existing account authentication');
  check((await api('online-boot',{serverId,epoch:crypto.randomUUID()})).status===401,'server actions reject browser/public credentials');
+ const reuse=process.argv.includes('--reuse-browser')?JSON.parse(readFileSync(new URL('../artifacts/online-browser-users.json',import.meta.url),'utf8')):null;
  for(let i=0;i<2;i++){
-  const username='qa_net_'+randomBytes(4).toString('hex'),password='QA!'+randomBytes(16).toString('hex');
-  const account=await expect('signup',{username,password});const user={username,password,session:account.session};users.push(user);
-  user.player=(await expect('create',{nickname:'온라인검증'+i,role:i?'center':'guard'},user.session)).player;
+  const username=reuse?.[i].username||'qa_net_'+randomBytes(4).toString('hex'),password=reuse?.[i].password||'QA!'+randomBytes(16).toString('hex');
+  const account=await expect(reuse?'login':'signup',{username,password});const user={username,password,session:account.session};users.push(user);
+  user.player=(await expect(reuse?'profile':'create',reuse?{}:{nickname:'온라인검증'+i,role:i?'center':'guard'},user.session)).player;
  }
  writeFileSync(new URL('../artifacts/online-test-users.json',import.meta.url),JSON.stringify(users),{mode:0o600});
  for(const table of ['cr_online_servers','cr_online_tickets','cr_online_matches','cr_online_participants']){
@@ -42,21 +43,21 @@ try{
  check(foundA.participants.every(p=>!p.id&&!p.userId&&!p.session),'roster does not disclose account/session identifiers');
  const envelope={matchId:foundA.matchId,serverEpoch:foundA.serverEpoch};
  a.send({...envelope,type:'match.ready'});b.send({...envelope,type:'match.ready'});await Promise.all([a.next('match.started'),b.next('match.started')]);
- let inputTimer,commands=0,receivedBytes=0;
+ let inputTimer,commands=0,receivedBytes=0;const matchStarted=Date.now();
  if(process.argv.includes('--full-match')){
   const started=Date.now();for(const c of [a,b])c.socket.on('message',d=>{receivedBytes+=d.length;});
   inputTimer=setInterval(()=>{const t=(Date.now()-started)/1000;for(const [slot,c] of [a,b].entries()){
    c.send({...envelope,type:'input',seq:commands++,x:Math.sin(t*.3+slot*3)*.6,z:Math.cos(t*.3+slot*3)*.6,shoot:false,shoot_pressed:false,cross:false,spin:false,twostep:false,behind:false,hesi:false,steal:false,guard:false});
-   c.messages.splice(0,c.messages.findLastIndex(m=>m.type==='snapshot'));
+   for(let i=c.messages.length-1,seen=false;i>=0;i--)if(c.messages[i].type==='snapshot'){if(seen)c.messages.splice(i,1);else seen=true;}
   }},33);
  }else a.send({...envelope,type:'match.leave'});
  let resultA,resultB;
  try{[resultA,resultB]=await Promise.all([a.next('match.ended',240000),b.next('match.ended',240000)]);}finally{clearInterval(inputTimer);}
- if(process.argv.includes('--full-match')){check(resultA.result.reason==='draw'&&resultA.result.seconds===0,'real Render server completes regulation and bounded overtime without a leave command');console.log('FULL_MATCH receivedBytes='+receivedBytes+' inputCommands='+commands);}
+ if(process.argv.includes('--full-match')){const elapsed=(Date.now()-matchStarted)/1000;check(resultA.result.reason==='draw'&&resultA.result.seconds===0,'real Render server completes regulation and bounded overtime without a leave command');check(elapsed>=149&&elapsed<170,'server clock matches real elapsed regulation and overtime');console.log('FULL_MATCH elapsedSeconds='+elapsed+' receivedBytes='+receivedBytes+' inputCommands='+commands);}
  check(JSON.stringify(resultA.result)===JSON.stringify(resultB.result)&&resultA.result.saved,'same result stored by the restricted server API');
  a.socket.close();b.socket.close();
  for(const user of users){const p=(await expect('profile',{},user.session)).player;check(p.xp===user.player.xp&&p.wardrobe.coins===user.player.wardrobe.coins,'online result does not change growth XP or coins');}
  console.log('ONLINE_API_TEST checks='+checks);
 }finally{
- if(!process.argv.includes('--keep-browser'))for(const user of users)await expect('delete',{password:user.password},user.session);
+ if(!process.argv.includes('--keep-browser')&&!process.argv.includes('--reuse-browser'))for(const user of users)await expect('delete',{password:user.password},user.session);
 }

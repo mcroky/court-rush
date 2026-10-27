@@ -168,8 +168,8 @@ if(session)api('profile').then(r=>{username=r.username;player=r.player;panel();i
 else if(new URLSearchParams(location.search).get('account')==='manage')open();
 
 window.CourtCareerOnline={async ticket(data){
- if(!session){open();throw Error('먼저 로그인한 뒤 온라인 경기를 시작하세요.');}
+ if(!session){open();throw Object.assign(Error('먼저 로그인한 뒤 온라인 경기를 시작하세요.'),{accountDialog:true});}
  if(!player){const profile=await api('profile');player=profile.player;panel();}
- if(!player){open();throw Error('먼저 선수를 만들어 주세요.');}
+ if(!player){open();throw Object.assign(Error('먼저 선수를 만들어 주세요.'),{accountDialog:true});}
  return api('online-ticket',data);
 }};
