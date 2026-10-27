@@ -414,6 +414,7 @@ func update_pass(delta: float) -> void:
 
 func claim(index: int, title: String) -> void:
 	var changed = team(index) != possession
+	var just_blocked = game.last_event == "block" and game.loose_timer < .75
 	if changed:assist_candidate=-1
 	rebound_live=false
 	possession = team(index)
@@ -430,7 +431,10 @@ func claim(index: int, title: String) -> void:
 	if team(index) == 0: selected = index
 	game.ball.position = game.players[index].ball_anchor(game.time)
 	game.previous_ball_position = game.ball.position
-	game.announce(title,"외곽선 밖으로 공을 빼세요." if game.needs_clear else "공격을 이어가세요.",1.4)
+	if just_blocked:
+		game.announce("BLOCK! · YOUR BALL" if team(index)==0 else "BLOCK! · RIVAL BALL", "블록 성공! 우리 팀이 공을 확보했습니다." if team(index)==0 else "블록 성공! 상대가 공을 다시 잡았습니다.",1.8)
+	else:
+		game.announce(title,"외곽선 밖으로 공을 빼세요." if game.needs_clear else "공격을 이어가세요.",1.4)
 	game.last_event = "pass" if title == "NICE PASS" else ("steal" if title == "INTERCEPTED!" else "rebound")
 	ai_cooldown = .8
 

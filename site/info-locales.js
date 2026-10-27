@@ -176,6 +176,12 @@
  news["ja"][2].unshift(block_ja[2],news["ja"][1]);news["ja"][0]=block_ja[0];news["ja"][1]=block_ja[1];
  const block_zh_CN=["伸手完成盖帽。", "v0.9.1 · 盖帽输入与正面起跳", "短促的防守起跳输入会保留到游戏读取。正面防守时小幅踏步接近，手掌实际碰到球才向下扇出。站在对手与篮筐之间，在对方举球时起跳。"];
  news["zh-CN"][2].unshift(block_zh_CN[2],news["zh-CN"][1]);news["zh-CN"][0]=block_zh_CN[0];news["zh-CN"][1]=block_zh_CN[1];
+ const block_feedback_en=["See the block.", "v0.9.2 · Block and possession feedback", "When someone immediately recovers a blocked ball, the game shows both the block and which team recovered it. Ball-to-body contact still allows an immediate pickup."];
+ news["en"][2].unshift(block_feedback_en[2],news["en"][1]);news["en"][0]=block_feedback_en[0];news["en"][1]=block_feedback_en[1];
+ const block_feedback_ja=["ブロック成功を見逃さない。", "v0.9.2・ブロックとボールの所有表示", "ブロック直後にボールを取られても、ブロック成功と確保したチームを一緒に表示。ボールが体に触れたらすぐ確保できるルールは維持します。"];
+ news["ja"][2].unshift(block_feedback_ja[2],news["ja"][1]);news["ja"][0]=block_feedback_ja[0];news["ja"][1]=block_feedback_ja[1];
+ const block_feedback_zh_CN=["让盖帽成功清晰可见。", "v0.9.2 · 盖帽与球权提示", "盖帽后球被立即拿到时，同时显示盖帽成功与获得球权的一方。球碰到身体即可拾取的规则保持不变。"];
+ news["zh-CN"][2].unshift(block_feedback_zh_CN[2],news["zh-CN"][1]);news["zh-CN"][0]=block_feedback_zh_CN[0];news["zh-CN"][1]=block_feedback_zh_CN[1];
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;
