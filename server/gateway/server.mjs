@@ -1,11 +1,12 @@
 import { createServer } from 'node:http';
-import { randomUUID } from 'node:crypto';
+import { randomUUID,randomBytes } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 import { PROTOCOL, RULES, parseInput, publicParticipant } from './protocol.mjs';
 
 export class Gateway {
   epoch = randomUUID(); connections = new Set(); queue = []; owners = new Map(); room = null;
   draining = false; totalBytes = 0; lastSessionCheck = 0; checkingSessions = false;
+  lobbies=new Map();pairs=[];pendingCleanup=0;
   constructor({ auth, worker, origins = ['https://mcroky.github.io', 'http://127.0.0.1:8791'], countdownMs = 3000, readyMs = 15000, reconnectMs = 20000, resultMs = 3000 }) {
     Object.assign(this, { auth, worker, origins: new Set(origins), countdownMs, readyMs, reconnectMs, resultMs });
     this.server = createServer((req, res) => this.http(req, res));
@@ -27,7 +28,7 @@ export class Gateway {
     const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...(origin ? { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' } : {}) };
     if (req.method !== 'GET' || !['/healthz', '/readyz'].includes(req.url)) { res.writeHead(404, headers).end('{}'); return; }
     const ready = this.healthy() && !this.draining;
-    res.writeHead(req.url === '/healthz' || ready ? 200 : 503, headers).end(JSON.stringify({ ready, protocolVersion: PROTOCOL, rulesVersion: RULES, serverEpoch: this.epoch, capacity: 1, busy: Boolean(this.room), queue: this.queue.length }));
+    res.writeHead(req.url === '/healthz' || ready ? 200 : 503, headers).end(JSON.stringify({ ready,serverId:this.auth.serverId, protocolVersion: PROTOCOL, rulesVersion: RULES, serverEpoch: this.epoch, capacity: 1, busy: Boolean(this.room||this.pendingCleanup), queue: this.queue.length }));
   }
   connect(socket) {
     const c = { socket, user: null, status: 'authenticating', joined: Date.now(), lastPong: Date.now(), lastPing: 0, lastSeq: -1, lastActivity: Date.now(), windowAt: Date.now(), messages: 0, busy: false, closed: false };
@@ -60,19 +61,21 @@ export class Gateway {
       catch { this.send(c, { type: 'error', code: 'authentication_failed' }); c.socket.close(1008); return; }
       finally { c.busy = false; }
       if (c.closed) return;
+      if(user.rulesVersion!==RULES||!user.athlete){this.send(c,{type:'error',code:'rules_mismatch'});c.socket.close(1008);return;}
       const owned = this.owners.get(user.id);
       if (owned && (owned.connection || !this.room?.members.includes(owned))) { this.send(c, { type: 'error', code: 'already_participating' }); c.socket.close(1008); return; }
       c.user = user; c.status = 'idle';
       this.send(c, { type: 'authenticated', rulesVersion: RULES, resuming: Boolean(owned) });
       if (owned) {
-        owned.user = user; owned.connection = c; owned.disconnectedAt = 0; c.status = 'playing'; c.lastSeq = -1;
+        owned.user = {...user,nickname:owned.user.nickname,appearance:owned.user.appearance,athlete:owned.user.athlete}; owned.connection = c; owned.disconnectedAt = 0; c.status = 'playing'; c.lastSeq = -1;
         this.worker.send({type:'reset_input',roomId:this.room.id,slot:this.room.members.indexOf(owned)});
-        this.send(c, { type: 'match.found', matchId: this.room.id, slot: this.room.members.indexOf(owned), participants: this.room.members.map((p, i) => publicParticipant(p.user, i)), state: this.room.snapshot, resumed: true });
+        this.send(c, { type: 'match.found', matchId: this.room.id, slot: this.room.members.indexOf(owned),ranked:this.room.ranked,entry:this.room.lobby?{kind:'room',private:this.room.lobby.private,title:this.room.lobby.title}:{kind:'auto'}, participants: this.room.members.map((p, i) => publicParticipant(p.user, i)), state: this.room.snapshot, resumed: true });
         this.broadcast(this.room, { type: 'reconnect.status', connected: this.room.members.map(p => Boolean(p.connection)) });
       }
       return;
     }
     if (!c.user) { this.send(c, { type: 'error', code: 'authentication_required' }); return; }
+    if(typeof m.type==='string'&&m.type.startsWith('room.')){this.lobbyMessage(c,m);return;}
     if (m.type === 'queue.join') {
       if (m.mode !== 'duel' || !this.healthy() || this.draining) { this.send(c, { type: 'error', code: 'unavailable' }); return; }
       if (this.owners.has(c.user.id)) { this.send(c, { type: 'error', code: c.status === 'queued' ? 'already_queued' : 'already_participating' }); return; }
@@ -119,17 +122,73 @@ export class Gateway {
     this.queue = this.queue.filter(p => p.connection !== c);
     this.owners.delete(c.user.id); c.status = 'idle'; this.queueStatus();
   }
-  queueStatus() { this.queue.forEach((p, i) => this.send(p.connection, { type: 'queue.status', position: i + 1, waiting: this.queue.length, busy: Boolean(this.room) })); }
+  lobbySummary(lobby){return {id:lobby.id,title:lobby.title,host:lobby.members[0]?.user.nickname||'',players:lobby.members.length,queued:Boolean(lobby.queuedAt)};}
+  lobbyState(lobby,c){return {...this.lobbySummary(lobby),code:lobby.code,private:lobby.private,slot:lobby.members.findIndex(p=>p.connection===c),members:lobby.members.map(p=>({nickname:p.user.nickname,ready:p.ready}))};}
+  lobbyList(c){this.send(c,{type:'room.list',rooms:[...this.lobbies.values()].filter(l=>!l.private).map(l=>this.lobbySummary(l))});}
+  lobbyLists(){for(const c of this.connections)if(c.user&&['idle','lobby','room-queued'].includes(c.status))this.lobbyList(c);}
+  lobbyChanged(lobby){for(const p of lobby.members)this.send(p.connection,{type:'room.state',lobby:this.lobbyState(lobby,p.connection)});this.lobbyLists();}
+  leaveLobby(c){
+    const lobby=[...this.lobbies.values()].find(l=>l.members.some(p=>p.connection===c));if(!lobby)return;
+    this.pairs=this.pairs.filter(l=>l!==lobby);lobby.queuedAt=0;
+    lobby.members=lobby.members.filter(p=>p.connection!==c);this.owners.delete(c.user.id);c.status='idle';
+    if(!lobby.members.length)this.lobbies.delete(lobby.id);
+    else{for(const p of lobby.members){p.ready=false;p.connection.status='lobby';}this.lobbyChanged(lobby);}
+    this.lobbyLists();
+  }
+  lobbyMessage(c,m){
+    const error=code=>this.send(c,{type:'room.error',code});
+    if(m.type==='room.list'){if(Date.now()-(c.lastLobbyList||0)>750){c.lastLobbyList=Date.now();this.lobbyList(c);}return;}
+    if(this.draining||!this.healthy()){error('unavailable');return;}
+    if(!c.lobbyWindow||Date.now()-c.lobbyWindow>60000){c.lobbyWindow=Date.now();c.lobbyActions=0;}
+    if(++c.lobbyActions>20){error('room_rate_limit');return;}
+    if(m.type==='room.create'){
+      if(this.owners.has(c.user.id)){error('already_participating');return;}
+      if(this.lobbies.size>=16){error('room_limit');return;}
+      if(typeof m.title!=='string'||!m.title.trim()||m.title.trim().length>24||typeof m.private!=='boolean'){error('invalid_room');return;}
+      const member={user:c.user,connection:c,joined:Date.now(),disconnectedAt:0,ready:false};
+      let code;do{code=randomBytes(4).toString('hex').toUpperCase();}while([...this.lobbies.values()].some(l=>l.code===code));
+      const lobby={id:randomUUID(),code,title:m.title.trim(),private:m.private,members:[member],createdAt:Date.now(),queuedAt:0};
+      this.lobbies.set(lobby.id,lobby);this.owners.set(c.user.id,member);c.status='lobby';this.lobbyChanged(lobby);return;
+    }
+    if(m.type==='room.join'){
+      if(this.owners.has(c.user.id)){error('already_participating');return;}
+      const code=typeof m.code==='string'?m.code.trim().toUpperCase():'';
+      const lobby=code?[...this.lobbies.values()].find(l=>/^[A-F0-9]{8}$/.test(code)&&l.code===code):this.lobbies.get(m.lobbyId);
+      if(!lobby||lobby.private&&!code||lobby.members.length!==1||lobby.queuedAt){error('room_unavailable');return;}
+      const member={user:c.user,connection:c,joined:Date.now(),disconnectedAt:0,ready:false};lobby.members.push(member);
+      this.owners.set(c.user.id,member);c.status='lobby';this.lobbyChanged(lobby);return;
+    }
+    const lobby=this.lobbies.get(m.lobbyId);
+    if(!lobby||!lobby.members.some(p=>p.connection===c)){
+      if(m.type==='room.leave'&&this.room?.lobby?.id===m.lobbyId&&!['playing','finishing'].includes(this.room.phase))this.cancelReservation(c);
+      else error('room_unavailable');return;
+    }
+    if(m.type==='room.leave'){this.leaveLobby(c);this.send(c,{type:'room.left'});this.tryMatch();return;}
+    if(m.type==='room.ready'){
+      if(typeof m.ready!=='boolean'){error('invalid_room');return;}
+      this.pairs=this.pairs.filter(l=>l!==lobby);lobby.queuedAt=0;
+      lobby.members.find(p=>p.connection===c).ready=m.ready;
+      if(lobby.members.length===2&&lobby.members.every(p=>p.ready)){lobby.queuedAt=Date.now();this.pairs.push(lobby);}
+      for(const p of lobby.members)p.connection.status=lobby.queuedAt?'room-queued':'lobby';
+      this.lobbyChanged(lobby);this.tryMatch();
+    }
+  }
+  queueStatus() { this.queue.forEach((p, i) => this.send(p.connection, { type: 'queue.status', position: i + 1, waiting: this.queue.length, busy: Boolean(this.room||this.pendingCleanup) })); }
   async tryMatch() {
-    if (this.room || this.queue.length < 2 || this.draining || !this.healthy()) return;
-    const room = this.room = { id: randomUUID(), members: this.queue.splice(0, 2), phase: 'registering', ready: new Set(), snapshot: null, timeout: null, createdAt: Date.now(), winner: null };
+    if (this.room || this.pendingCleanup || this.draining || !this.healthy()) return;
+    const paired=this.pairs[0];const autoAt=this.queue.length>=2?this.queue[1].joined:Infinity;
+    if(!paired&&autoAt===Infinity)return;
+    const lobby=paired&&paired.queuedAt<=autoAt?this.pairs.shift():null;
+    const members=lobby?lobby.members:this.queue.splice(0,2);
+    if(lobby){this.lobbies.delete(lobby.id);this.lobbyLists();}
+    const room = this.room = { id: randomUUID(), members,lobby,ranked:!lobby?.private, phase: 'registering', ready: new Set(), snapshot: null, timeout: null, createdAt: Date.now(), winner: null };
     room.members.forEach(p => { p.connection.status = 'reserved'; }); this.queueStatus();
     room.registration = this.auth.register(room, this.epoch);
-    try { await room.registration; }
+    try { const registered=await room.registration;if(registered?.profiles?.length===2)room.members.forEach((member,i)=>{member.user={...member.user,...registered.profiles[i]};}); }
     catch { if (this.room === room) this.abort('account_unavailable'); return; }
     if (this.room !== room) return;
     room.phase = 'creating'; room.timeout = setTimeout(() => this.abort('worker_timeout'), 15000);
-    if (!this.worker.send({ type: 'create', roomId: room.id, appearances: room.members.map(p => p.user.appearance) })) this.abort('worker_unavailable');
+    if (!this.worker.send({ type: 'create', roomId: room.id, appearances: room.members.map(p => p.user.appearance),athletes:room.members.map(p=>p.user.athlete) })) this.abort('worker_unavailable');
   }
   workerMessage(message) {
     if(message.type==='health'){
@@ -142,7 +201,7 @@ export class Gateway {
     if (!room || message.roomId !== room.id) return;
     if (message.type === 'created') {
       clearTimeout(room.timeout); room.phase = 'loading'; room.snapshot = message.state;
-      room.members.forEach((p, slot) => this.send(p.connection, { type: 'match.found', matchId: room.id, slot, participants: room.members.map((q, i) => publicParticipant(q.user, i)), state: message.state }));
+      room.members.forEach((p, slot) => this.send(p.connection, { type: 'match.found', matchId: room.id, slot,ranked:room.ranked,entry:room.lobby?{kind:'room',private:room.lobby.private,title:room.lobby.title}:{kind:'auto'}, participants: room.members.map((q, i) => publicParticipant(q.user, i)), state: message.state }));
       room.timeout = setTimeout(() => this.cancelReservation(), this.readyMs);
     } else if (message.type === 'snapshot' && room.phase === 'playing') {
       room.snapshot = message.state;
@@ -153,6 +212,7 @@ export class Gateway {
   disconnected(c) {
     c.closed = true; this.connections.delete(c);
     if (!c.user) return;
+    if(['lobby','room-queued'].includes(c.status)){this.leaveLobby(c);return;}
     if (c.status === 'queued') { this.removeQueued(c); return; }
     const room = this.room, member = room?.members.find(p => p.connection === c);
     if (!member) return;
@@ -163,25 +223,33 @@ export class Gateway {
   cancelReservation(leaving) {
     const room = this.room; if (!room || ['playing', 'finishing'].includes(room.phase)) return;
     clearTimeout(room.timeout); this.worker.send({ type: 'destroy', roomId: room.id }); this.room = null;
+    this.pendingCleanup++;
+    const returned=[];
     for (const member of room.members) {
       this.owners.delete(member.user.id);
       const c = member.connection;
       if (!c || c === leaving || c.closed) { if (c) c.status = 'idle'; continue; }
-      c.status = 'queued'; this.owners.set(c.user.id, member); this.queue.unshift(member);
-      this.send(c, { type: 'match.cancelled', matchId: room.id });
+      this.owners.set(c.user.id,member);
+      if(room.lobby){c.status='lobby';member.ready=false;returned.push(member);}
+      else{c.status='queued';this.queue.unshift(member);this.send(c,{type:'match.cancelled',matchId:room.id});}
     }
-    void Promise.resolve(room.registration).then(()=>this.auth.finish(room, this.epoch, { reason: 'cancelled', winner: null, score: [0, 0], seconds: 90 })).catch(() => {});
-    this.queueStatus(); this.tryMatch();
+    if(room.lobby&&returned.length){room.lobby.members=returned;room.lobby.queuedAt=0;this.lobbies.set(room.lobby.id,room.lobby);for(const member of returned)this.send(member.connection,{type:'match.cancelled',matchId:room.id,lobby:this.lobbyState(room.lobby,member.connection)});this.lobbyLists();}
+    void Promise.resolve(room.registration).then(()=>this.auth.finish(room, this.epoch, { reason: 'cancelled', winner: null, score: [0, 0], seconds: 90 })).catch(() => {}).finally(()=>{this.pendingCleanup--;this.tryMatch();});
+    this.queueStatus();
   }
   async finish(room, reason, winner = null) {
     if (this.room !== room || room.phase === 'finishing') return;
     room.phase = 'finishing'; clearTimeout(room.timeout);
     this.worker.send({ type: 'end', roomId: room.id, reason });
     const result = { reason, winner, score: room.snapshot?.score || [0, 0], seconds: room.snapshot?.seconds ?? 90 };
-    let saved = false;
-    try { await Promise.race([this.auth.finish(room, this.epoch, result).then(() => { saved = true; }), new Promise(resolve => setTimeout(resolve, this.resultMs))]); } catch {}
+    let saved = false, settled=result,announced=false;
+    const save=this.auth.finish(room,this.epoch,result).then(response=>{
+      settled=response?.result||result;saved=true;
+      if(announced)this.broadcast(room,{type:'match.saved',result:{...settled,saved:true}});
+    });
+    try { await Promise.race([save, new Promise(resolve => setTimeout(resolve, this.resultMs))]); } catch {}
     if (this.room !== room) return;
-    this.broadcast(room, { type: 'match.ended', result: { ...result, saved } });
+    this.broadcast(room, { type: 'match.ended', result: { ...settled, saved } });announced=true;
     this.worker.send({ type: 'destroy', roomId: room.id }); this.room = null;
     for (const p of room.members) { this.owners.delete(p.user.id); if (p.connection) p.connection.status = 'idle'; }
     this.queueStatus(); this.tryMatch();
@@ -192,6 +260,7 @@ export class Gateway {
   }
   maintenance() {
     const now = Date.now();
+    for(const lobby of [...this.lobbies.values()])if(now-lobby.createdAt>600000){for(const p of [...lobby.members]){this.send(p.connection,{type:'room.closed',code:'room_expired'});this.leaveLobby(p.connection);} }
     for (const c of this.connections) {
       if (!c.user && now - c.joined > 5000 || now - c.lastPong > 25000) { c.socket.terminate(); continue; }
       if (now - c.lastPing > 10000) { c.lastPing = now; c.socket.ping(); }

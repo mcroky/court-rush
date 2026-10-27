@@ -1,5 +1,5 @@
 export const PROTOCOL = 1;
-export const RULES = 'duel-standard-v1';
+export const RULES = 'duel-career-v2';
 export const ACTIONS = ['shoot', 'cross', 'spin', 'twostep', 'behind', 'hesi', 'steal', 'guard'];
 export function parseInput(message, lastSequence) {
   if (!Number.isSafeInteger(message.seq) || message.seq < 0 || message.seq <= lastSequence || message.seq - lastSequence > 10000) throw Error('input_sequence');
@@ -14,5 +14,5 @@ export function parseInput(message, lastSequence) {
   return input;
 }
 export function publicParticipant(member, slot) {
-  return { slot, team: slot, nickname: member.nickname, appearance: member.appearance };
+  return { slot, team: slot, nickname: member.nickname, appearance: member.appearance, athlete:member.athlete };
 }

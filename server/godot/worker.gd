@@ -33,7 +33,9 @@ func handle(message: Dictionary) -> void:
 			room_id=str(message.get("roomId",""))
 			match_node=Simulation.new(); root.add_child(match_node)
 			var appearances=message.get("appearances",[{},{}])
+			var athletes=message.get("athletes",[{},{}])
 			for i in 2:
+				if athletes is Array and athletes.size()==2 and athletes[i] is Dictionary:match_node.players[i].apply_athlete(athletes[i])
 				if appearances is Array and appearances.size()==2 and appearances[i] is Dictionary: match_node.players[i].apply_appearance(appearances[i])
 			pending=[[],[]]; inputs=[Controls.neutral(),Controls.neutral()]; acks=[-1,-1]
 			received=[Time.get_ticks_msec(),Time.get_ticks_msec()]

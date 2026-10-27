@@ -20,7 +20,7 @@ static func replay(state: Dictionary,slot: int,commands: Array) -> Vector3:
 		var age=clampf(float(command.age),0,.2)
 		var next_age=clampf(float(commands[i+1].age),0,.2) if i+1<commands.size() else 0.0
 		var duration=minf(age-next_age,.2-elapsed)
-		var desired=target(float(command.x),float(command.z),float(Rules.role_profile("forward").speed))
+		var desired=target(float(command.x),float(command.z),float(player.get("speed",Rules.role_profile("forward").speed)))
 		while duration>.00001:
 			var step=minf(duration,1.0/60)
 			velocity=velocity.move_toward(desired,(24.0 if desired.length()>.01 else 35.0)*step)

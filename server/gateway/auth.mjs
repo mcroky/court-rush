@@ -1,3 +1,4 @@
+import {RULES} from './protocol.mjs';
 export class AccountAPI {
   constructor({ url, key, serverKey, serverId }) {
     this.url = url; this.key = key; this.serverKey = serverKey; this.serverId = serverId;
@@ -12,7 +13,7 @@ export class AccountAPI {
     return response.json();
   }
   redeem(ticket, requestId, epoch) { return this.call('online-redeem', { ticket, requestId, epoch }); }
-  register(room, epoch) { return this.call('online-register', { matchId: room.id, epoch, players: room.members.map(m => ({ userId: m.user.id, ticketId: m.user.ticketId })) }); }
+  register(room, epoch) { return this.call('online-register', { matchId: room.id, epoch, rulesVersion:RULES,ranked:room.ranked!==false,players: room.members.map(m => ({ userId: m.user.id, ticketId: m.user.ticketId })) }); }
   async finish(room, epoch, result) {
     for(let attempt=0;attempt<3;attempt++){
       try{return await this.call('online-finish', { matchId: room.id, epoch, result });}

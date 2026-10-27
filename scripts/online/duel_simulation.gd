@@ -19,7 +19,7 @@ func _ready() -> void:
 	impact_ring=Node3D.new(); add_child(impact_ring)
 	court_audio=SilentAudio.new(); add_child(court_audio)
 	for i in 2:
-		var actor=Actor.new(); add_child(actor); actor.setup(i==1)
+		var actor=Actor.new(); add_child(actor); actor.setup(false)
 		actor.apply_athlete({"role":"forward","height":190})
 		players.append(actor); controllers.append(ControlSlot.new())
 	rng.randomize()
@@ -140,7 +140,7 @@ func resolve_online_steals() -> void:
 		if phase!="live" or ball_owner!=1-i or not p.stealing() or p.steal_resolved or not p.steal_eligible or p.action_time<.12 or p.action_time>.32: continue
 		if players[ball_owner].action!="idle" or hand_ball_distance(p.hand_world,p.previous_hand_world)>=.25 or p.hand_world.distance_to(ball.position)>=.25: continue
 		p.steal_resolved=true
-		if rng.randf()<.65:
+		if rng.randf()<clampf(.65+(float(p.growth.get("defense",50))-50)*.003+p.skill_rank("steal")*.012,.4,.85):
 			players[ball_owner].has_ball=false; p.has_ball=true; p.dribble_ended=false
 			p.receive_steal(ball.position); ball_owner=i; ball.position=p.ball_anchor(time)
 			needs_clear=not Rules.is_clear(p.position); shot_clock=15; last_event="steal"
@@ -150,7 +150,7 @@ func snapshot(acks: Array=[]) -> Dictionary:
 	var actors: Array=[]
 	for i in 2:
 		var p=players[i]
-		actors.append({"defense":defense_kind(i) if not p.has_ball and phase in ["live","takeoff","flight","loose"] else "","predictable":p.action=="idle" and not p.dribble_ended and not p.defending and not p.boxing_out and p.brake_state=="" and p.landing_push_left<=0 and p.landing_recovery_left<=0 and not p.chase_recovery,"slot":i,"team":i,"position":vec(p.position),"yaw":snappedf(p.rotation.y,.0001),"body":pack_transform(p.body.transform),"rig":pack_transform(p.skinned.transform),"model":pack_transform(p.skinned.model.transform),"pose":PoseCodec.encode(p.skinned.skeleton),"boneCount":p.skinned.skeleton.get_bone_count(),"motion":[snappedf(p.motion.x,.0001),snappedf(p.motion.y,.0001)],"action":p.action,"actionTime":snappedf(p.action_time,.0001),"held":p.dribble_ended,"guard":p.defending,"boxout":p.boxing_out,"jump":snappedf(p.jump,.0001),"palms":[vec(p.palm_position(0)),vec(p.palm_position(1))],"finish":p.finish_kind,"style":p.shot_style})
+		actors.append({"defense":defense_kind(i) if not p.has_ball and phase in ["live","takeoff","flight","loose"] else "","predictable":p.action=="idle" and not p.dribble_ended and not p.defending and not p.boxing_out and p.brake_state=="" and p.landing_push_left<=0 and p.landing_recovery_left<=0 and not p.chase_recovery,"speed":p.athletic_profile().speed,"role":p.court_role,"slot":i,"team":i,"position":vec(p.position),"yaw":snappedf(p.rotation.y,.0001),"body":pack_transform(p.body.transform),"rig":pack_transform(p.skinned.transform),"model":pack_transform(p.skinned.model.transform),"pose":PoseCodec.encode(p.skinned.skeleton),"boneCount":p.skinned.skeleton.get_bone_count(),"motion":[snappedf(p.motion.x,.0001),snappedf(p.motion.y,.0001)],"action":p.action,"actionTime":snappedf(p.action_time,.0001),"held":p.dribble_ended,"guard":p.defending,"boxout":p.boxing_out,"jump":snappedf(p.jump,.0001),"palms":[vec(p.palm_position(0)),vec(p.palm_position(1))],"finish":p.finish_kind,"style":p.shot_style})
 	return {"tick":tick_id,"time":time,"phase":phase,"score":scores.duplicate(),"seconds":clock_left,"shotClock":shot_clock,"clear":needs_clear,"owner":ball_owner,"shooter":shooter,"ball":vec(ball.position),"players":actors,"acks":acks,"event":last_event,"eventSequence":event_sequence,"possessionRevision":possession_revision,"charge":shot_hold/.62 if ball_owner>=0 and players[ball_owner].action=="gather" else 0,"outcome":outcome}
 
 static func vec(v: Vector3) -> Array:

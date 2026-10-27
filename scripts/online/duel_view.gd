@@ -15,6 +15,7 @@ var labels: Array=[]
 var nicknames: Array=[]
 var event_seen=-1
 var commands: Array=[]
+var original_meshes: Array=[]
 
 func _init(owner) -> void:
 	game=owner
@@ -24,7 +25,11 @@ func start(data: Dictionary) -> void:
 	game.start_mode("duel")
 	game.mode="online"; game.paused=false
 	for i in 2:
-		game.players[i].apply_athlete({"role":"forward","height":190})
+		var mesh=game.players[i].skinned.human_mesh
+		original_meshes.append(mesh.get_meta("wardrobe_original",mesh.mesh))
+		mesh.set_meta("wardrobe_original",game.players[i].skinned.HumanPlayer)
+		mesh.mesh=game.players[i].skinned.HumanPlayer
+		game.players[i].apply_athlete(data.participants[i].get("athlete",{"role":"forward","height":190}))
 		game.players[i].apply_appearance(data.participants[i].appearance)
 		game.players[i].marker.visible=i==slot
 		var label=Label3D.new(); game.add_child(label)
@@ -35,6 +40,11 @@ func start(data: Dictionary) -> void:
 	push(data.state)
 
 func stop() -> void:
+	for i in original_meshes.size():
+		var mesh=game.players[i].skinned.human_mesh
+		mesh.set_meta("wardrobe_original",original_meshes[i]);mesh.mesh=original_meshes[i]
+		game.players[i].apply_appearance(game.equipped_appearance if i==0 else {})
+	original_meshes.clear()
 	for label in labels: label.queue_free()
 	labels.clear()
 
@@ -113,7 +123,7 @@ func hud() -> Dictionary:
 	var own=int(current.owner)
 	var scores_local=[current.score[slot],current.score[1-slot]]
 	var defense=str(player.get("defense",""))
-	var state={"ready":true,"started":true,"paused":false,"mode":"online","online":true,"phase":current.phase,"owner":0 if own==slot else 1 if own>=0 else -1,"score":scores_local,"seconds":ceili(float(current.seconds)),"shotClock":ceili(float(current.shotClock)),"clear":current.clear,"attempts":0,"makes":0,"headline":"","detail":"","feedback":false,"charge":current.charge if own==slot else 0,"crossReady":true,"event":current.event,"player":[player.position[0],player.position[2]],"ball":current.ball,"action":player.action,"sound":game.sound_enabled,"finish":(player.style if player.style!="jumper" else player.finish) if player.action in ["gather","shot"] else Rules.finish_type(vector(player.position),Vector2(player.motion[0],player.motion[1])),"sweet":Rules.release_bonus(game.shot_hold)>0 and player.action=="gather","drill":"free","slowPractice":false,"boxout":player.boxout,"guard":player.guard,"secured":player.action=="rebound","inspecting":false,"closeup":false,"motionPreview":0,"held":player.held,"courtRole":"forward","canChangeRole":false,"careerMatchId":"","careerMode":"","careerStage":0,"defenseAction":defense if own!=slot else "","reboundWindow":defense=="rebound","onlineMatchId":match_id,"onlineSlot":slot,"onlineTick":current.tick}
+	var state={"ready":true,"started":true,"paused":false,"mode":"online","online":true,"phase":current.phase,"owner":0 if own==slot else 1 if own>=0 else -1,"score":scores_local,"seconds":ceili(float(current.seconds)),"shotClock":ceili(float(current.shotClock)),"clear":current.clear,"attempts":0,"makes":0,"headline":"","detail":"","feedback":false,"charge":current.charge if own==slot else 0,"crossReady":true,"event":current.event,"player":[player.position[0],player.position[2]],"ball":current.ball,"action":player.action,"sound":game.sound_enabled,"finish":(player.style if player.style!="jumper" else player.finish) if player.action in ["gather","shot"] else Rules.finish_type(vector(player.position),Vector2(player.motion[0],player.motion[1])),"sweet":Rules.release_bonus(game.shot_hold)>0 and player.action=="gather","drill":"free","slowPractice":false,"boxout":player.boxout,"guard":player.guard,"secured":player.action=="rebound","inspecting":false,"closeup":false,"motionPreview":0,"held":player.held,"courtRole":str(player.get("role","forward")),"canChangeRole":false,"careerMatchId":"","careerMode":"","careerStage":0,"defenseAction":defense if own!=slot else "","reboundWindow":defense=="rebound","onlineMatchId":match_id,"onlineSlot":slot,"onlineTick":current.tick}
 	var viewport_size=game.get_viewport().get_visible_rect().size
 	var names: Array=[]
 	for i in 2:

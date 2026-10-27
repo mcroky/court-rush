@@ -3,6 +3,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {randomBytes} from 'node:crypto';
 import assert from 'node:assert/strict';
 import WebSocket from '../server/node_modules/ws/index.js';
+import {RULES} from '../server/gateway/protocol.mjs';
 const config=readFileSync(new URL('../site/career-config.js',import.meta.url),'utf8');
 const url=config.match(/url:'([^']+)'/)[1],key=config.match(/key:'([^']+)'/)[1],users=[];
 const serverId='court-rush-online-free',serverURL=process.env.CR_TEST_SERVER_URL||'http://127.0.0.1:8792';
@@ -14,7 +15,7 @@ async function api(action,body={},session=null){
 }
 async function expect(action,body={},session=null){const r=await api(action,body,session);assert.equal(r.status,200,action+': '+JSON.stringify(r.data));return r.data;}
 async function connect(user){
- const ticket=await expect('online-ticket',{serverId,mode:'duel',protocolVersion:1,rulesVersion:'duel-standard-v1'},user.session);
+ const ticket=await expect('online-ticket',{serverId,mode:'duel',protocolVersion:1,rulesVersion:RULES},user.session);
  const socket=new WebSocket(serverURL.replace(/^http/,'ws')+'/play'),messages=[];
  socket.on('message',d=>messages.push(JSON.parse(String(d))));
  await new Promise((resolve,reject)=>{socket.once('open',resolve);socket.once('error',reject);});
@@ -23,7 +24,7 @@ async function connect(user){
  send({type:'authenticate',ticket:ticket.ticket});await next('authenticated');return {socket,send,next,messages};
 }
 try{
- check((await api('online-ticket',{serverId,mode:'duel',protocolVersion:1,rulesVersion:'duel-standard-v1'})).status===401,'ticket requires existing account authentication');
+ check((await api('online-ticket',{serverId,mode:'duel',protocolVersion:1,rulesVersion:RULES})).status===401,'ticket requires existing account authentication');
  check((await api('online-boot',{serverId,epoch:crypto.randomUUID()})).status===401,'server actions reject browser/public credentials');
  const reuse=process.argv.includes('--reuse-browser')?JSON.parse(readFileSync(new URL('../artifacts/online-browser-users.json',import.meta.url),'utf8')):null;
  for(let i=0;i<2;i++){

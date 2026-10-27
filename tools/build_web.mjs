@@ -10,7 +10,7 @@ const match = exported.match(/const GODOT_CONFIG = (\{.*\});/);
 if (!match) throw new Error('Godot export config not found. Export Web before running this script.');
 const config = JSON.parse(match[1]);
 for(const name of ['wardrobe.css','wardrobe-locales.js'])copyFileSync(resolve(root,'site',name),resolve(output,name));
-for(const name of ['online-config.js','online.js','online.css','online-locales.js'])copyFileSync(resolve(root,'site',name),resolve(output,name));
+for(const name of ['online-config.js','online.js','online.css','online-locales.js','online-ranking.js','online-rooms.js'])copyFileSync(resolve(root,'site',name),resolve(output,name));
 writeFileSync(resolve(output, 'engine-config.js'), `window.UF_ENGINE_CONFIG = ${JSON.stringify(config)};\n`);
 for (const name of ['index.html','style.css','app.js','motion-lab.html','motion-lab.js','character-lab.html','character-lab.js','career.css','career.js','career-config.js','language.css','locales.js','i18n.js','info-locales.js','privacy.html','updates.json']) copyFileSync(resolve(root,'site',name),resolve(output,name));
 writeFileSync(resolve(output,'career-rules.js'),readFileSync(resolve(root,'site/career-rules.mjs'),'utf8').replaceAll('./wardrobe-catalog.mjs','./wardrobe-catalog.js'));

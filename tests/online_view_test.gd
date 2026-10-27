@@ -8,9 +8,15 @@ func check(ok: bool,message: String) -> void:
 	else: push_error("FAIL: "+message); failures+=1
 func run() -> void:
 	var authority=Authority.new();root.add_child(authority)
+	var look=CourtWardrobe.data().defaults.duplicate()
+	for item in CourtWardrobe.data().items:
+		if item.get("form","")=="hoodie":look.jersey=item.id;break
+	var athletes=[{"role":"guard","height":178,"speed":76,"shoot":70,"defense":60,"training":{"speed":12},"skills":{"cross":3},"appearance":{}},{"role":"center","height":204,"shoot":55,"defense":79,"training":{"rebound":10},"skills":{"rebound":2},"appearance":look}]
+	for i in 2:authority.players[i].apply_athlete(athletes[i])
+	authority.reset_positions(0)
 	var game=load("res://scenes/main.tscn").instantiate();root.add_child(game);game.set_physics_process(false)
 	var initial=JSON.parse_string(JSON.stringify(authority.snapshot()))
-	var data={"slot":1,"matchId":"qa-match","serverEpoch":"qa-epoch","participants":[{"nickname":"A","appearance":{}},{"nickname":"B","appearance":{}}],"state":initial}
+	var data={"slot":1,"matchId":"qa-match","serverEpoch":"qa-epoch","participants":[{"nickname":"A","appearance":{},"athlete":athletes[0]},{"nickname":"B","appearance":look,"athlete":athletes[1]}],"state":initial}
 	data=JSON.parse_string(JSON.stringify(data))
 	game.web_input={"appearance":"{}","sound":false,"reduced":false,"x":0,"z":0,"shoot":false,"cross":false,"spin":false,"twostep":false,"behind":false,"hesi":false,"steal":false,"guard":false,"passBall":false,"switchPlayer":false,"controlReset":0,"switchSeq":0,"passSeq":0,"shootSeq":0,"shootCancelSeq":0,"commandId":123,"command":"online-begin","onlineMatch":JSON.stringify(data),"suspended":false,"onlineInputs":"[]","onlineSeq":0,"onlineState":JSON.stringify(initial),"onlineAxes":"[]","compactCamera":false}
 	game.read_controls()
@@ -19,6 +25,8 @@ func run() -> void:
 	view.tick(0)
 	check(view.hud().online and view.hud().onlineSlot==1,"second client owns its own HUD and camera")
 	check(game.controlled_player()==game.players[1],"camera follows local slot rather than slot zero")
+	check(game.players[0].court_role=="guard" and game.players[1].court_role=="center" and game.players[0].height_ratio<game.players[1].height_ratio,"career roles and physical heights are preserved")
+	check(game.players[1].skinned.human_mesh.mesh.resource_path.contains("hoodie") and game.players[1].appearance.jersey==look.jersey,"slot one keeps its own equipped garment geometry")
 	var p=game.players[1];var q=authority.players[1]
 	check(p.position.distance_to(q.position)<.001,"render root agrees with authoritative root")
 	var skeleton=p.skinned.skeleton
@@ -41,4 +49,5 @@ func run() -> void:
 	check(game.clock_left==clock,"client never advances the server match clock")
 	game.start_mode("practice")
 	check(game.online_view==null and game.mode=="practice","leaving online releases puppet mode")
+	check(game.players[1].skinned.human_mesh.mesh.get_meta("opponent",false),"leaving restores the AI rival model")
 	game.web_input=null;game.queue_free();authority.queue_free();await process_frame;quit(1 if failures else 0)

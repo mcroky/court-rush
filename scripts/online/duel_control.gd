@@ -60,7 +60,7 @@ func tick(game, index: int, input: Dictionary, delta: float) -> void:
 					if kind=="cross":
 						p.prepare_cross(game.ball.position)
 						cross_direction = Vector3(cos(p.facing),0,-sin(p.facing))*p.cross_to
-						cross_cooldown=p.cross_duration()+.08
+						cross_cooldown=p.cross_duration()+maxf(.015,.08-p.skill_rank("cross")*.01-clampf(float(p.growth.get("handle",50))-50,-20,40)*.0007)
 					else:
 						p.action=kind; p.action_time=0; p.dribble_phase=0
 						p.turn_origin=p.rotation.y; p.turn_sign=p.dribble_hand
@@ -68,7 +68,7 @@ func tick(game, index: int, input: Dictionary, delta: float) -> void:
 						skill_side=Vector3(skill_forward.z,0,-skill_forward.x)*p.dribble_hand
 						p.facing=p.turn_origin if kind=="spin" else atan2(skill_forward.x,skill_forward.z)
 						if kind=="behind": p.dribble_hand *= -1
-						cross_cooldown=game.DRIBBLE_DURATIONS[kind]+.08
+						cross_cooldown=game.DRIBBLE_DURATIONS[kind]+maxf(.015,.06-p.skill_rank("spin")*.009-clampf(float(p.growth.get("handle",50))-50,-20,40)*.0007)
 					break
 	elif game.phase in ["live","takeoff","flight","loose"]:
 		if (pressed(input,"shoot") or input.get("shoot_pressed",false)) and p.action=="idle": game.start_defensive_jump(index,game.defense_kind(index))

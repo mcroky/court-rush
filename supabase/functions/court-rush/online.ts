@@ -1,4 +1,5 @@
-import {normalizePlayer} from './rules.mjs';
+import {normalizePlayer,attributes} from './rules.mjs';
+const RANKED_RULES='duel-career-v2';
 const uuid=(value:unknown)=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value);
 const reject=(status=400):never=>{throw Object.assign(Error('온라인 경기 요청을 확인하세요.'),{status});};
 function value<T>(r:{data:T,error:any}):T{if(r.error)reject(r.error.code==='42501'?403:409);return r.data;}
@@ -6,15 +7,20 @@ const hash=async(text:string)=>Array.from(new Uint8Array(await crypto.subtle.dig
 const randomTicket=()=>Array.from(crypto.getRandomValues(new Uint8Array(32))).map(n=>n.toString(16).padStart(2,'0')).join('');
 
 export async function issueOnlineTicket(admin:any,a:any,token:string,b:any){
- if(b.mode!=='duel'||b.protocolVersion!==1||b.rulesVersion!=='duel-standard-v1'||typeof b.serverId!=='string')reject();
+ if(b.mode!=='duel'||b.protocolVersion!==1||!['duel-standard-v1',RANKED_RULES].includes(b.rulesVersion)||typeof b.serverId!=='string')reject();
  const server=value<any>(await admin.from('cr_online_servers').select('id,epoch,heartbeat_at').eq('id',b.serverId).eq('enabled',true).maybeSingle());
  if(!server?.epoch)reject(503);
  const row=value<any>(await admin.from('cr_players').select('data').eq('user_id',a.user_id).maybeSingle());
  if(!row)reject();
  const player=normalizePlayer(row.data),ticket=randomTicket();
  const claims=JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
- value(await admin.from('cr_online_tickets').insert({ticket_hash:await hash(ticket),server_id:server.id,user_id:a.user_id,session_id:claims.session_id,profile:{nickname:player.nickname,appearance:player.wardrobe.equipped},expires_at:new Date(Date.now()+60000).toISOString()}));
- return {ticket,expiresIn:60,protocolVersion:1,rulesVersion:'duel-standard-v1',serverEpoch:server.epoch};
+ const profile={nickname:player.nickname,appearance:player.wardrobe.equipped,...(b.rulesVersion===RANKED_RULES?{athlete:attributes(player),rulesVersion:RANKED_RULES}:{})};
+ value(await admin.from('cr_online_tickets').insert({ticket_hash:await hash(ticket),server_id:server.id,user_id:a.user_id,session_id:claims.session_id,profile,expires_at:new Date(Date.now()+60000).toISOString()}));
+ return {ticket,expiresIn:60,protocolVersion:1,rulesVersion:b.rulesVersion,serverEpoch:server.epoch};
+}
+
+export async function onlineRanking(admin:any,userId:string){
+ return value(await admin.rpc('cr_online_ranking',{p_user:userId}));
 }
 
 export async function handleOnlineServer(admin:any,req:Request,b:any){
@@ -31,6 +37,21 @@ export async function handleOnlineServer(admin:any,req:Request,b:any){
  }
  if(b.action==='online-register'){
   if(!uuid(b.matchId)||!Array.isArray(b.players)||b.players.length!==2||b.players.some((p:any)=>!uuid(p.ticketId)))reject();
+  if(b.rulesVersion===RANKED_RULES){
+   if(typeof b.ranked!=='boolean')reject();
+   const ids=b.players.map((p:any)=>p.ticketId);
+   const tickets=value<any[]>(await admin.from('cr_online_tickets').select('id,user_id').in('id',ids).eq('server_id',server.id).eq('consumed_epoch',b.epoch));
+   if(tickets.length!==2)reject(403);
+   const players=value<any[]>(await admin.from('cr_players').select('user_id,data').in('user_id',tickets.map(t=>t.user_id)));
+   if(players.length!==2)reject(403);
+   for(const ticket of tickets){
+    const player=normalizePlayer(players.find(p=>p.user_id===ticket.user_id).data);
+    value(await admin.from('cr_online_tickets').update({profile:{nickname:player.nickname,appearance:player.wardrobe.equipped,athlete:attributes(player),rulesVersion:RANKED_RULES}}).eq('id',ticket.id).eq('server_id',server.id).eq('consumed_epoch',b.epoch));
+   }
+   const ok=value(await admin.rpc('cr_online_register_ranked',{p_server:server.id,p_epoch:b.epoch,p_match:b.matchId,p_tickets:ids,p_ranked:b.ranked}));
+   const roster=value<any[]>(await admin.from('cr_online_participants').select('slot,profile').eq('match_id',b.matchId).order('slot'));
+   return {ok,profiles:roster.map(r=>r.profile)};
+  }
   return {ok:value(await admin.rpc('cr_online_register',{p_server:server.id,p_epoch:b.epoch,p_match:b.matchId,p_tickets:b.players.map((p:any)=>p.ticketId)}))};
  }
  if(b.action==='online-finish'){

@@ -73,6 +73,7 @@ function panel(){
  window.CourtGame?.setAppearance(player?wardrobeOf(player).equipped:{});
  status.textContent=player?`${player.nickname} · ${ROLES[player.role].name} · Lv.${player.level} / ${player.cleared}코트 클리어`:session?`${username} · 첫 선수를 만들어 주세요`:'아이디로 시작하는 나만의 선수';
  $('career-open').textContent=player?'선수 육성 · 코트 도전 →':session?'첫 선수 만들기 →':'내 선수 키우기 →';
+ window.dispatchEvent(new CustomEvent('court-account',{detail:{signedIn:Boolean(session),hasPlayer:Boolean(player)}}));
 }
 function open(view='login'){
  leaveShop();
@@ -104,10 +105,10 @@ function renderCreation(){
 }
 function renderPlayer(){
  const r=ROLES[player.role],a=attributes(player);
- frame(`<div class="career-heading"><div><span class="eyebrow">${escape(username)} / MY PLAYER</span><h2 translate="no">${escape(player.nickname)}</h2><p>${r.name} · ${r.height}cm / ${r.weight}kg · Lv.${player.level}</p></div><button id="career-account">계정 관리</button></div><div class="career-xp"><span>다음 레벨 ${player.xp} / ${xpNeeded(player.level)} XP</span><progress max="${xpNeeded(player.level)}" value="${player.xp}"></progress></div><div class="growth-columns"><section><h3>스탯 훈련 <small>${player.statPoints}P</small></h3>${Object.keys(STAT_NAMES).map(k=>`<div class="train-row"><span>${STAT_NAMES[k]}</span><strong>${a[k]} <small>+${player.stats[k]}</small></strong><button data-train="stat" data-key="${k}" ${player.statPoints<1||player.stats[k]>=20?'disabled':''} aria-label="${STAT_NAMES[k]} 훈련 1포인트">+1</button></div>`).join('')}</section><section><h3>기술 훈련 <small>${player.skillPoints}P</small></h3>${Object.entries(SKILLS).map(([k,s])=>`<div class="train-row"><span>${s.name}<small>${s.description}</small></span><strong>${player.skills[k]} / 5</strong><button data-train="skill" data-key="${k}" ${player.skillPoints<1||player.skills[k]>=5?'disabled':''} aria-label="${s.name} 기술 훈련 1포인트">+1</button></div>`).join('')}</section></div><h3>1대1 코트 도전</h3><p>11점 또는 90초 승부. 처음 깨는 코트는 더 많은 경험치를 줍니다. 연습·일반 1대1에는 성장 보상이 없습니다.</p><div class="career-stages">${STAGES.map((s,i)=>`<button data-stage="${i+1}" ${i>player.cleared?'disabled':''}><small>COURT ${String(i+1).padStart(2,'0')} · ${ROLES[s.role].name} Lv.${s.level}</small><b>${s.name}</b><span>${i<player.cleared?'✓ 클리어 · 다시 도전':i===player.cleared?'도전하기 →':'이전 코트부터 클리어'} / ${s.xp} XP</span></button>`).join('')}</div><p class="career-fine">내 선수는 서버에 자동 저장됩니다. 다른 기기에서도 같은 아이디로 이어갈 수 있습니다.</p>`);
+ frame(`<div class="career-heading"><div><span class="eyebrow">${escape(username)} / MY PLAYER</span><h2 translate="no">${escape(player.nickname)}</h2><p>${r.name} · ${r.height}cm / ${r.weight}kg · Lv.${player.level}</p></div><button id="career-account">계정 관리</button></div><div class="career-xp"><span>다음 레벨 ${player.xp} / ${xpNeeded(player.level)} XP</span><progress max="${xpNeeded(player.level)}" value="${player.xp}"></progress></div><div class="growth-columns"><section><h3>스탯 훈련 <small>${player.statPoints}P</small></h3>${Object.keys(STAT_NAMES).map(k=>`<div class="train-row"><span>${STAT_NAMES[k]}</span><strong>${a[k]} <small>+${player.stats[k]}</small></strong><button data-train="stat" data-key="${k}" ${player.statPoints<1||player.stats[k]>=20?'disabled':''} aria-label="${STAT_NAMES[k]} 훈련 1포인트">+1</button></div>`).join('')}</section><section><h3>기술 훈련 <small>${player.skillPoints}P</small></h3>${Object.entries(SKILLS).map(([k,s])=>`<div class="train-row"><span>${s.name}<small>${s.description}</small></span><strong>${player.skills[k]} / 5</strong><button data-train="skill" data-key="${k}" ${player.skillPoints<1||player.skills[k]>=5?'disabled':''} aria-label="${s.name} 기술 훈련 1포인트">+1</button></div>`).join('')}</section></div><section class="career-online"><h3>온라인 전적</h3><p>AI 육성 전적과 별도로 승패와 Elo를 기록합니다.</p><button id="career-online-open">온라인 전적 · 랭킹</button></section><h3>1대1 코트 도전</h3><p>11점 또는 90초 승부. 처음 깨는 코트는 더 많은 경험치를 줍니다. 연습·일반 1대1에는 성장 보상이 없습니다.</p><div class="career-stages">${STAGES.map((s,i)=>`<button data-stage="${i+1}" ${i>player.cleared?'disabled':''}><small>COURT ${String(i+1).padStart(2,'0')} · ${ROLES[s.role].name} Lv.${s.level}</small><b>${s.name}</b><span>${i<player.cleared?'✓ 클리어 · 다시 도전':i===player.cleared?'도전하기 →':'이전 코트부터 클리어'} / ${s.xp} XP</span></button>`).join('')}</div><p class="career-fine">내 선수는 서버에 자동 저장됩니다. 다른 기기에서도 같은 아이디로 이어갈 수 있습니다.</p>`);
  content.querySelectorAll('[data-train]').forEach(b=>b.onclick=()=>run(async()=>{const r=await api('train',{kind:b.dataset.train,key:b.dataset.key});player=r.player;panel();renderPlayer();notice('훈련을 저장했습니다. 다음 도전부터 적용됩니다.');}));
  content.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>confirmStart(Number(b.dataset.stage)));
- $('career-account').onclick=renderAccount;
+ $('career-online-open').onclick=()=>window.CourtOnlineRanking?.open();$('career-account').onclick=renderAccount;
  const team=document.createElement('section');team.className='career-team';
  team.innerHTML='<h3>내 선수로 AI 3대3</h3><p>AI 동료 2명과 함께 11점 또는 3분. 완주 경험치·승리 보너스와 직접 조작한 득점·어시스트·리바운드·블록·스틸 기여 보상을 받습니다.</p><p>내 선수를 포함한 아군의 직접 조작 기록을 합산합니다. 중도 종료·참여 부족·일반 팀전에는 성장 보상이 없으며, 1대1 코트 해금은 별도입니다.</p><button id="career-team-start" class="primary">성장 팀전 시작 →</button>';
  content.querySelector('.growth-columns').after(team);$('career-team-start').onclick=()=>confirmStart('team');
@@ -172,4 +173,7 @@ window.CourtCareerOnline={async ticket(data){
  if(!player){const profile=await api('profile');player=profile.player;panel();}
  if(!player){open();throw Object.assign(Error('먼저 선수를 만들어 주세요.'),{accountDialog:true});}
  return api('online-ticket',data);
-}};
+},async ranking(){
+ if(!session){open();throw Object.assign(Error('먼저 로그인한 뒤 온라인 경기를 시작하세요.'),{accountDialog:true});}
+ return api('online-ranking');
+},get signedIn(){return Boolean(session);}};
