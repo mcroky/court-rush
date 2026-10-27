@@ -2,6 +2,8 @@
 
 2026-10-27. [확정 설계](19-online-multiplayer-plan.md)의 1대1 구현. 공개 배포 검증은 아래에 별도로 기록한다.
 
+이 문서는 v0.9.8 당시의 검증 이력이다. 현재 외형·육성 능력치·방·승패/Elo 정책은 사용자 후속 확정에 따라 [v0.10.0 구현](24-online-rooms-and-ranking.md)으로 변경됐다.
+
 ## 구성
 
 - Godot 4.7.2 Standard / Compatibility 유지. Render Node 24 WSS 게이트웨이가 인증·자동 매칭·재접속을 맡고, 별도 Godot headless worker가 실제 45본 리그로 60Hz 판정한다. 초기 수용량은 경기 1개다.
