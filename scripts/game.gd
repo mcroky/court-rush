@@ -5,6 +5,8 @@ var check_ball = CheckBall.new()
 const Actor = preload("res://scripts/actor.gd")
 const TeamMatch = preload("res://scripts/team_match.gd")
 var team_match
+const OnlineView = preload("res://scripts/online/duel_view.gd")
+var online_view
 const Art = preload("res://scripts/art.gd")
 const Rules = preload("res://scripts/rules.gd")
 const CourtAudio = preload("res://scripts/court_audio.gd")
@@ -96,6 +98,7 @@ var camera_mobile_zoom = 1.0
 var camera_mobile_follow = Vector3.ZERO
 
 func controlled_player():
+	if online_view!=null: return players[online_view.slot]
 	return players[team_match.selected] if mode == "team" and team_match != null and players.size() == 6 else players[0]
 
 func frame_court(delta: float) -> void:
@@ -375,6 +378,8 @@ func play_sound(name: String, volume: float = -9) -> void:
 	stream.play()
 
 func start_mode(next_mode: String) -> void:
+	if online_view!=null:
+		online_view.stop(); online_view=null
 	get_viewport().msaa_3d=Viewport.MSAA_DISABLED if next_mode=="team" else Viewport.MSAA_2X
 	close_wardrobe()
 	if inspecting: toggle_showroom()
@@ -617,7 +622,7 @@ func read_controls() -> Dictionary:
 	var controls = {"x": 0.0, "z": 0.0, "shoot": false, "shoot_pressed":false, "cross": false, "spin": false, "twostep": false, "behind": false, "hesi": false, "steal": false, "guard": false, "pause": false,"pass":false,"switch":false}
 	if web_input != null:
 		var appearance_text=str(web_input.appearance)
-		if appearance_text!=web_appearance:
+		if appearance_text!=web_appearance and online_view==null:
 			web_appearance=appearance_text
 			var ids=JSON.parse_string(appearance_text)
 			if ids is Dictionary:
@@ -651,7 +656,18 @@ func read_controls() -> Dictionary:
 		var command = int(web_input.commandId)
 		if command != last_command:
 			last_command = command
-			match str(web_input.command):
+			var command_name=str(web_input.command)
+			if online_view!=null and command_name not in ["online-begin","online-end","sound","motion","pause","resume","blur"]: command_name=""
+			match command_name:
+				"online-begin":
+					var data=JSON.parse_string(str(web_input.onlineMatch))
+					if data is Dictionary and int(data.get("slot",-1)) in [0,1] and data.get("participants",[]).size()==2:
+						var view=OnlineView.new(self)
+						view.start(data); online_view=view
+				"online-end":
+					if online_view!=null:
+						online_view.stop(); online_view=null
+					start_mode("practice"); paused=true
 				"wardrobe":
 					var data=JSON.parse_string(str(web_input.wardrobe))
 					if data is Dictionary:open_wardrobe(data)
@@ -723,6 +739,7 @@ func read_controls() -> Dictionary:
 	return controls
 
 func set_paused(value: bool,reason: String = "잠시 쉬었다가 직접 이어가세요.") -> void:
+	if online_view!=null: return
 	if value:
 		if not paused:
 			# Releasing D outside the game must not release an interrupted shot.
@@ -754,6 +771,11 @@ func gate_resumed_input(input: Dictionary) -> void:
 
 func _physics_process(delta: float) -> void:
 	var input = read_controls()
+	if online_view!=null:
+		online_view.tick(delta)
+		ui_time+=delta
+		if ui_time>=.1: ui_time=0; send_state()
+		return
 	if web_input != null and str(web_input.audio) != audio_settings_json:
 		audio_settings_json = str(web_input.audio)
 		var settings = JSON.parse_string(audio_settings_json)
@@ -1815,6 +1837,9 @@ func update_ball_visual() -> void:
 		trail_positions.clear()
 
 func send_state() -> void:
+	if online_view!=null:
+		if OS.has_feature("web"): JavaScriptBridge.eval("if(window.ufUpdate)window.ufUpdate(%s);" % JSON.stringify(online_view.hud()))
+		return
 	var state = {
 		"ready": true, "started": started, "paused": paused, "mode": mode,
 		"pauseReason": pause_reason,

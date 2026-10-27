@@ -19,6 +19,7 @@
 2. [게임·작화·조작 설계](docs/02-game-design.md)
 3. [구조·검증·공통 기본 틀 적용 계획](docs/03-architecture-and-delivery.md)
 4. [모바일 출시·가드/포워드/센터·스탯과 스킬 육성 계획](docs/05-mobile-and-growth-roadmap.md)
+5. [온라인 1대1 우선 구현과 3대3 확장 설계](docs/19-online-multiplayer-plan.md) — Render Free 경기 서버와 기존 Supabase를 조합하는 구현 전 계획.
 
 ## 기준 문서
 

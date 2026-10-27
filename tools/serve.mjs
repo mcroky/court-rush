@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { createReadStream, statSync, existsSync } from 'node:fs';
 import { resolve, extname, sep } from 'node:path';
-const root = resolve(import.meta.dirname, '../build/web');
+const root = resolve(import.meta.dirname, '..', process.argv[3] || 'build/web');
 const port = Number(process.argv[2] || 8791);
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.svg': 'image/svg+xml', '.png': 'image/png', '.pck': 'application/octet-stream' };
 createServer((req, res) => {

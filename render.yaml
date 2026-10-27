@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: court-rush-online
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./server/Dockerfile
+    healthCheckPath: /readyz
+    autoDeployTrigger: off
+    envVars:
+      - key: CR_SERVER_ID
+        value: court-rush-online-free
+      - key: CR_ONLINE_SERVER_KEY
+        sync: false
+      - key: CR_SUPABASE_URL
+        sync: false
+      - key: CR_SUPABASE_KEY
+        sync: false
+      - key: CR_ALLOWED_ORIGINS
+        value: https://mcroky.github.io,http://127.0.0.1:8791

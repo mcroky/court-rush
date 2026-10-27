@@ -51,6 +51,11 @@ function fixture(raw=null,failWrite=false){
   assert.equal(f.document.activeElement.id,'resume-button');
 }
 {
+  const f=fixture();f.playing();f.run('state.online=true');f.key('keydown','ArrowUp');
+  f.events.get('blur')();assert.equal(f.window.ufInput.z,0);assert.equal(f.window.ufInput.suspended,false,'online clock cannot be paused by blur');
+  f.events.get('focus')();f.key('keydown','ArrowUp');assert.equal(f.window.ufInput.z,-1,'online controls resume after focus');
+}
+{
   const f=fixture();f.playing();const event={pointerId:1,clientX:95,clientY:50,preventDefault(){},currentTarget:f.node('joystick')};
   f.node('shoot-touch').fire('pointerdown',event);f.node('joystick').fire('pointerdown',event);
   assert.equal(f.window.ufInput.shoot,true);assert.ok(f.window.ufInput.x>0);

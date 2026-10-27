@@ -54,11 +54,13 @@ function updateInput() {
   const canSwitch=state?.canSwitchDefender??(state?.possessionTeam===1);
   input.passBall = pressed.has('KeyQ') || (touches.has('team') && !canSwitch);
   input.switchPlayer = pressed.has('KeyE') || (touches.has('team') && canSwitch);
+  window.CourtOnline?.inputChanged();
 }
 function clearInput() { input.controlReset++;pressed.clear(); touches.clear(); stickX=0; stickZ=0;stickPointer=null; $('stick').style.transform=''; updateInput(); }
 function requestPause(reason='잠시 쉬었다가 직접 이어가세요.') {
   input.audioSuspended=true;
   clearInput();
+  if(state?.online){input.suspended=false;return;}
   if((state?.started || document.body.classList.contains('in-play')) && state?.phase!=='ended') { input.suspended=true;input.pauseReason=reason; }
 }
 function resumeGame() {
@@ -67,6 +69,8 @@ function resumeGame() {
 }
 function start(mode) {
   if(!ready) return;
+  if(window.CourtOnline?.active && window.CourtOnline.status!=='ended')return;
+  window.CourtOnline?.resetForLocal();
   clearCareerResult();
   clearInput();input.suspended=false;unlockAudio();selectMode(mode); manuallyChoosing=false;
   document.body.classList.add('in-play');
@@ -154,6 +158,7 @@ window.addEventListener('keydown',(event)=>{
 });
 window.addEventListener('keyup',(event)=>{pressed.delete(event.code);updateInput();});
 window.addEventListener('blur',()=>requestPause('창을 벗어나 경기를 멈췄습니다. 계속 플레이를 눌러 이어가세요.'));
+window.addEventListener('focus',()=>{if(state?.online){clearInput();input.suspended=false;unlockAudio();}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)requestPause('다른 탭으로 이동해 경기를 멈췄습니다. 계속 플레이를 눌러 이어가세요.');});
 for(const button of document.querySelectorAll('[data-control]')) {
   let shootTouchSeq=0;
@@ -305,4 +310,14 @@ async function boot() {
   }
 }
 boot();
+
+window.CourtGame.startOnline=data=>{
+ if(!ready)throw Error('코트가 준비되는 동안 잠시 기다려 주세요.');
+ clearCareerResult();clearInput();input.suspended=false;unlockAudio();manuallyChoosing=false;
+ input.onlineMatch=JSON.stringify(data);document.body.classList.add('in-play');
+ $('pause-overlay').classList.add('hidden');$('result-overlay').classList.add('hidden');
+ command('online-begin');canvas.focus({preventScroll:true});
+ if(input.compactCamera)$('arena').scrollIntoView({block:'start',behavior:'instant'});
+};
+window.CourtGame.endOnline=()=>{clearInput();input.suspended=false;command('online-end');};
 

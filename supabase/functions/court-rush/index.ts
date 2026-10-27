@@ -1,4 +1,5 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.118.0';
+import {issueOnlineTicket,handleOnlineServer} from './online.ts';
 import {ROLES,STAGES,newPlayer,attributes,opponentAthlete,trainPlayer,rewardPlayer,normalizePlayer,buyClothing,equipClothing,teamOpponents,validateTeamResult,rewardTeamPlayer} from './rules.mjs';
 
 const url=Deno.env.get('SUPABASE_URL')!;
@@ -44,6 +45,7 @@ Deno.serve(async(req:Request)=>{
   const action=b.action;
   const ip=(req.headers.get('x-forwarded-for')||req.headers.get('cf-connecting-ip')||'unknown').split(',')[0].trim();
   await limit('api:'+ip,180,60);
+  if(typeof action==='string'&&action.startsWith('online-')&&action!=='online-ticket')return send(await handleOnlineServer(admin,req,b));
   if(['signup','login','recover'].includes(action)){
    const id=username(b.username),pass=password(b.password);
    await limit(action+':ip:'+ip,action==='signup'?5:15,action==='signup'?3600:60);
@@ -81,6 +83,10 @@ Deno.serve(async(req:Request)=>{
    return send({session:sessionData(r.data.session)});
   }
   const {a,token}=await authenticate(req);
+  if(action==='online-ticket'){
+   await limit('online-ticket:'+a.user_id,20,60);
+   return send(await issueOnlineTicket(admin,a,token,b));
+  }
   if(action==='logout'){checked(await admin.auth.admin.signOut(token,'global'));return send({ok:true});}
   if(action==='delete'){
    password(b.password);const proof=await verifyPassword(a.login_alias,b.password);

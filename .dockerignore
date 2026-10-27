@@ -1,0 +1,10 @@
+.git
+.godot
+artifacts
+build
+release
+screenshots
+**/node_modules
+**/.env
+**/.env.*
+**/*.log

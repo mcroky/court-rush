@@ -166,3 +166,10 @@ try{const remembered=localStorage.getItem(sessionKey),saved=remembered||sessionS
 }catch{status.textContent='저장된 로그인 정보를 읽지 못했습니다. 다시 로그인하세요.';}
 if(session)api('profile').then(r=>{username=r.username;player=r.player;panel();if(shopping){renderShop();previewShop();}if(pending?.score)claim();if(new URLSearchParams(location.search).get('account')==='manage')open();}).catch(e=>{session=null;storageSave();status.textContent='다시 로그인해 주세요. '+e.message;});
 else if(new URLSearchParams(location.search).get('account')==='manage')open();
+
+window.CourtCareerOnline={async ticket(data){
+ if(!session){open();throw Error('먼저 로그인한 뒤 온라인 경기를 시작하세요.');}
+ if(!player){const profile=await api('profile');player=profile.player;panel();}
+ if(!player){open();throw Error('먼저 선수를 만들어 주세요.');}
+ return api('online-ticket',data);
+}};
