@@ -1471,6 +1471,9 @@ func block_escape_direction(defender: Node3D) -> Vector3:
 					var high = center+Vector3.UP*(p.jump+1.70*p.height_ratio)
 					clearance = minf(clearance,Rules.segment_gap(point,point,low,high)-(.31*p.height_ratio+Art.BALL_RADIUS))
 			var score = clearance+(.035 if sign_side==preferred else 0.0)-absf(skew)*.02
+			# Prefer a playable loose-ball chase over sending every near-rim
+			# swat straight beyond the baseline. Crowded edge blocks may still go out.
+			if Rules.ball_outside(ball.position+direction*8*.40): score -= 1.0
 			if score > best_score: best_score=score;best=direction
 	return best
 
@@ -1576,7 +1579,9 @@ func update_loose(delta: float) -> void:
 		ball_velocity.x *= 0.76
 		ball_velocity.z *= 0.76
 	if Rules.ball_outside(ball.position):
-		turnover("OUT OF BOUNDS", "체크볼로 다시 시작합니다.", 1 - shooter)
+		# A swat was last touched by the defender; the original shooting side
+		# keeps the check ball when that swat goes out.
+		turnover("OUT OF BOUNDS", "체크볼로 다시 시작합니다.", shooter if last_event=="block" else 1-shooter)
 		return
 	if block_escape_active(): return
 	var candidates: Array = []

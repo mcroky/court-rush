@@ -63,6 +63,15 @@ func run():
 	for i in 6:g.players[i].position=Vector3(1.1,0,float(i%3)*.25);g.players[i].jump=0;g.players[i].motion=Vector2.ZERO
 	g.players[0].position=Vector3(0,0,-.7);g.players[3].position=Vector3(0,0,.4);g.ball.position=Vector3(0,2,0)
 	check(g.block_escape_direction(g.players[0]).x<-.7,"Swat chose a crowded flank instead of open court")
+	g.players[0].position=Vector3(-.7,0,-6.2);g.players[3].position=Vector3(0,0,-5.7);g.ball.position=Vector3(-.1,2,-6.2)
+	check(not g.Rules.ball_outside(g.ball.position+g.block_escape_direction(g.players[0])*8*.4),"Swat preferred the baseline despite an open in-bounds flank")
+	for mode in ["duel","team"]:
+		for event in ["block","rim"]:
+			g.start_mode(mode);g.phase="loose";g.ball_owner=-1;g.loose_timer=0;g.last_event=event;g.shooter=1 if mode=="duel" else 3
+			g.ball.position=Vector3(7.6,1,-3);g.ball_velocity=Vector3.RIGHT
+			if mode=="team":g.team_match.last_touch=0 if event=="block" else 3;g.team_match.update_loose(1.0/60)
+			else:g.update_loose(1.0/60)
+			check(g.ball_owner==((1 if event=="block" else 0) if mode=="duel" else (3 if event=="block" else 0)),"Wrong check-ball ownership after %s %s went out"%[mode,event])
 	g.last_event="block";g.phase="loose";g.loose_timer=0;g.shooter=4
 	g.start_mode("practice");g.set_drill("rebound")
 	check(not g.block_escape_active() and g.shooter<g.players.size(),"Mode/drill restart retained a previous team's block state")

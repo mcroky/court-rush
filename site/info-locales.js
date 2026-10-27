@@ -194,6 +194,9 @@
  news["en"][2].unshift("A palm block now sends the ball strongly into an open flank. During the brief strike, touching bodies cannot immediately gather it again. Chase and contest it once it escapes. Applies to 1v1 and 3v3; ordinary rim rebounds remain immediately playable.",news["en"][1]);news["en"][0]="Swat it clear.";news["en"][1]="v0.9.5 · Block, then contest the loose ball";
  news["ja"][2].unshift("手のひらで弾いたボールを空いた横のスペースへ強く飛ばします。打撃直後は体に触れても即座に再取得せず、ボールが離れてから再び争奪します。1対1・3対3共通。通常のリムリバウンドはすぐに取れます。",news["ja"][1]);news["ja"][0]="はっきり弾き出すブロック。";news["ja"][1]="v0.9.5・ブロック後のルーズボール争い";
  news["zh-CN"][2].unshift("手掌盖帽会将球有力地拍向空出的侧面空间。击球瞬间，身体接触不会立即重新拿球；球离开后再争抢。1对1和3对3共同生效。普通打铁篮板仍可立即争抢。",news["zh-CN"][1]);news["zh-CN"][0]="盖帽，把球拍开。";news["zh-CN"][1]="v0.9.5 · 盖帽后争抢球权";
+ news["en"][2].unshift("Blocks send the ball firmly away, with a brief escape period before anyone can gather it. The swat favors open court; if the defender sends it out, the shooting team keeps the check ball. Applies to 1v1 and 3v3.",news["en"][1]);news["en"][0]="Swat it clear.";news["en"][1]="v0.9.6 · Block into loose-ball play";
+ news["ja"][2].unshift("ブロック直後はボールを強く弾き出し、少し離れてから再び争奪します。空いたコート内の方向を優先し、守備のブロックで外に出た場合は攻撃側のチェックボール。1対1・3対3共通です。",news["ja"][1]);news["ja"][0]="はっきり弾き出すブロック。";news["ja"][1]="v0.9.6・ブロック後のルーズボール争い";
+ news["zh-CN"][2].unshift("盖帽会有力地将球拍开，短暂离开身体后才能重新争抢。优先拍向场内的空位；若防守方盖出界，由投篮方继续发球。1对1和3对3均适用。",news["zh-CN"][1]);news["zh-CN"][0]="盖帽，把球拍开。";news["zh-CN"][1]="v0.9.6 · 盖帽后争抢球权";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;
