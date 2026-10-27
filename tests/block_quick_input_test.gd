@@ -32,14 +32,11 @@ func run():
 				check(g.phase=="loose" and g.ball_velocity.y< -5,mode+" did not swat the ball")
 				break
 		check(touched,mode+" quick press did not reach the real ball")
-		var recovered=false
+		var contact_point=g.ball.position
 		for frame in 12:
 			g._physics_process(1.0/60)
-			if g.phase=="live" and g.ball_owner>=0:
-				recovered=true
-				check(g.feedback.begins_with("블록 성공!"),mode+" immediate recovery hid the block feedback")
-				break
-		check(recovered,mode+" fixture failed to exercise immediate physical recovery after the block")
+			if frame<9:check(g.phase=="loose" and g.ball_owner<0,mode+" immediately recaptured a swatted ball")
+			if frame==5:check(g.ball.position.distance_to(contact_point)>.85,mode+" block did not visibly leave the contact")
 		# An input released by lifecycle reset or pointer cancellation must not jump.
 		g.web_input=null;g.start_mode(mode);p=g.players[0];p.has_ball=false;g.ball_owner=1 if mode=="practice" else 3;g.phase="live"
 		input=web();g.web_input=input;g.web_control_reset=-1;g.web_shoot_seq=0;g.read_controls()
@@ -54,10 +51,10 @@ func run():
 		var resumed=g.read_controls();g.gate_resumed_input(resumed)
 		check(not resumed.shoot_pressed and g.resume_input_lock,mode+" fired a quick press before neutral resume")
 		resumed=g.read_controls();g.gate_resumed_input(resumed);check(not g.resume_input_lock,mode+" did not unlock after neutral resume")
-	# Both teams' immediate recoveries must name the block and correct owner.
+	# Recoveries after the escape period name the block and correct owner.
 	for mode in ["practice","team"]:
 		for owner in [0,1]:
-			g.web_input=null;g.start_mode(mode);g.phase="loose";g.last_event="block";g.loose_timer=.1
+			g.web_input=null;g.start_mode(mode);g.phase="loose";g.last_event="block";g.loose_timer=.3
 			if mode=="team":g.team_match.claim(0 if owner==0 else 3,"LOOSE BALL")
 			else:g.claim_ball(owner)
 			check(g.feedback==("블록 성공! · 우리 공" if owner==0 else "블록 성공! · 상대 공"),mode+" wrong block/recovery owner")
@@ -65,5 +62,5 @@ func run():
 		if mode=="team":g.team_match.claim(0,"LOOSE BALL")
 		else:g.claim_ball(0)
 		check(not g.feedback.begins_with("블록 성공!"),mode+" stale block replaced a later rebound")
-	print("BLOCK_QUICK_INPUT practice+team, real contact, immediate/late possession, cancelled/paused inputs failures=",failures)
+	print("BLOCK_QUICK_INPUT practice+team, real contact, swat escape/later possession, cancelled/paused inputs failures=",failures)
 	g.web_input=null;g.queue_free();await process_frame;quit(1 if failures else 0)

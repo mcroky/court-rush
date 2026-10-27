@@ -858,7 +858,7 @@ func capture_rebound(ball_position: Vector3,incoming_velocity: Vector3 = Vector3
 	defense_catch_velocity = incoming_velocity.limit_length(5)
 	defense_ball_offset = ball_position-rebound_anchor()
 
-func record_block_contact() -> void:
+func record_block_contact(outgoing_velocity: Vector3 = Vector3.ZERO) -> void:
 	block_contact = true
 	block_contact_time = action_time
 	block_contact_hand = palm_position(1 if dribble_hand > 0 else 0)
@@ -866,6 +866,8 @@ func record_block_contact() -> void:
 	block_contact_upper = upper.rotation
 	# The released ball and the palm follow the same outward/downward strike.
 	block_contact_stroke = global_basis*Vector3(dribble_hand*.10,-.50,.36)
+	if outgoing_velocity.length_squared() > .01:
+		block_contact_stroke = (outgoing_velocity*Vector3(1,0,1)).normalized()*.36+Vector3.DOWN*.50
 
 func palm_position(index: int) -> Vector3:
 	return skinned.palm_world[index] if skinned != null and skinned.initialized else hands[index].global_position

@@ -191,6 +191,9 @@
  news["en"][2].unshift("The block plant and arm extension start sooner, using the visible skeleton. A rising ball meeting a downward-facing palm now counts as a real block and continues into a swat and landing. Stay close and press D or Block as the opponent raises the ball.",news["en"][1]);news["en"][0]="React to the shot.";news["en"][1]="v0.9.4 · Reactive blocks in 1v1";
  news["ja"][2].unshift("踏み込みと腕の伸展を早め、表示リグで実際に接触判定。下向きの手のひらに上昇中のボールが当たれば、叩き落としから腕の回収と着地につながります。近くで相手がボールを上げる瞬間にDかブロックを押してください。",news["ja"][1]);news["ja"][0]="シュートを見て、ブロック。";news["ja"][1]="v0.9.4・1対1のブロック反応";
  news["zh-CN"][2].unshift("提前起跳蹬地和伸臂，并使用可见骨骼判断接触。上升的球碰到朝下的手掌时也可盖帽，接续下拍、收臂和落地。贴近对手，在其举球时按D或盖帽。",news["zh-CN"][1]);news["zh-CN"][0]="看准出手，起跳封盖。";news["zh-CN"][1]="v0.9.4 · 1对1盖帽反应";
+ news["en"][2].unshift("A palm block now sends the ball strongly into an open flank. During the brief strike, touching bodies cannot immediately gather it again. Chase and contest it once it escapes. Applies to 1v1 and 3v3; ordinary rim rebounds remain immediately playable.",news["en"][1]);news["en"][0]="Swat it clear.";news["en"][1]="v0.9.5 · Block, then contest the loose ball";
+ news["ja"][2].unshift("手のひらで弾いたボールを空いた横のスペースへ強く飛ばします。打撃直後は体に触れても即座に再取得せず、ボールが離れてから再び争奪します。1対1・3対3共通。通常のリムリバウンドはすぐに取れます。",news["ja"][1]);news["ja"][0]="はっきり弾き出すブロック。";news["ja"][1]="v0.9.5・ブロック後のルーズボール争い";
+ news["zh-CN"][2].unshift("手掌盖帽会将球有力地拍向空出的侧面空间。击球瞬间，身体接触不会立即重新拿球；球离开后再争抢。1对1和3对3共同生效。普通打铁篮板仍可立即争抢。",news["zh-CN"][1]);news["zh-CN"][0]="盖帽，把球拍开。";news["zh-CN"][1]="v0.9.5 · 盖帽后争抢球权";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;

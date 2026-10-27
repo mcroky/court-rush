@@ -438,6 +438,8 @@ func reset_positions(next_owner: int) -> void:
 		team_match.reset(0)
 		return
 	ball_owner = next_owner
+	shooter = next_owner
+	last_event = ""
 	phase = "live"
 	needs_clear = false
 	shot_clock = 15
@@ -1438,18 +1440,57 @@ func try_block() -> bool:
 	var defender = players[1 - shooter]
 	if defender.action != "block" or defender.action_time < .13 or defender.action_time > .52: return false
 	if not block_palm_contact(defender): return false
+	begin_block_deflection(defender)
+	return true
+
+const BLOCK_ESCAPE_TIME = .18
+
+func block_escape_direction(defender: Node3D) -> Vector3:
+	var axis = (players[shooter].position-defender.position)*Vector3(1,0,1)
+	if axis.length_squared() < .01: axis = Basis(Vector3.UP,defender.defense_landing_yaw).z
+	axis = axis.normalized()
+	var flank = Vector3(axis.z,0,-axis.x)
+	var side = (ball.position-players[shooter].position).dot(flank)
+	if absf(side) < .04: side = (defender.global_basis.x*defender.dribble_hand).dot(flank)
+	var preferred = 1.0 if side >= 0 else -1.0
+	var best = flank*preferred
+	var best_score = -INF
+	# The old forward swat sent the ball back through the shooter's chest.
+	# Pick an open flank of the actual contact, including other 3v3 players.
+	for sign_side in [preferred,-preferred]:
+		for skew in [0.0,.35,-.35]:
+			var direction = (flank*sign_side+axis*skew).normalized()
+			var clearance = INF
+			for t in [.08,.18]:
+				var point = ball.position+direction*8*t+Vector3.DOWN*(7*t+4.9*t*t)
+				if Rules.ball_outside(point): clearance = minf(clearance,-.5)
+				for p in players:
+					if not p.visible: continue
+					var center = p.position+Vector3(p.motion.x,0,p.motion.y).limit_length(3)*t
+					var low = center+Vector3.UP*(p.jump+.18*p.height_ratio)
+					var high = center+Vector3.UP*(p.jump+1.70*p.height_ratio)
+					clearance = minf(clearance,Rules.segment_gap(point,point,low,high)-(.31*p.height_ratio+Art.BALL_RADIUS))
+			var score = clearance+(.035 if sign_side==preferred else 0.0)-absf(skew)*.02
+			if score > best_score: best_score=score;best=direction
+	return best
+
+func begin_block_deflection(defender: Node3D) -> void:
+	ball_velocity = block_escape_direction(defender)*8+Vector3.DOWN*7
+	defender.record_block_contact(ball_velocity)
 	phase = "loose"
 	ball_owner = -1
 	players[shooter].has_ball = false
-	defender.record_block_contact()
-	ball_velocity = defender.block_contact_stroke.normalized()*9.2
 	trail_positions.clear()
 	loose_timer = 0
 	last_event = "block"
 	court_audio.cue("block")
 	announce("GET THAT OUT!", "손바닥으로 쳐냈습니다! 튕겨 나간 공을 따라가세요.")
 	play_sound("block", -7)
-	return true
+
+func block_escape_active() -> bool:
+	# A block is a strike, not a catch. Let the ball leave the overlapping
+	# contact bodies before anybody can automatically gather it again.
+	return phase == "loose" and last_event == "block" and loose_timer < BLOCK_ESCAPE_TIME
 
 func block_palm_contact(defender: Node3D) -> bool:
 	if defender.defensive_jump():
@@ -1537,6 +1578,7 @@ func update_loose(delta: float) -> void:
 	if Rules.ball_outside(ball.position):
 		turnover("OUT OF BOUNDS", "체크볼로 다시 시작합니다.", 1 - shooter)
 		return
+	if block_escape_active(): return
 	var candidates: Array = []
 	for i in range(2 if opponent_enabled() else 1):
 		var player = players[i]

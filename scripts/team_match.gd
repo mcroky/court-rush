@@ -101,6 +101,8 @@ func reset(next_team: int) -> void:
 	possession = next_team
 	last_touch = next_team*3
 	game.ball_owner = next_team*3
+	game.shooter = game.ball_owner
+	game.last_event = ""
 	game.phase = "live"
 	game.needs_clear = false
 	game.shot_clock = 18
@@ -570,20 +572,11 @@ func try_block() -> bool:
 		if team(i) == team(game.shooter): continue
 		var p = game.players[i]
 		if p.action != "block" or p.action_time < .13 or p.action_time > .46 or not game.block_lane_open(p) or not game.block_palm_contact(p): continue
-		p.record_block_contact()
-		game.players[game.shooter].has_ball = false
-		game.ball_owner = -1
-		game.phase = "loose"
-		game.loose_timer = 0
-		game.ball_velocity = p.block_contact_stroke.normalized()*9.2
+		game.begin_block_deflection(p)
 		last_touch = i
 		blocks += 1
 		record_contribution(i,"blocks")
 		rebound_live=true
-		game.last_event = "block"
-		game.court_audio.cue("block")
-		game.play_sound("block",-7)
-		game.announce("GET THAT OUT!", "손바닥으로 쳐냈습니다! 튕겨 나간 공을 따라가세요.")
 		return true
 	return false
 
@@ -643,6 +636,7 @@ func update_loose(delta: float) -> void:
 	if Rules.ball_outside(game.ball.position):
 		turnover("OUT OF BOUNDS", "체크볼로 다시 시작합니다.",1-team(last_touch))
 		return
+	if game.block_escape_active(): return
 	var candidates: Array = []
 	for i in 6:
 		var p = game.players[i]

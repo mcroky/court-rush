@@ -33,7 +33,6 @@ func run() -> void:
 			var origin = Vector3.ZERO
 			var outgoing = Vector3.ZERO
 			var checked_departure = false
-			var physical_recovery = false
 			for f in range(int(fps*.9)):
 				var before = p.block_contact
 				game._physics_process(1.0/fps)
@@ -45,14 +44,10 @@ func run() -> void:
 					struck_velocity = outgoing
 					check(game.phase == "loose" and game.ball_owner == -1,"Block did not knock the ball free")
 					check(outgoing.length()>8.5 and outgoing.y < -5.0,"Block let the ball drop weakly instead of swatting it away")
-				if contact_t >= 0 and game.phase == "live" and game.ball_owner >= 0:
-					physical_recovery = true
-					check(game.feedback.begins_with("블록 성공!"),"Immediate physical recovery hid the block")
-				if contact_t >= 0 and not checked_departure and (physical_recovery or p.action_time-contact_t >= .10):
+				if contact_t >= 0 and p.action_time-contact_t < .17:
+					check(game.phase=="loose" and game.ball_owner<0,"Block was immediately gathered before it escaped")
+				if contact_t >= 0 and not checked_departure and p.action_time-contact_t >= .10:
 					checked_departure = true
-					# A real body/hand touch must collect a loose ball immediately,
-					# so only an uncollected swat can be checked for 100 ms of flight.
-					if physical_recovery: continue
 					var travel = game.ball.position-origin
 					fastest_separation = maxf(fastest_separation,travel.length())
 					check(travel.length()>.65,"Swatted ball remained beside the palm after impact")
@@ -61,8 +56,7 @@ func run() -> void:
 			check(checked_departure,"Missing a timed swat contact")
 			check(game.scores == [0,0],"Swatted shot scored")
 			key(false)
-	# Check the unobstructed flight separately from the real contact fixtures,
-	# where the shooter's touching body is required to recover the ball at once.
+	# Check the same impact velocity in an unobstructed lane as well.
 	for fps in [30,60,120]:
 		game.start_mode("duel");game.phase="loose";game.ball_owner=-1;game.last_event="block";game.loose_timer=0
 		for i in 2:
