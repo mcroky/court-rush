@@ -123,7 +123,7 @@ export class Gateway {
     this.owners.delete(c.user.id); c.status = 'idle'; this.queueStatus();
   }
   lobbySummary(lobby){return {id:lobby.id,title:lobby.title,host:lobby.members[0]?.user.nickname||'',players:lobby.members.length,queued:Boolean(lobby.queuedAt)};}
-  lobbyState(lobby,c){return {...this.lobbySummary(lobby),code:lobby.code,private:lobby.private,slot:lobby.members.findIndex(p=>p.connection===c),members:lobby.members.map(p=>({nickname:p.user.nickname,ready:p.ready}))};}
+  lobbyState(lobby,c){return {...this.lobbySummary(lobby),...(lobby.private?{code:lobby.code}:{}),private:lobby.private,slot:lobby.members.findIndex(p=>p.connection===c),members:lobby.members.map(p=>({nickname:p.user.nickname,ready:p.ready}))};}
   lobbyList(c){this.send(c,{type:'room.list',rooms:[...this.lobbies.values()].filter(l=>!l.private).map(l=>this.lobbySummary(l))});}
   lobbyLists(){for(const c of this.connections)if(c.user&&['idle','lobby','room-queued'].includes(c.status))this.lobbyList(c);}
   lobbyChanged(lobby){for(const p of lobby.members)this.send(p.connection,{type:'room.state',lobby:this.lobbyState(lobby,p.connection)});this.lobbyLists();}
@@ -146,14 +146,14 @@ export class Gateway {
       if(this.lobbies.size>=16){error('room_limit');return;}
       if(typeof m.title!=='string'||!m.title.trim()||m.title.trim().length>24||typeof m.private!=='boolean'){error('invalid_room');return;}
       const member={user:c.user,connection:c,joined:Date.now(),disconnectedAt:0,ready:false};
-      let code;do{code=randomBytes(4).toString('hex').toUpperCase();}while([...this.lobbies.values()].some(l=>l.code===code));
+      let code;if(m.private){do{code=randomBytes(4).toString('hex').toUpperCase();}while([...this.lobbies.values()].some(l=>l.code===code));}
       const lobby={id:randomUUID(),code,title:m.title.trim(),private:m.private,members:[member],createdAt:Date.now(),queuedAt:0};
       this.lobbies.set(lobby.id,lobby);this.owners.set(c.user.id,member);c.status='lobby';this.lobbyChanged(lobby);return;
     }
     if(m.type==='room.join'){
       if(this.owners.has(c.user.id)){error('already_participating');return;}
       const code=typeof m.code==='string'?m.code.trim().toUpperCase():'';
-      const lobby=code?[...this.lobbies.values()].find(l=>/^[A-F0-9]{8}$/.test(code)&&l.code===code):this.lobbies.get(m.lobbyId);
+      const lobby=code?[...this.lobbies.values()].find(l=>l.private&&/^[A-F0-9]{8}$/.test(code)&&l.code===code):this.lobbies.get(m.lobbyId);
       if(!lobby||lobby.private&&!code||lobby.members.length!==1||lobby.queuedAt){error('room_unavailable');return;}
       const member={user:c.user,connection:c,joined:Date.now(),disconnectedAt:0,ready:false};lobby.members.push(member);
       this.owners.set(c.user.id,member);c.status='lobby';this.lobbyChanged(lobby);return;

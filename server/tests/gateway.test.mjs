@@ -112,7 +112,7 @@ test('private rooms hide codes, fix the pair, require both ready and never enter
 test('public room list never leaks invitation codes and leaving resets ready state',async t=>{
  const auth=new TestAccounts(),worker=new TestWorker(),g=new Gateway({auth,worker});const port=await g.listen();t.after(()=>g.close());
  const a=await client(port,auth.issue('a')),b=await client(port,auth.issue('b'));
- a.send({type:'room.create',title:'Public court',private:false});const lobby=(await a.next('room.state')).lobby;
+ a.send({type:'room.create',title:'Public court',private:false});const lobby=(await a.next('room.state')).lobby;assert.equal(lobby.code,undefined,'public rooms use list entry without invitation codes');
  b.send({type:'room.list'});const listed=(await b.next('room.list')).rooms[0];assert.equal(listed.id,lobby.id);assert.equal(listed.code,undefined);
  a.send({type:'room.ready',lobbyId:lobby.id,ready:true});b.send({type:'room.join',lobbyId:lobby.id});await b.next('room.state');
  a.send({type:'room.leave',lobbyId:lobby.id});await a.next('room.left');

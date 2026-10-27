@@ -1,4 +1,10 @@
 window.CourtMessages.push(
+ ['공개 대전방','Public match rooms','公開対戦ルーム','公开对战房间'],
+ ['원하는 방의 입장을 누르세요. 코드는 필요하지 않습니다.','Choose a room and press Join. No code is needed.','希望のルームの参加ボタンを押してください。コードは不要です。','选择房间并点击加入，无需代码。'],
+ ['친구방 코드로 입장','Join a friend’s room by code','友達のルームにコードで参加','通过代码加入好友房间'],
+ ['친구가 만든 비공개 연습방에 들어갈 때만 코드를 입력하세요.','Enter a code only to join a friend’s private practice room.','友達が作った非公開練習ルームに参加するときだけコードを入力してください。','仅在加入好友创建的私人练习房时输入代码。'],
+ ['다른 사용자가 공개방 목록에서 이 방을 선택해 입장합니다.','Other players can choose this room from the public room list and join.','他のプレイヤーは公開一覧からこのルームを選んで参加できます。','其他玩家可从公开列表选择本房间并加入。'],
+ ['친구에게 알려줄 방 코드','Room code to share with friends','友達に伝えるルームコード','分享给好友的房间代码'],
  ['온라인 1대1','Online 1v1','オンライン1対1','在线 1 对 1'],
  ['기존 선수 외형 · 균등 능력치 · 성장 보상 없음','Your appearance · Equal attributes · No growth rewards','自分の外見・均等な能力・育成報酬なし','现有外观 · 公平属性 · 无成长奖励'],
  ['다른 이용자와 자동 매칭 · 90초 · 11점 승부','Auto match with another player · 90 seconds · First to 11','自動マッチング・90秒・11点先取','自动匹配其他玩家 · 90 秒 · 先得 11 分'],

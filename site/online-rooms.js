@@ -2,7 +2,7 @@
  'use strict';
  const $=id=>document.getElementById(id),t=s=>window.CourtI18n?.text(s)||s;
  const dialog=document.querySelector('.online-dialog'),section=document.createElement('section');section.className='online-rooms';
- section.innerHTML='<div id="room-browser"><h3>대전방</h3><p>공개방·자동 매칭은 정식 전적과 Elo에 반영됩니다. 비공개 연습방은 반영되지 않습니다.</p><button id="room-refresh">대기방 새로고침</button><p id="room-empty" role="status"></p><div id="room-list"></div><h3>방 만들기</h3><label>방 이름<input id="room-title" maxlength="24" placeholder="함께 뛰어요"></label><label>경기 종류<select id="room-kind"><option value="public">공개 대전 · 승패와 Elo 반영</option><option value="private">비공개 연습 · 승패와 Elo 미반영</option></select></label><button id="room-create">방 만들기</button><h3>코드로 입장</h3><label>방 코드<input id="room-join-code" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="8자리 방 코드"></label><button id="room-join">코드로 입장</button><p class="online-separator">또는 자동 매칭</p></div><div id="room-lobby" hidden><h3 id="room-lobby-title" translate="no"></h3><p id="room-policy"></p><p><span>방 코드</span> <code id="room-code" translate="no" tabindex="0"></code></p><ol id="room-members"></ol><button id="room-ready" class="primary">준비 완료</button><button id="room-leave">방 나가기</button></div>';
+ section.innerHTML='<div id="room-browser"><h3>공개 대전방</h3><p>원하는 방의 입장을 누르세요. 코드는 필요하지 않습니다.</p><button id="room-refresh">대기방 새로고침</button><p id="room-empty" role="status"></p><div id="room-list"></div><h3>방 만들기</h3><label>방 이름<input id="room-title" maxlength="24" placeholder="함께 뛰어요"></label><label>경기 종류<select id="room-kind"><option value="public">공개 대전 · 승패와 Elo 반영</option><option value="private">비공개 연습 · 승패와 Elo 미반영</option></select></label><button id="room-create">방 만들기</button><p>공개방·자동 매칭은 정식 전적과 Elo에 반영됩니다. 비공개 연습방은 반영되지 않습니다.</p><details id="room-friends"><summary>친구방 코드로 입장</summary><p>친구가 만든 비공개 연습방에 들어갈 때만 코드를 입력하세요.</p><label>방 코드<input id="room-join-code" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="8자리 방 코드"></label><button id="room-join">코드로 입장</button></details><p class="online-separator">또는 자동 매칭</p></div><div id="room-lobby" hidden><h3 id="room-lobby-title" translate="no"></h3><p id="room-policy"></p><p id="room-public-entry">다른 사용자가 공개방 목록에서 이 방을 선택해 입장합니다.</p><p id="room-invite" hidden><span>친구에게 알려줄 방 코드</span> <code id="room-code" translate="no" tabindex="0"></code></p><ol id="room-members"></ol><button id="room-ready" class="primary">준비 완료</button><button id="room-leave">방 나가기</button></div>';
  dialog.insertBefore(section,$('online-find'));let lobby=null,rooms=[];
  const action=m=>window.CourtOnline.action(m);
  function drawRooms(){
@@ -12,7 +12,8 @@
  function drawLobby(){
   $('room-browser').hidden=Boolean(lobby);$('room-lobby').hidden=!lobby;$('online-find').hidden=Boolean(lobby);
   if(!lobby)return;
-  $('room-lobby-title').textContent=lobby.title;$('room-code').textContent=lobby.code;
+  $('room-lobby-title').textContent=lobby.title;$('room-code').textContent=lobby.private?lobby.code:'';
+  $('room-invite').hidden=!lobby.private;$('room-public-entry').hidden=lobby.private;
   $('room-policy').textContent=t(lobby.private?'비공개 연습 · 승패와 Elo 미반영':'공개 대전 · 승패와 Elo 반영');
   $('room-members').replaceChildren();for(const m of lobby.members){const li=document.createElement('li'),name=document.createElement('span');name.setAttribute('translate','no');name.textContent=m.nickname;li.append(name,document.createTextNode(' · '+t(m.ready?'준비 완료':'준비 전')));$('room-members').append(li);}
   if(lobby.members.length<2){const li=document.createElement('li');li.textContent=t('상대의 입장을 기다리고 있어요.');$('room-members').append(li);}
@@ -29,7 +30,7 @@
   for(const id of ['room-create','room-join','room-refresh'])$(id).disabled=blocked;
  });
  window.addEventListener('court-language-change',()=>{drawRooms();drawLobby();});
- window.CourtOnlineRooms={open(){lobby=null;drawLobby();action({type:'room.list'});},packet(m){
+ window.CourtOnlineRooms={open(){lobby=null;$('room-friends').open=false;drawLobby();action({type:'room.list'});},packet(m){
   if(m.type==='room.list'){rooms=m.rooms;drawRooms();}
   else if(m.type==='room.state'){lobby=m.lobby;drawLobby();window.CourtOnline.roomStatus(lobby.queued?'room-queued':'lobby',lobby.queued?'두 사람의 차례를 기다리고 있어요.':'둘 다 준비를 누르면 경기가 시작됩니다.');}
   else if(m.type==='room.left'||m.type==='room.closed'){lobby=null;drawLobby();window.CourtOnline.roomStatus('browsing',m.type==='room.closed'?'대기 시간이 끝나 방이 닫혔습니다.':'방을 선택하거나 새로 만들어 주세요.');action({type:'room.list'});}
