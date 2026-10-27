@@ -15,6 +15,8 @@ var held=HeldBall.new()
 const DRIBBLE_FLOOR = CourtArt.BALL_RADIUS+.003
 const DRIBBLE_PALM = CourtArt.BALL_RADIUS+.015
 var use_skinned = true
+var motion_buffers_enabled=true
+var previous_palm_buffer:Array=[Quaternion.IDENTITY,Quaternion.IDENTITY]
 var skinned: Node3D
 const CROSS_TIME = .38
 var court_role = "guard"
@@ -1495,7 +1497,9 @@ func dribble_hand_pose() -> Vector3:
 	return body.to_local(world)
 
 func animate(delta: float, _time: float) -> void:
-	var previous_palms = hands.map(func(h): return h.global_basis.orthonormalized().get_rotation_quaternion())
+	var previous_palms:Array=previous_palm_buffer if motion_buffers_enabled else hands.map(func(h): return h.global_basis.orthonormalized().get_rotation_quaternion())
+	if motion_buffers_enabled:
+		for i in 2:previous_palms[i]=hands[i].global_basis.orthonormalized().get_rotation_quaternion()
 	var previous_upper_frame = upper.transform
 	pose_delta = delta
 	shot_recovery_left=maxf(0,shot_recovery_left-delta)
@@ -1694,16 +1698,20 @@ func animate(delta: float, _time: float) -> void:
 		upper.rotation = landing_from_upper.lerp(upper.rotation,smoothstep(0,LANDING_RECOVERY_TIME,LANDING_RECOVERY_TIME-landing_recovery_left))
 	if action == "dunk": upper.rotation.x = lerpf(-.10, .13, smoothstep(.28, .55, action_time))
 	upper.position = Vector3(0, 1.55, 0) - upper.basis * Vector3(0, 1.55, 0)
-	head.rotation.z = -body.rotation.z * 0.5
-	var look_up = -.16 if defensive_jump() else 0.0
-	if defense_caught: look_up *= 1-rebound_tuck_phase()
-	head.rotation.x = lerpf(head.rotation.x,look_up,1-exp(-delta*14))
-	var look_yaw = facing
-	if watch_direction.length_squared() > .01 and defense_weight > .1: look_yaw = atan2(watch_direction.x,watch_direction.z)
-	head.rotation.y = lerpf(head.rotation.y, clampf(angle_difference(rotation.y, look_yaw), -.65, .65) - upper.rotation.y * .55, 1 - exp(-delta * 9))
+	if not motion_buffers_enabled or skinned==null or body.visible:
+		head.rotation.z = -body.rotation.z * 0.5
+		var look_up = -.16 if defensive_jump() else 0.0
+		if defense_caught: look_up *= 1-rebound_tuck_phase()
+		head.rotation.x = lerpf(head.rotation.x,look_up,1-exp(-delta*14))
+		var look_yaw = facing
+		if watch_direction.length_squared() > .01 and defense_weight > .1: look_yaw = atan2(watch_direction.x,watch_direction.z)
+		head.rotation.y = lerpf(head.rotation.y, clampf(angle_difference(rotation.y, look_yaw), -.65, .65) - upper.rotation.y * .55, 1 - exp(-delta * 9))
 	shadow.scale = Vector3(1 + jump * 0.12, 1, 0.7 + jump * 0.1)
 	settle_guard_support(delta)
 	body_vertical_velocity = (body.position.y-previous_body_height)/maxf(delta,.0001)
+	var body_frame=body.global_basis.orthonormalized() if motion_buffers_enabled else Basis.IDENTITY
+	var body_inverse=body_frame.inverse() if motion_buffers_enabled else Basis.IDENTITY
+	var body_scale_inverse=body.global_basis.inverse() if motion_buffers_enabled else Basis.IDENTITY
 	for i in range(2):
 		var side: float = -1.0 if i == 0 else 1.0
 		var shoe_offset = landing_shoe_offset(i)
@@ -1753,14 +1761,14 @@ func animate(delta: float, _time: float) -> void:
 		shoes[i].rotation.x = -.12 * sin(swing_progress[i] * PI) if swinging[i] and jump < .05 else (.28 if jump > .05 else 0.0)
 		shoes[i].rotation.z = 0
 		if (athletic_stance > .01 or stealing() or defense_weight > .5 or brake_state != "" or brake_weight > .01 or landing_recovery_left > 0 or landing_push_left > 0 or landing_push_pitch[i] > 0) and jump < .05:
-			shoes[i].basis = body.global_basis.inverse() * Basis(Vector3.UP,feet_yaw[i]) * Basis(Vector3.RIGHT,landing_push_pitch[i]) * VISUAL_SCALE
+			shoes[i].basis = (body_scale_inverse if motion_buffers_enabled else body.global_basis.inverse()) * Basis(Vector3.UP,feet_yaw[i]) * Basis(Vector3.RIGHT,landing_push_pitch[i]) * VISUAL_SCALE
 		if defensive_jump():
 			var shoe_yaw = lerp_angle(defense_yaw,defense_landing_yaw,smoothstep(defense_plant_time(),defense_plant_time()+.20,action_time))
-			shoes[i].basis = body.global_basis.inverse()*Basis(Vector3.UP,shoe_yaw)*Basis(Vector3.RIGHT,defense_shoe_pitch(i))*VISUAL_SCALE
+			shoes[i].basis = (body_scale_inverse if motion_buffers_enabled else body.global_basis.inverse())*Basis(Vector3.UP,shoe_yaw)*Basis(Vector3.RIGHT,defense_shoe_pitch(i))*VISUAL_SCALE
 		if action == "layup" and finish_target_valid and i == layup_plant_index:
 			# Roll about the forefoot in world space, including the body's forward lean.
 			var shoe_basis = Basis(Vector3.UP, layup_plant_yaw) * Basis(Vector3.RIGHT, layup_heel_roll())
-			shoes[i].basis = body.global_basis.inverse() * shoe_basis * VISUAL_SCALE
+			shoes[i].basis = (body_scale_inverse if motion_buffers_enabled else body.global_basis.inverse()) * shoe_basis * VISUAL_SCALE
 		CourtArt.align(shorts[i], hip, hip.lerp(knee, 0.92))
 		CourtArt.align(legs[i][0], hip.lerp(knee, 0.82), knee)
 		CourtArt.align(legs[i][1], knee, ankle)
@@ -1929,18 +1937,18 @@ func animate(delta: float, _time: float) -> void:
 				press_pitch = lerpf(.65,-.25,smoothstep(.18,.85,cross_phase()))
 				if action_time < cross_wait: press_pitch = dribble_palm_pitch(fposmod(cross_start_phase+action_time*cross_rate/TAU,1))
 			# The chest may lean into a cut while the palm still presses down.
-			var ball_palm = body.global_basis.orthonormalized().inverse()*Basis(Vector3.UP,rotation.y+upper.rotation.y)*Basis(Vector3.RIGHT,PI*.5+press_pitch)
+			var ball_palm = (body_inverse if motion_buffers_enabled else body.global_basis.orthonormalized().inverse())*Basis(Vector3.UP,rotation.y+upper.rotation.y)*Basis(Vector3.RIGHT,PI*.5+press_pitch)
 			desired_palm = desired_palm.slerp(ball_palm,touch_weight)
-			if crossing(): desired_palm = (body.global_basis.orthonormalized().inverse()*cross_start_palms[i]).slerp(desired_palm,smoothstep(0,.10,action_time))
-			if cross_exit_left > 0 and ordinary_dribble(): desired_palm = (body.global_basis.orthonormalized().inverse()*cross_exit_palms[i]).slerp(desired_palm,smoothstep(0,.16,.16-cross_exit_left))
+			if crossing(): desired_palm = ((body_inverse if motion_buffers_enabled else body.global_basis.orthonormalized().inverse())*cross_start_palms[i]).slerp(desired_palm,smoothstep(0,.10,action_time))
+			if cross_exit_left > 0 and ordinary_dribble(): desired_palm = ((body_inverse if motion_buffers_enabled else body.global_basis.orthonormalized().inverse())*cross_exit_palms[i]).slerp(desired_palm,smoothstep(0,.16,.16-cross_exit_left))
 			# IK segment frames can change their roll near a straight elbow. Carry
 			# the actual world wrist orientation through that change instead of
 			# making the palm instantly inherit the new frame or hand role.
 			if pose_ready and not teleported and delta > 0:
-				var desired_world = (body.global_basis.orthonormalized()*desired_palm).get_rotation_quaternion()
+				var desired_world = ((body_frame if motion_buffers_enabled else body.global_basis.orthonormalized())*desired_palm).get_rotation_quaternion()
 				var wrist_angle = previous_palms[i].angle_to(desired_world)
 				var wrist_blend = minf(1.0,20.0*delta/maxf(wrist_angle,.00001))
-				desired_palm = body.global_basis.orthonormalized().inverse()*Basis(previous_palms[i].slerp(desired_world,wrist_blend))
+				desired_palm = (body_inverse if motion_buffers_enabled else body.global_basis.orthonormalized().inverse())*Basis(previous_palms[i].slerp(desired_world,wrist_blend))
 			hands[i].basis = desired_palm.scaled_local(Vector3(.10,.145,.075))
 		if action == "block" and defense_target_valid and side == dribble_hand:
 			var palm_pitch = lerpf(.40,1.55,smoothstep(.08,.16,action_time))
@@ -1948,17 +1956,18 @@ func animate(delta: float, _time: float) -> void:
 				var elapsed = action_time-block_contact_time
 				palm_pitch = lerpf(1.55,2.05,smoothstep(0,.10,elapsed))
 				palm_pitch = lerpf(palm_pitch,.40,smoothstep(.20,.42,elapsed))
-			var palm_frame = body.global_basis.orthonormalized().inverse()*Basis(Vector3.UP,defense_yaw)*Basis(Vector3.RIGHT,palm_pitch)*Basis(Vector3.FORWARD,-side*.08)
+			var palm_frame = (body_inverse if motion_buffers_enabled else body.global_basis.orthonormalized().inverse())*Basis(Vector3.UP,defense_yaw)*Basis(Vector3.RIGHT,palm_pitch)*Basis(Vector3.FORWARD,-side*.08)
 			hands[i].basis = palm_frame.scaled_local(Vector3(.10,.145,.075))
-		thumbs[i].position = hand + Vector3(-side * .045, .015, .015)
-		thumbs[i].rotation = Vector3(0,0,side*.4)
-		cuffs[i].position = hand.lerp(elbow_pose[i], 0.22)
-		cuffs[i].rotation = Vector3.ZERO
-		if flowing_wrist or (action == "block" and defense_target_valid):
-			var palm = hands[i].basis.orthonormalized()
-			thumbs[i].position = hand+palm*Vector3(-side*.045,.015,.015)
-			thumbs[i].basis = (palm*Basis(Vector3.FORWARD,side*.4)).scaled_local(Vector3(.047,.085,.045))
-			cuffs[i].basis = arms[i][1].basis.orthonormalized().scaled(Vector3(.11,.065,.10))
+		if not motion_buffers_enabled or skinned==null or body.visible:
+			thumbs[i].position = hand + Vector3(-side * .045, .015, .015)
+			thumbs[i].rotation = Vector3(0,0,side*.4)
+			cuffs[i].position = hand.lerp(elbow_pose[i], 0.22)
+			cuffs[i].rotation = Vector3.ZERO
+			if flowing_wrist or (action == "block" and defense_target_valid):
+				var palm = hands[i].basis.orthonormalized()
+				thumbs[i].position = hand+palm*Vector3(-side*.045,.015,.015)
+				thumbs[i].basis = (palm*Basis(Vector3.FORWARD,side*.4)).scaled_local(Vector3(.047,.085,.045))
+				cuffs[i].basis = arms[i][1].basis.orthonormalized().scaled(Vector3(.11,.065,.10))
 		if side == dribble_hand: hand_world = body.to_global(hand)
 	pose_ready = true
 	# Rebuilding a ground stance at touchdown is not a world teleport. Keep

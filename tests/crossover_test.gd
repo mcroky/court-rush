@@ -19,6 +19,21 @@ func key(code: Key, down: bool) -> void:
 
 func sample(player) -> void:
 	for i in range(2):
+		if player.skinned!=null:
+			# The human skin replaced these prototype mesh limbs. Inspect the
+			# rendered chains; an invisible mannequin is not the displayed pose.
+			var rig=player.skinned
+			var error=0.0
+			for chain in [rig.feet[i],rig.arms[i]]:
+				for segment in 2:
+					var actual=rig.bone_world(chain[segment]).origin.distance_to(rig.bone_world(chain[segment+1]).origin)
+					var expected=rig.skeleton.get_bone_pose_position(chain[segment+1]).length()*rig.render_scale
+					error=maxf(error,absf(actual-expected))
+			worst_error=maxf(worst_error,error)
+			if error>.0002:failures+=1
+			if not rig.toe_world[i].is_finite() or rig.toe_world[i].y<-.04:failures+=1
+			samples+=1
+			continue
 		var thigh = player.joint_hips[i].distance_to(player.joint_knees[i])
 		var shin = player.joint_knees[i].distance_to(player.joint_ankles[i])
 		var error = maxf(absf(thigh - player.THIGH_LENGTH), absf(shin - player.SHIN_LENGTH))
