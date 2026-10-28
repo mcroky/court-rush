@@ -4,6 +4,7 @@ const Actor = preload("res://scripts/actor.gd")
 const Rules = preload("res://scripts/rules.gd")
 const ROLES = ["guard", "forward", "center"]
 var game
+var active_ids: Array = [0,1,2,3,4,5]
 var legacy: Array = []
 var extras: Array = []
 var labels: Array = []
@@ -49,6 +50,7 @@ func team(index: int) -> int:
 	return index / 3 if index >= 0 else -1
 
 func start(role: String) -> void:
+	active_ids=[0,1,2,3,4,5]
 	legacy = game.players.duplicate()
 	if extras.is_empty():
 		for i in 4:
@@ -60,7 +62,7 @@ func start(role: String) -> void:
 	var friendly_roles = [role]
 	for value in ROLES:
 		if value != role: friendly_roles.append(value)
-	for i in 6:
+	for i in active_ids:
 		var r: String = friendly_roles[i] if i < 3 else ROLES[i-3]
 		game.players[i].apply_athlete({"role":r,"height":{"guard":178,"forward":190,"center":204}[r]})
 		game.players[i].visible = true
@@ -74,8 +76,8 @@ func start(role: String) -> void:
 			label.no_depth_test = true
 			labels.append(label)
 		labels[i].visible = true
-	for i in 6:
-		for j in 6:
+	for i in active_ids:
+		for j in active_ids:
 			if team(i) != team(j) and game.players[i].court_role == game.players[j].court_role: marks[i] = j
 	goals.resize(6)
 	selected = 0
@@ -124,7 +126,7 @@ func reset(next_team: int, preserve_pose: bool = false) -> void:
 	edges = {"shoot":true,"pass":true,"switch":true}
 	ai_cooldown = 1.0
 	decisions = 0
-	for i in 6:
+	for i in active_ids:
 		var p = game.players[i]
 		var attacking = team(i) == next_team
 		if preserve_pose:
@@ -152,7 +154,8 @@ func reset(next_team: int, preserve_pose: bool = false) -> void:
 
 func nearest_friendly(target: Vector3) -> int:
 	var best = 0
-	for i in range(1,3):
+	for i in active_ids:
+		if i==0 or team(i)!=0:continue
 		if game.players[i].position.distance_to(target) < game.players[best].position.distance_to(target): best = i
 	return best
 
@@ -172,7 +175,7 @@ func tick(delta: float, input: Dictionary) -> void:
 	game.steal_cooldown = maxf(0,game.steal_cooldown-delta)
 	ai_cooldown = maxf(0,ai_cooldown-delta)
 	switch_cooldown = maxf(0,switch_cooldown-delta)
-	for i in 6: feint_cooldowns[i] = maxf(0,feint_cooldowns[i]-delta)
+	for i in active_ids: feint_cooldowns[i] = maxf(0,feint_cooldowns[i]-delta)
 	if game.phase != "dead":
 		game.clock_left = maxf(0,game.clock_left-delta)
 		if game.phase in ["live","pass_windup","pass_flight","takeoff"]:
@@ -194,7 +197,8 @@ func tick(delta: float, input: Dictionary) -> void:
 	var direction = Vector2(input.x,input.z).limit_length()
 	var desired = (Vector3(game.camera.global_basis.x.x,0,game.camera.global_basis.x.z).normalized()*direction.x+Vector3(game.camera.global_basis.z.x,0,game.camera.global_basis.z.z).normalized()*direction.y)
 	if pressed(input,"switch") and switch_cooldown <= 0 and (possession != 0 or game.ball_owner<0):
-		selected = (selected+1)%3
+		var friends=active_ids.filter(func(i):return team(i)==0)
+		selected = friends[(friends.find(selected)+1)%friends.size()]
 		switch_cooldown = .18
 		game.announce("SWITCH", "선택한 선수의 발밑 링을 확인하세요.", 1)
 	var p = game.players[selected]
@@ -228,7 +232,7 @@ func tick(delta: float, input: Dictionary) -> void:
 	if decisions <= 0:
 		decisions = .18
 		decide()
-	for i in 6:
+	for i in active_ids:
 		if i == selected: continue
 		var actor = game.players[i]
 		if game.phase=="loose":goals[i]=game.loose_chase_target(actor)
@@ -244,7 +248,7 @@ func tick(delta: float, input: Dictionary) -> void:
 	update_boxouts(input.guard)
 	separate()
 	# Pose the owner first: block/steal targets follow this tick's visible ball.
-	var order = range(6) as Array
+	var order = active_ids.duplicate()
 	if game.ball_owner >= 0:
 		order.erase(game.ball_owner)
 		order.push_front(game.ball_owner)
@@ -314,14 +318,14 @@ func move_actor(index: int, desired: Vector3, delta: float) -> void:
 
 func openness(index: int) -> float:
 	var distance = 12.0
-	for i in 6:
+	for i in active_ids:
 		if team(i) != team(index): distance = minf(distance,game.players[i].position.distance_to(game.players[index].position))
 	return distance
 
 func choose_receiver(sender: int, direction: Vector3 = Vector3.ZERO) -> int:
 	var best = -1
 	var best_score = -INF
-	for i in 6:
+	for i in active_ids:
 		if i == sender or team(i) != team(sender) or game.players[i].action != "idle": continue
 		var offset: Vector3 = game.players[i].position-game.players[sender].position
 		var value = openness(i)*.7-offset.length()*.06
@@ -332,7 +336,7 @@ func choose_receiver(sender: int, direction: Vector3 = Vector3.ZERO) -> int:
 	return best
 
 func begin_pass(sender: int, receiver: int) -> bool:
-	if game.phase != "live" or game.ball_owner != sender or receiver < 0 or team(sender) != team(receiver) or receiver == sender: return false
+	if sender not in active_ids or receiver not in active_ids or game.phase != "live" or game.ball_owner != sender or receiver < 0 or team(sender) != team(receiver) or receiver == sender: return false
 	var p = game.players[sender]
 	var r = game.players[receiver]
 	if (p.action not in ["idle","fake"] and not (p.action=="held_fake" and p.action_time>=p.held.duration*.6)) or r.action != "idle": return false
@@ -375,7 +379,7 @@ func update_pass(delta: float) -> void:
 	var receiver = game.players[passing_to]
 	var hands: Vector3 = (receiver.palm_position(0)+receiver.palm_position(1))*.5
 	game.ball.position = pass_start.lerp(pass_target.lerp(hands,smoothstep(.55,.90,t)),t)+Vector3.UP*sin(t*PI)*.13
-	for i in 6:
+	for i in active_ids:
 		if team(i) == possession: continue
 		var p = game.players[i]
 		if p.stealing() and p.action_time >= .12 and p.action_time <= .32 and game.hand_ball_distance(p.hand_world,p.previous_hand_world) < .25 and p.hand_world.distance_to(game.ball.position) < .25:
@@ -427,7 +431,7 @@ func claim(index: int, title: String) -> void:
 	last_touch = index
 	game.ball_owner = index
 	game.phase = "live"
-	for i in 6:
+	for i in active_ids:
 		game.players[i].has_ball = i == index
 		game.players[i].boxing_out = false
 	game.players[index].dribble_ended = false
@@ -448,7 +452,7 @@ func decide() -> void:
 	var target: Vector3 = game.rebound_target()
 	var carrier: int = game.ball_owner
 	if carrier < 0 and game.phase in ["pass_windup","pass_flight"]: carrier = passing_to
-	for i in 6:
+	for i in active_ids:
 		var p = game.players[i]
 		p.defending = false if i != selected else p.defending
 		if game.phase in ["flight","loose"]:
@@ -523,7 +527,7 @@ func space_offball_goal(index: int,point: Vector3,owner) -> Vector3:
 		goal.x=side*maxf(3.2,absf(goal.x))
 		goal.z=maxf(-4.2,goal.z)
 	if goal.distance_to(owner.position)<1.15:goal+=Vector3(side*1.4,0,.5)
-	for i in 6:
+	for i in active_ids:
 		if i!=index and i!=game.ball_owner and team(i)==team(index) and goal.distance_to(goals[i])<1.5:goal.x+=side*.8
 	return Rules.clamp_to_court(goal)
 
@@ -538,7 +542,7 @@ func dribble(index: int, kind: String, direction: Vector3) -> void:
 		p.turn_sign = p.dribble_hand
 		if kind == "behind": p.dribble_hand *= -1
 	game.crossover_cooldown = p.cross_duration()+.08 if kind == "cross" else game.DRIBBLE_DURATIONS[kind]+.08
-	for i in 6:
+	for i in active_ids:
 		if team(i) == team(index): continue
 		var defender = game.players[i]
 		var gap: Vector3 = p.position-defender.position
@@ -559,7 +563,7 @@ func steal(index: int) -> void:
 	p.steal_end = Rules.clamp_to_court(p.steal_end)
 
 func resolve_steals() -> void:
-	for i in 6:
+	for i in active_ids:
 		var p = game.players[i]
 		if team(i) == possession or not p.stealing() or p.steal_resolved or not p.steal_eligible or p.action_time < .12 or p.action_time > .32: continue
 		if game.hand_ball_distance(p.hand_world,p.previous_hand_world) < .25 and p.hand_world.distance_to(game.ball.position) < .25:
@@ -573,7 +577,7 @@ func resolve_steals() -> void:
 
 func try_block() -> bool:
 	if game.phase not in ["takeoff","flight"]: return false
-	for i in 6:
+	for i in active_ids:
 		if team(i) == team(game.shooter): continue
 		var p = game.players[i]
 		if p.action != "block" or p.action_time < .13 or p.action_time > .46 or not game.block_lane_open(p) or not game.block_palm_contact(p): continue
@@ -588,7 +592,7 @@ func try_block() -> bool:
 func update_boxouts(guard: bool) -> void:
 	var active = game.phase in ["flight","loose"]
 	var target: Vector3 = game.rebound_target()
-	for i in 6:
+	for i in active_ids:
 		var p = game.players[i]
 		p.boxing_out = false
 		p.contesting_boxout = false
@@ -601,16 +605,17 @@ func update_boxouts(guard: bool) -> void:
 			p.facing = atan2(-p.contact_direction.x,-p.contact_direction.z)
 			p.watch_direction = target-p.position
 			p.contact_pressure = clampf((1.1-p.position.distance_to(opponent.position))/.35,0,1)
-	for i in 6: game.players[i].contesting_boxout = rebound_blocked(i)
+	for i in active_ids: game.players[i].contesting_boxout = rebound_blocked(i)
 
 func rebound_blocked(index: int) -> bool:
-	for j in 6:
+	for j in active_ids:
 		if team(j) != team(index) and game.players[j].boxing_out and Rules.can_box_out(game.players[j].position,game.players[index].position,game.rebound_target()): return true
 	return false
 
 func separate() -> void:
-	for i in 6:
-		for j in range(i+1,6):
+	for i in active_ids:
+		for j in active_ids:
+			if j<=i:continue
 			var a = game.players[i]
 			var b = game.players[j]
 			if a.jump > .25 or b.jump > .25: continue
@@ -643,7 +648,7 @@ func update_loose(delta: float) -> void:
 		return
 	if game.block_escape_active(): return
 	var candidates: Array = []
-	for i in 6:
+	for i in active_ids:
 		var p = game.players[i]
 		var distance = game.hand_ball_distance(p.rebound_anchor(),p.previous_rebound_anchor)
 		var both = maxf(game.ball.position.distance_to(p.palm_position(0)),game.ball.position.distance_to(p.palm_position(1))) < .34
@@ -666,7 +671,7 @@ func update_loose(delta: float) -> void:
 
 func contest(shooter: int) -> float:
 	var value = 0.0
-	for i in 6:
+	for i in active_ids:
 		if team(i) == team(shooter): continue
 		var defender = game.players[i]
 		var pressure = clampf(1-game.players[shooter].position.distance_to(defender.position)/2.15,0,1)
@@ -704,7 +709,7 @@ func update_labels() -> void:
 	var changed=marker_selection!=selected or marker_owner!=game.ball_owner
 	marker_selection=selected
 	marker_owner=game.ball_owner
-	for i in 6:
+	for i in active_ids:
 		var p = game.players[i]
 		p.marker.visible = i == selected or i == game.ball_owner
 		if changed:
@@ -751,3 +756,14 @@ func record_contribution(index: int, key: String, amount: int=1) -> void:
 func capture_shot(index: int) -> void:
 	human_shooter=index==selected and team(index)==0
 	rebound_live=true
+
+func configure_one_vs_two() -> void:
+	active_ids=[0,3,4]
+	marks=[3,3,3,0,0,0]
+	for i in 6:
+		game.players[i].visible=i in active_ids
+		labels[i].visible=i in active_ids
+		if i not in active_ids:
+			game.players[i].has_ball=false
+			game.players[i].position=Vector3(30+i,0,30)
+	game.clock_left=90

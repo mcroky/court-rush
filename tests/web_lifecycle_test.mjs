@@ -23,7 +23,7 @@ function fixture(raw=null,failWrite=false){
   node('practice-option').dataset.select='practice';node('duel-option').dataset.select='duel';node('team-option').dataset.select='team';
   node('shoot-touch').dataset.control='shoot';
   node('team-control').dataset.control='team';
-  document={hidden:false,body:{classList:classes()},activeElement:null,
+  document={hidden:false,body:node('body'),activeElement:null,
     getElementById:node,addEventListener:(n,cb)=>docEvents.set(n,cb),
     querySelectorAll:q=>q==='[data-select]'?[node('practice-option'),node('duel-option'),node('team-option')]:q==='[data-control]'?[node('shoot-touch'),node('team-control')]:[]};
   const storage=new Map(raw===null?[]:[['unfree-settings-v1',raw]]);
@@ -155,6 +155,17 @@ function fixture(raw=null,failWrite=false){
  for(const [id,label] of [['cross','피벗'],['spin','턴 페이크'],['twostep','업앤언더'],['behind','다리 사이'],['hesi','펌프']])assert.equal(f.node(`touch-${id}-label`).textContent,label);
  f.window.ufUpdate({...next,held:false});assert.equal(f.node('touch-cross-label').textContent,'돌파');assert.equal(f.document.body.classList.contains('held-ball'),false);
  console.log('HELD_BALL_UI: contextual fake labels and restoration to dribble controls passed');
+}
+{
+ const f=fixture();f.playing();
+ const next={ready:true,started:true,paused:false,phase:'ended',mode:'practice',score:[4,4],seconds:60,owner:-1,action:'idle',charge:0,finish:'shot',makes:4,attempts:10,challenge:{kind:'free_throw',name:'자유투 도전',value:4,target:4,rounds:10,total:10,won:true,ready:false}};
+ f.window.ufUpdate(next);
+ assert.equal(f.node('result-title').textContent,'CHALLENGE CLEAR.','Meeting the objective is a clear even when both count fields are equal');
+ assert.equal(f.node('result-score').textContent,'4 / 4');assert.equal(f.node('clock').textContent,'FINAL');
+ assert.equal(f.document.body.dataset.challenge,'free_throw');
+ f.window.ufUpdate({...next,phase:'live',mode:'team',challenge:{...next.challenge,kind:'two_one'}});
+ assert.equal(f.node('team-control').hidden,true,'A lone player has no teammate to pass or switch to');
+ console.log('CHALLENGE_UI: objective result, timed practice clock, mobile context and solo-team controls passed');
 }
 {
  const f=fixture();f.playing();

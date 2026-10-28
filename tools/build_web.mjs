@@ -13,7 +13,8 @@ for(const name of ['wardrobe.css','wardrobe-locales.js'])copyFileSync(resolve(ro
 for(const name of ['online-config.js','online.js','online.css','online-locales.js','online-ranking.js','online-rooms.js'])copyFileSync(resolve(root,'site',name),resolve(output,name));
 writeFileSync(resolve(output, 'engine-config.js'), `window.UF_ENGINE_CONFIG = ${JSON.stringify(config)};\n`);
 for (const name of ['index.html','style.css','app.js','motion-lab.html','motion-lab.js','character-lab.html','character-lab.js','career.css','career.js','career-config.js','language.css','locales.js','i18n.js','info-locales.js','privacy.html','updates.json']) copyFileSync(resolve(root,'site',name),resolve(output,name));
-writeFileSync(resolve(output,'career-rules.js'),readFileSync(resolve(root,'site/career-rules.mjs'),'utf8').replaceAll('./wardrobe-catalog.mjs','./wardrobe-catalog.js'));
+writeFileSync(resolve(output,'challenge-rules.js'),readFileSync(resolve(root,'site/challenge-rules.mjs'),'utf8'));
+writeFileSync(resolve(output,'career-rules.js'),readFileSync(resolve(root,'site/career-rules.mjs'),'utf8').replaceAll('./wardrobe-catalog.mjs','./wardrobe-catalog.js').replaceAll('./challenge-rules.mjs','./challenge-rules.js'));
 copyFileSync(resolve(root,'site/wardrobe-catalog.mjs'),resolve(output,'wardrobe-catalog.js'));
 copyFileSync(resolve(root, 'icon.svg'), resolve(output, 'icon.svg'));
 const total = ['game.wasm', 'game.pck', 'game.js'].reduce((sum, name) => sum + statSync(resolve(output, name)).size, 0);

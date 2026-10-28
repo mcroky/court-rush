@@ -1,3 +1,5 @@
+import {CHALLENGES,challengeSetup,challengeRecord} from './challenge-rules.mjs';
+export {CHALLENGES,challengeSetup,challengeRecord} from './challenge-rules.mjs';
 import {WARDROBE_CATALOG as CATALOG} from './wardrobe-catalog.mjs';
 export {WARDROBE_CATALOG} from './wardrobe-catalog.mjs';
 function reject(message){throw Object.assign(Error(message),{status:400});}
@@ -11,7 +13,7 @@ export function wardrobeOf(original){
  for(const slot of Object.keys(equipped))if(owned.includes(w.equipped[slot])&&CATALOG.items.some(i=>i.id===w.equipped[slot]&&i.slot===slot))equipped[slot]=w.equipped[slot];
  return {version:1,coins:w.coins,owned,equipped};
 }
-export function normalizePlayer(original){const p=structuredClone(original);p.wardrobe=wardrobeOf(p);return p;}
+export function normalizePlayer(original){const p=structuredClone(original);p.wardrobe=wardrobeOf(p);p.challengeRecord={...(p.challengeRecord||{})};return p;}
 export function buyClothing(original,itemId){
  const item=CATALOG.items.find(i=>i.id===itemId);if(!item)reject('판매 중인 의상이 아닙니다.');
  const p=normalizePlayer(original),owned=p.wardrobe.owned.includes(item.id);
@@ -34,7 +36,23 @@ export const STAGES=[
  {name:'첫 코트',role:'guard',level:1,xp:100}, {name:'드라이브 인',role:'forward',level:2,xp:120},
  {name:'페인트 지킴이',role:'center',level:3,xp:140}, {name:'퀵 핸들',role:'guard',level:4,xp:170},
  {name:'하이 플라이어',role:'forward',level:5,xp:200}, {name:'림의 주인',role:'center',level:6,xp:240},
- {name:'동네 에이스',role:'guard',level:8,xp:280}, {name:'코트 챔피언',role:'forward',level:10,xp:330}
+ {name:'동네 에이스',role:'guard',level:8,xp:280}, {name:'코트 챔피언',role:'forward',level:10,xp:330},
+ {name:'백보드 골목',role:'center',level:11,xp:360,pressure:1.025},
+ {name:'네온 드라이브',role:'guard',level:11,xp:390,pressure:1.050},
+ {name:'윙 스톰',role:'forward',level:12,xp:420,pressure:1.075},
+ {name:'리바운드 타워',role:'center',level:12,xp:450,pressure:1.100},
+ {name:'크로스 로드',role:'guard',level:13,xp:480,pressure:1.125},
+ {name:'미드레인지 마스터',role:'forward',level:14,xp:510,pressure:1.150},
+ {name:'페인트 요새',role:'center',level:14,xp:540,pressure:1.175},
+ {name:'다운타운 에이스',role:'guard',level:15,xp:570,pressure:1.200},
+ {name:'스카이 워커',role:'forward',level:15,xp:600,pressure:1.225},
+ {name:'아이언 림',role:'center',level:16,xp:630,pressure:1.250},
+ {name:'라스트 크로스',role:'guard',level:17,xp:660,pressure:1.275},
+ {name:'클러치 윙',role:'forward',level:17,xp:690,pressure:1.300},
+ {name:'골밑 제왕',role:'center',level:18,xp:720,pressure:1.325},
+ {name:'나이트 코트',role:'guard',level:18,xp:750,pressure:1.350},
+ {name:'시티 파이널',role:'forward',level:19,xp:780,pressure:1.375},
+ {name:'코트 레전드',role:'center',level:20,xp:810,pressure:1.400}
 ];
 export function xpNeeded(level){return 100+(level-1)*60;}
 export function newPlayer(role,nickname){
@@ -45,7 +63,7 @@ export function attributes(p){
  const r=ROLES[p.role];if(!r)reject('선수 데이터가 올바르지 않습니다.');
  return {...Object.fromEntries(Object.keys(STAT_NAMES).map(k=>[k,Math.min(99,r.base[k]+p.stats[k])])),height:r.height,weight:r.weight,role:p.role,skills:{...p.skills},training:{...p.stats},level:p.level,appearance:{...wardrobeOf(p).equipped}};
 }
-export function opponentAthlete(stage){const s=STAGES[stage-1],p=newPlayer(s.role,s.name);p.level=s.level;for(const k of Object.keys(p.stats))p.stats[k]=Math.min(20,(s.level-1)*(k==='shoot'?2:1));const {appearance,...athlete}=attributes(p);return athlete;}
+export function opponentAthlete(stage){const s=STAGES[stage-1],p=newPlayer(s.role,s.name);p.level=s.level;for(const k of Object.keys(p.stats))p.stats[k]=Math.min(20,(s.level-1)*(k==='shoot'?2:1));const {appearance,...athlete}=attributes(p);if(stage>8)for(const k of Object.keys(STAT_NAMES))athlete[k]=Math.min(96,athlete[k]+Math.floor((stage-8)*.7));return athlete;}
 export function trainPlayer(original,kind,key){
  const p=normalizePlayer(original),stat=kind==='stat';
  if(!['stat','skill'].includes(kind)||!Object.hasOwn(stat?STAT_NAMES:SKILLS,key))reject('훈련 항목을 확인하세요.');
@@ -104,4 +122,31 @@ export function rewardTeamPlayer(original,won,stats){
  const record=p.teamRecord||{games:0,wins:0,losses:0};
  p.teamRecord={games:record.games+1,wins:record.wins+Number(won),losses:record.losses+Number(!won)};
  return {player:p,reward:{mode:'team',xp,coins,won,contribution,eligible,stats:{...stats}}};
+}
+
+export function challengeTicket(player,kind,tier){
+ const setup=challengeSetup(kind,tier),record=challengeRecord(player,kind);
+ if(tier>record.cleared+1)reject('이전 도전을 먼저 클리어하세요.');
+ const opponents=['guard','forward'].map(role=>{const p=newPlayer(role,'도전 상대');for(const k of Object.keys(p.stats))p.stats[k]=Math.min(20,(tier-1)*3);return attributes(p);});
+ return {mode:'challenge',challenge:setup,athlete:attributes(player),opponents};
+}
+export function validateChallengeResult(setup,score,seconds,result,elapsed){
+ const c=challengeSetup(setup.kind,setup.tier);
+ if(!Number.isInteger(seconds)||seconds<0||seconds>c.seconds||!Number.isFinite(elapsed)||elapsed<15||elapsed>86400||elapsed+3<c.seconds-seconds)reject('도전 시간과 결과를 확인하세요.');
+ if(c.kind==='two_one'){
+  if(!Array.isArray(score)||score.length!==2||score.some(n=>!Number.isInteger(n)||n<0||n>13)||score[0]===score[1]||(Math.max(...score)<11&&seconds>0))reject('도전 경기 결과를 확인하세요.');
+  return {value:Number(score[0]>score[1]),rounds:0,won:score[0]>score[1]};
+ }
+ if(!result||!Number.isInteger(result.value)||!Number.isInteger(result.rounds)||result.value<0||result.value>result.rounds||result.rounds<0||result.rounds>c.rounds||(result.rounds<c.rounds&&seconds>0)||elapsed+3<result.rounds*1.5)reject('도전 기록을 확인하세요.');
+ return {value:result.value,rounds:result.rounds,won:result.value>=c.target};
+}
+export function rewardChallenge(original,setup,result){
+ const p=normalizePlayer(original),c=challengeSetup(setup.kind,setup.tier),r=challengeRecord(p,c.kind);
+ if(c.tier>r.cleared+1)reject('이전 도전을 먼저 클리어하세요.');
+ const first=result.won&&c.tier>r.cleared,xp=result.won?(first?c.xp:Math.floor(c.xp*.3)):20,coins=result.won?(first?c.coins:Math.floor(c.coins*.3)):10;
+ p.challengeRecord[c.kind]={cleared:result.won?Math.max(r.cleared,c.tier):r.cleared,best:Math.max(r.best,result.value),games:r.games+1};
+ p.xp+=xp;p.wardrobe.coins+=coins;
+ while(p.level<20&&p.xp>=xpNeeded(p.level)){p.xp-=xpNeeded(p.level);p.level++;p.statPoints+=3;p.skillPoints++;}
+ if(p.level===20)p.xp=Math.min(p.xp,xpNeeded(20)-1);
+ return {player:p,reward:{mode:'challenge',kind:c.kind,tier:c.tier,firstClear:first,won:result.won,xp,coins,value:result.value,target:c.target}};
 }

@@ -11,7 +11,9 @@
   if(row&&column)return source.replace(value,row[column]);
   const replace=(pattern,fn)=>{const match=value.match(pattern);return match?source.replace(value,fn(match)):null;};
   let result;
+
   const choice=(en,ja,zh)=>({en,ja,'zh-CN':zh})[language];
+  if((result=replace(/^목표 (\d+) \/ (\d+) · (\d+)초$/,m=>choice(`Goal ${m[1]} / ${m[2]} · ${m[3]}s`,`目標 ${m[1]} / ${m[2]}・${m[3]}秒`,`目标 ${m[1]} / ${m[2]} · ${m[3]}秒`)))!==null)return result;
   if((result=replace(/^(\d+)코트 클리어 후 구매$/,m=>choice(`Clear court ${m[1]} to purchase`,`コート${m[1]}クリア後に購入`,`通关球场 ${m[1]} 后可购买`)))!==null)return result;
   if((result=replace(/^(.+) · \+(\d+) 코인$/,m=>`${text(m[1],language)} · +${m[2]} ${choice('coins','コイン','金币')}`))!==null)return result;
   if((result=replace(/^(\d+) 코인$/,m=>`${m[1]} ${choice('coins','コイン','金币')}`))!==null)return result;

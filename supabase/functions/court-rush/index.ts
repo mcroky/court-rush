@@ -1,6 +1,6 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.118.0';
 import {issueOnlineTicket,handleOnlineServer,onlineRanking} from './online.ts';
-import {ROLES,STAGES,newPlayer,attributes,opponentAthlete,trainPlayer,rewardPlayer,normalizePlayer,buyClothing,equipClothing,teamOpponents,validateTeamResult,rewardTeamPlayer} from './rules.mjs';
+import {ROLES,STAGES,newPlayer,attributes,opponentAthlete,trainPlayer,rewardPlayer,normalizePlayer,buyClothing,equipClothing,teamOpponents,validateTeamResult,rewardTeamPlayer,challengeTicket,validateChallengeResult,rewardChallenge,CHALLENGES} from './rules.mjs';
 
 const url=Deno.env.get('SUPABASE_URL')!;
 const service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -82,6 +82,7 @@ Deno.serve(async(req:Request)=>{
    if(r.error||!r.data.session)fail('다시 로그인하세요.',401);
    return send({session:sessionData(r.data.session)});
   }
+  if(action==='challenge-catalog')return send({version:'0.10.7',courts:STAGES.length,challenges:CHALLENGES});
   const {a,token}=await authenticate(req);
   if(action==='online-ranking'){await limit('online-ranking:'+a.user_id,30,60);return send(await onlineRanking(admin,a.user_id));}
   if(action==='online-ticket'){
@@ -117,8 +118,17 @@ Deno.serve(async(req:Request)=>{
    if(!changed.length)fail('선수가 다른 창에서 변경됐습니다. 다시 불러와 주세요.',409);return send({player});
   }
   if(action==='start'){
-   if(b.mode!==undefined&&!['duel','team'].includes(b.mode))fail('경기 모드를 확인하세요.');
+   if(b.mode!==undefined&&!['duel','team','challenge'].includes(b.mode))fail('경기 모드를 확인하세요.');
    const mode=b.mode||'duel';
+   if(mode==='challenge'){
+    if(!/^[0-9a-f-]{36}$/.test(b.requestId||''))fail('경기 요청을 확인하세요.');
+    const setup=challengeTicket(row.data,b.kind,b.tier);
+    const prior=checked(await admin.from('cr_matches').select('*').eq('id',b.requestId).eq('user_id',a.user_id).maybeSingle());
+    if(prior){if(prior.game_mode!=='challenge'||prior.finished_at||prior.setup.challenge.kind!==b.kind||prior.setup.challenge.tier!==b.tier)fail('새 경기를 시작해 주세요.');return send({matchId:prior.id,...prior.setup});}
+    await limit('start:'+a.user_id,40,3600);
+    checked(await admin.from('cr_matches').insert({id:b.requestId,user_id:a.user_id,stage:b.tier,game_mode:'challenge',setup}));
+    return send({matchId:b.requestId,...setup});
+   }
    if(mode==='team'){
     if(!/^[0-9a-f-]{36}$/.test(b.requestId||''))fail('경기 요청을 확인하세요.');
     const prior=checked(await admin.from('cr_matches').select('*').eq('id',b.requestId).eq('user_id',a.user_id).maybeSingle());
@@ -142,6 +152,13 @@ Deno.serve(async(req:Request)=>{
    const m=checked(await admin.from('cr_matches').select('*').eq('id',b.matchId).eq('user_id',a.user_id).maybeSingle());
    if(!m)fail('경기를 찾을 수 없습니다.',404);
    if(m.finished_at)return send({player:normalizePlayer(row.data),reward:m.result});
+   if(m.game_mode==='challenge'){
+    const result=validateChallengeResult(m.setup.challenge,b.score,b.seconds,b.challengeResult,(Date.now()-Date.parse(m.started_at))/1000);
+    const reward=rewardChallenge(row.data,m.setup.challenge,result);
+    const saved=await admin.rpc('cr_finish_match',{p_user:a.user_id,p_match:m.id,p_revision:row.revision,p_data:reward.player,p_result:reward.reward});
+    if(saved.error?.code==='40001')fail('선수가 다른 창에서 변경됐습니다. 보상 받기를 다시 눌러 주세요.',409);
+    return send(checked(saved));
+   }
    if(m.game_mode==='team'){
     const elapsed=(Date.now()-Date.parse(m.started_at))/1000;
     const stats=validateTeamResult(b.score,b.seconds,b.stats,elapsed);

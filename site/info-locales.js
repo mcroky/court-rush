@@ -221,6 +221,9 @@
  news.en[2].unshift("Reduced duplicate local-rig work and repeated input decoding during online prediction while preserving poses and decisions. Moved the mobile joystick 16px to the right, keeping its height and the right action buttons.",news.en[1]);news.en[0]="Less repeated work. More room for your thumb.";news.en[1]="v0.10.6 · Online display and mobile joystick";
  news.ja[2].unshift("オンライン予測中の自分の重複ボーン処理と入力データ解析を削減。動作と判定を維持し、モバイルのスティックを高さを変えず右へ16px移動しました。右側ボタンは維持します。",news.ja[1]);news.ja[0]="繰り返し処理を軽く、親指に少し余裕を。";news.ja[1]="v0.10.6・オンライン表示とスティック位置";
  news["zh-CN"][2].unshift("减少在线预测中本机球员的重复骨骼处理与输入解析，保持动作和判定。手机摇杆向右移动16px，高度与右侧按钮保持不变。",news["zh-CN"][1]);news["zh-CN"][0]="减少重复处理，调整拇指位置。";news["zh-CN"][1]="v0.10.6 · 在线显示与手机摇杆";
+ news["en"][2].unshift("Expanded 1v1 to 24 courts with gradual difficulty. Six tiers each of free throws, rebounds, three-pointers, steals and one vs two grant growth rewards. Mobile shows one event card at a time with existing controls.",news["en"][1]);news["en"][0]="Your next challenge.";news["en"][1]="v0.10.7 · 24 courts and five challenge events";
+ news["ja"][2].unshift("1対1を24コートに拡張し、少しずつ難しく。フリースロー・リバウンド・3ポイント・スティール・1対2は各6段階で育成報酬を獲得。モバイルは種目ごとに1枚のカードと既存操作で遊べます。",news["ja"][1]);news["ja"][0]="次の挑戦を、自分らしく。";news["ja"][1]="v0.10.7・24コートと5種目の挑戦";
+ news["zh-CN"][2].unshift("1对1扩展至24个球场，难度逐步上升。罚球、篮板、三分、抢断及一对二各有6级并提供成长奖励。手机每次仅显示一个项目卡片，沿用现有操作。",news["zh-CN"][1]);news["zh-CN"][0]="下一场挑战，打出自己的风格。";news["zh-CN"][1]="v0.10.7 · 24个球场与五种挑战";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;

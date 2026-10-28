@@ -4,6 +4,8 @@ const CheckBall = preload("res://scripts/check_ball.gd")
 var check_ball = CheckBall.new()
 const Actor = preload("res://scripts/actor.gd")
 const TeamMatch = preload("res://scripts/team_match.gd")
+var challenge = preload("res://scripts/challenge.gd").new(self)
+var career_pressure=1.0
 var team_match
 const OnlineView = preload("res://scripts/online/duel_view.gd")
 var online_view
@@ -378,6 +380,8 @@ func play_sound(name: String, volume: float = -9) -> void:
 	stream.play()
 
 func start_mode(next_mode: String) -> void:
+	challenge.active=false
+	career_pressure=1.0
 	if online_view!=null:
 		online_view.stop(); online_view=null
 	get_viewport().msaa_3d=Viewport.MSAA_DISABLED if next_mode=="team" else Viewport.MSAA_2X
@@ -411,6 +415,17 @@ func start_mode(next_mode: String) -> void:
 	send_state()
 
 func start_career(data: Dictionary) -> void:
+	if data.get("mode","")=="challenge":
+		if not data.get("challenge") is Dictionary or not data.get("athlete") is Dictionary:return
+		var c=data.challenge
+		if str(c.get("kind","")) not in ["free_throw","three","rebound","steal","two_one"] or int(c.get("tier",0)) not in range(1,7):return
+		if c.kind=="two_one" and (not data.get("opponents") is Array or data.opponents.size()!=2):return
+		players[0].court_role=str(data.athlete.get("role","guard"))
+		start_mode("team" if c.kind=="two_one" else "practice")
+		career_match_id=str(data.get("matchId",""))
+		players[0].apply_athlete(data.athlete)
+		if mode!="team" and data.get("opponents") is Array and not data.opponents.is_empty():players[1].apply_athlete(data.opponents[0])
+		challenge.start(data);send_state();return
 	if data.get("mode","")=="team":
 		if not data.get("athlete",null) is Dictionary or not data.get("opponents",null) is Array or data.opponents.size()!=3 or str(data.get("matchId","")).length()!=36:return
 		if str(data.athlete.get("role","")) not in ["guard","forward","center"]:return
@@ -430,9 +445,10 @@ func start_career(data: Dictionary) -> void:
 	if not opponent is Dictionary or opponent.is_empty() or str(data.get("matchId","")).length()!=36:return
 	start_mode("duel")
 	career_match_id=str(data.matchId)
-	career_stage=clampi(int(data.get("stage",1)),1,8)
+	career_stage=clampi(int(data.get("stage",1)),1,24)
 	players[0].apply_athlete(data.athlete)
 	players[1].apply_athlete(opponent)
+	career_pressure=clampf(float(data.opponent.get("pressure",1)),1,1.4)
 	reset_positions(0)
 	announce("COURT %02d" % career_stage,str(data.opponent.get("name","코트 도전"))+" · 11점 또는 90초 승부",4)
 	send_state()
@@ -495,6 +511,7 @@ func reset_positions(next_owner: int, preserve_pose: bool = false) -> void:
 		point.visible = false
 
 func set_drill(kind: String) -> void:
+	if challenge.active:return
 	if mode != "practice" or not started: return
 	practice_drill = kind
 	paused = false
@@ -680,7 +697,8 @@ func read_controls() -> Dictionary:
 					if started and phase != "ended": set_paused(not paused)
 				"resume":
 					if started and phase != "ended" and not bool(web_input.suspended): set_paused(false)
-				"reset": reset_positions(0)
+				"reset":
+					if not challenge.active:reset_positions(0)
 				"showroom": toggle_showroom()
 				"showroom-detail":
 					showroom_closeup = not showroom_closeup
@@ -866,6 +884,8 @@ func _physics_process(delta: float) -> void:
 		update_ball_visual()
 		last_shoot = input.shoot
 		return
+	if challenge.tick(delta):return
+	challenge.filter_input(input)
 	if mode == "team":
 		team_match.tick(delta,input)
 		return
@@ -1158,6 +1178,7 @@ func rebound_target() -> Vector3:
 	return Vector3(flight_target.x,0,flight_target.z)
 
 func set_court_role(role: String) -> void:
+	if challenge.active:return
 	if not Rules.ROLE_PROFILES.has(role): return
 	if started and phase != "ended" and (mode != "practice" or phase != "live" or players[0].action != "idle"): return
 	players[0].court_role = role
@@ -1480,6 +1501,7 @@ func update_flight(delta: float) -> void:
 		if flight_made:
 			register_score()
 		else:
+			challenge.shot_result(false)
 			phase = "loose"
 			var rebound_direction = Vector3(flight_target.x-HOOP.x,0,maxf(.08,flight_target.z-HOOP.z)).normalized()
 			ball_velocity = rebound_direction*rng.randf_range(1.2,1.9)+Vector3.UP*rng.randf_range(3.9,4.5)
@@ -1600,6 +1622,7 @@ func hand_ball_distance(hand: Vector3,old_hand: Vector3) -> float:
 	return minf(distance,(a+path*t).length())
 
 func register_score() -> void:
+	if challenge.active and challenge.config.kind in ["free_throw","three"]:challenge.shot_result(true)
 	if mode == "team":
 		team_match.register_score()
 		return
@@ -1646,17 +1669,19 @@ func update_loose(delta: float) -> void:
 		var both_hands = maxf(ball.position.distance_to(player.palm_position(0)),ball.position.distance_to(player.palm_position(1))) < .34
 		var airborne_catch = player.action == "rebound" and player.jump > .18 and player.action_time > .16 and player.action_time < player.defense_land_time() and catch_distance < .24 and both_hands
 		var contact=loose_contact(player,previous)
+		if challenge.active and challenge.config.kind=="rebound" and player.jump>.18 and not airborne_catch:continue
 		if contact<1.0 or airborne_catch and not rebound_blocked(i):
-			candidates.append({"id": i, "distance": catch_distance if airborne_catch else contact})
+			candidates.append({"id": i, "distance": catch_distance if airborne_catch else contact,"air":airborne_catch})
 	if not candidates.is_empty():
 		candidates.sort_custom(func(a, b): return a.distance < b.distance if a.distance != b.distance else a.id < b.id)
-		claim_ball(candidates[0].id)
+		claim_ball(candidates[0].id,candidates[0].air)
 	elif mode == "practice" and loose_timer > (6.0 if last_event=="block" else 2.5):
 		turnover("CHECK BALL", "자리로 돌아와 체크볼을 이어갑니다.",0)
 	elif loose_timer > 10:
 		turnover("CHECK BALL", "경기를 다시 이어갑니다.", 1 - shooter)
 
-func claim_ball(index: int) -> void:
+func claim_ball(index: int,air_qualified: bool=false) -> void:
+	challenge.catch_result(index,air_qualified)
 	var just_blocked = last_event == "block" and loose_timer < .75
 	if players[index].action == "rebound": players[index].capture_rebound(ball.position,ball_velocity)
 	else:players[index].begin_pickup(ball.position,ball_velocity)
@@ -1720,6 +1745,7 @@ func resolve_steal() -> void:
 		needs_clear = mode == "duel" and not Rules.is_clear(player.position)
 		shot_clock = 15
 		last_event = "steal"
+		challenge.steal_result()
 		court_audio.cue("steal")
 		announce("STEAL!", "외곽선 밖으로 공을 빼고 공격하세요." if needs_clear else "공을 가져왔어요. 드리블로 이어가세요.")
 		play_sound("block", -12)
@@ -1727,6 +1753,13 @@ func resolve_steal() -> void:
 		announce("REACH MISSED", "상대가 공을 지켰어요. 손을 회수하고 수비로 돌아갑니다.", 1)
 
 func update_ai(delta: float) -> void:
+	if challenge.active and challenge.config.kind=="steal":
+		var rival=players[1]
+		var goal=Vector3(sin(time*(.5+challenge.config.tier*.11))*(.15+challenge.config.tier*.13),0,-1.15)
+		rival.steer_motion(Vector2(goal.x-rival.position.x,goal.z-rival.position.z)*2,12,delta)
+		move_player(1,delta)
+		face_target(1,HOOP)
+		return
 	var ai = players[1]
 	if ai.contesting_boxout:
 		if ai_boxout_time == 0: ai_boxout_side = signf(ai.position.x-players[0].position.x) if absf(ai.position.x-players[0].position.x) > .15 else 1.0
@@ -1745,7 +1778,7 @@ func update_ai(delta: float) -> void:
 	if phase == "loose": ai_goal = loose_chase_target(ai)
 	ai_decision -= delta
 	if ai_decision <= 0:
-		ai_decision = rng.randf_range(0.16, 0.29)
+		ai_decision = rng.randf_range(0.16, 0.29)/career_pressure
 		if phase == "loose":
 			ai_goal = loose_chase_target(ai)
 		elif phase == "flight":
@@ -1769,7 +1802,7 @@ func update_ai(delta: float) -> void:
 		var side = Vector3(-toward_ball.z,0,toward_ball.x)*ai_boxout_side
 		offset = players[0].position + side*.92 + toward_ball*.20 - ai.position
 	var speed = 3.7 if ball_owner != 1 else 3.35
-	if not career_match_id.is_empty():speed=ai.athletic_profile().speed*(.80 if ball_owner!=1 else .74)
+	if not career_match_id.is_empty():speed=ai.athletic_profile().speed*(.80 if ball_owner!=1 else .74)*career_pressure
 	if ai.boxing_out: speed = 1.6
 	if ai_freeze > 0 or ai.action not in ["idle","pickup"]: speed = 0.35
 	if ai.action=="pickup":speed*=ai.pickup_speed_scale()
@@ -1797,6 +1830,9 @@ func update_ai(delta: float) -> void:
 			launch_shot(1)
 
 func turnover(title: String, subtitle: String, next_owner: int = -1) -> void:
+	if challenge.active and challenge.config.kind!="two_one":
+		challenge.complete(false)
+		return
 	var who = next_owner
 	if who < 0: who = 1 - maxi(ball_owner, 0)
 	if mode == "practice": who = 0
@@ -1874,10 +1910,11 @@ func send_state() -> void:
 	state["held"] = players[0].has_ball and players[0].dribble_ended
 	state["courtRole"] = players[0].court_role
 	state["careerMatchId"]=career_match_id
-	state["careerMode"]="team" if mode=="team" and not career_match_id.is_empty() else "duel" if not career_match_id.is_empty() else ""
+	state["careerMode"]="challenge" if challenge.active else "team" if mode=="team" and not career_match_id.is_empty() else "duel" if not career_match_id.is_empty() else ""
+	if challenge.active:state["challenge"]=challenge.state()
 	state["careerStage"]=career_stage
 	state["canChangeRole"] = not started or phase == "ended" or (mode == "practice" and phase == "live" and players[0].action == "idle")
-	if not career_match_id.is_empty():state["canChangeRole"]=false
+	if not career_match_id.is_empty() or challenge.active:state["canChangeRole"]=false
 	state["defenseAction"] = defense_kind(0) if not players[0].has_ball and phase in ["live","takeoff","flight","loose"] else ""
 	state["reboundWindow"] = state["defenseAction"] == "rebound"
 	if mode == "team" and team_match != null and players.size() == 6: team_match.decorate_state(state)

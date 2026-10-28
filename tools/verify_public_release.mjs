@@ -16,7 +16,7 @@ assert.ok(html.includes('<base href="./v'+version+'/">'),'Root has an older asse
 assert.ok(html.includes('v'+version),'Root has an older visible version');
 const notes=await (await get(base+'updates.json')).json();assert.equal(notes[0].version,version);
 const names=['career.js','career-rules.js','wardrobe-catalog.js','wardrobe-locales.js','wardrobe.css','app.js','locales.js','i18n.js','info-locales.js','engine-config.js'];
-names.push('online-config.js','online.js','online-rooms.js','online-ranking.js','online.css','online-locales.js');
+names.push('challenge-rules.js','online-config.js','online.js','online-rooms.js','online-ranking.js','online.css','online-locales.js');
 await Promise.all(names.map(async name=>{
  const response=await get(assetBase+name),text=await response.text();
  assert.equal(normalize(text),normalize(readFileSync(resolve(build,name),'utf8')),'Stale public '+name);
