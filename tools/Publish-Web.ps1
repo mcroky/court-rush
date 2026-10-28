@@ -1,5 +1,5 @@
 param(
- [string]$Version='0.10.3',
+ [string]$Version='0.10.4',
  [string]$Repository='mcroky/court-rush',
  [string]$PagesDirectory='release/pages',
  [string]$BuildDirectory='build/web',

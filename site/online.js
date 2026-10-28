@@ -2,7 +2,7 @@
  'use strict';
  const $=id=>document.getElementById(id),input=window.ufInput,config=window.COURT_ONLINE_CONFIG,t=s=>window.CourtI18n?.text(s)||s;
  const local=['127.0.0.1','localhost'].includes(location.hostname),base=local?'http://127.0.0.1:8792':config.url,enabled=local||config.enabled;
- Object.assign(input,{onlineSeq:0,onlineState:'{}',onlineMatch:'{}',onlineAxes:'[1,0,0,1]',onlineInputs:'[]'});
+ Object.assign(input,{onlineSeq:0,onlineState:'{}',onlineMatch:'{}',onlineAxes:'[1,0,0,1]',onlineInputs:'[]',onlineLocal:'{}'});
  let commandHistory=[];
  let status='idle',socket=null,authenticated=false,intent={type:'queue.join',mode:'duel'},generation=0,room=null,lastState=null,result=null,seq=0,lastShoot=input.shootSeq,epoch='',lastInput='',lastSend=0,reconnectUntil=0,retryTimer=null;
  const dialog=document.createElement('dialog');dialog.className='online-dialog';dialog.setAttribute('aria-labelledby','online-title');
@@ -17,7 +17,7 @@
  }
  function send(m){if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify({protocolVersion:1,serverEpoch:epoch,...m}));}
  function snapshot(s){lastState=s;if(room)commandHistory=commandHistory.filter(c=>c.seq>(s.acks?.[room.slot]??-1));input.onlineState=JSON.stringify(s);input.onlineSeq++;}
- function stopView(){room=null;lastState=null;names.forEach(n=>n.hidden=true);window.CourtGame.endOnline();}
+ function stopView(){room=null;lastState=null;input.onlineLocal='{}';names.forEach(n=>n.hidden=true);window.CourtGame.endOnline();}
  function close(){authenticated=false;clearTimeout(retryTimer);generation++;const old=socket;socket=null;old?.close();}
  function fail(message){close();if(room)stopView();setStatus('error',message);if(!dialog.open)dialog.showModal();}
  function cancel(){send({type:'queue.cancel'});close();if(room)stopView();setStatus('idle');dialog.close();}
@@ -65,19 +65,22 @@
   close();const token=generation;reconnectUntil=0;try{await connect(token);}catch(e){if(token===generation){if(e.accountDialog){close();dialog.close();setStatus('idle');}else fail(e.message);}}
  }
  function sendInput(force=false){
-  if(!room||status!=='playing')return;const blocked=document.hidden||document.querySelector('dialog[open]');let axes;try{axes=JSON.parse(input.onlineAxes);}catch{axes=[1,0,0,1];}
+  const blocked=document.hidden||Boolean(document.querySelector('dialog[open]'));
+  input.onlineLocal=JSON.stringify({enabled:Boolean(room&&status==='playing'&&!blocked),nextSeq:seq});
+  if(!room||status!=='playing')return;let axes;try{axes=JSON.parse(input.onlineAxes);}catch{axes=[1,0,0,1];}
   const x=blocked?0:input.x*axes[0]+input.z*axes[2],z=blocked?0:input.x*axes[1]+input.z*axes[3],length=Math.max(1,Math.hypot(x,z)),command={x:x/length,z:z/length};
   for(const k of ['shoot','cross','spin','twostep','behind','hesi','steal','guard'])command[k]=!blocked&&Boolean(input[k]);
   command.shoot_pressed=!blocked&&input.shootSeq!==lastShoot&&input.shootSeq!==input.shootCancelSeq;lastShoot=input.shootSeq;
   const encoded=JSON.stringify(command),now=performance.now();if(!force&&encoded===lastInput&&now-lastSend<33)return;lastInput=encoded;lastSend=now;
   commandHistory.push({seq,x:command.x,z:command.z,action:blocked||['shoot','cross','spin','twostep','behind','hesi','steal','guard'].some(k=>command[k]),sent:now});commandHistory=commandHistory.slice(-16);
   input.onlineInputs=JSON.stringify(commandHistory.map(c=>({seq:c.seq,x:c.x,z:c.z,action:c.action,age:(now-c.sent)/1000+.016})));send({type:'input',matchId:room.matchId,seq:seq++,...command});
+  input.onlineLocal=JSON.stringify({enabled:!blocked,nextSeq:seq});
  }
  $('online-open').onclick=()=>{if(!active()&&window.CourtGame.getState()?.started&&window.CourtGame.getState()?.phase!=='ended'&&!confirm(t('현재 경기를 마치고 온라인 매칭을 시작할까요?')))return;if(!dialog.open)dialog.showModal();setStatus(status,enabled?'상대 찾기를 누르면 서버를 준비합니다.':'온라인 서버를 준비 중입니다.');$('online-find').focus();window.CourtOnlineRooms?.open();};
  $('online-find').onclick=()=>begin();$('online-cancel').onclick=cancel;dialog.addEventListener('cancel',e=>{e.preventDefault();cancel();});
  $('online-leave').onclick=()=>{if(status!=='ended'&&!confirm(t('온라인 경기를 떠나면 기권 처리됩니다. 계속할까요?')))return;if(status==='playing')send({type:'match.leave',matchId:room.matchId});else{close();stopView();setStatus('idle');}};
  $('result-rematch').addEventListener('click',e=>{if(!room)return;e.preventDefault();e.stopImmediatePropagation();const roomEntry=room.entry?.kind==='room';close();stopView();setStatus('idle');dialog.showModal();if(roomEntry)window.CourtOnlineRooms?.open();else begin();},true);
- window.addEventListener('court-state',e=>{const s=e.detail;names.forEach((name,i)=>{const p=s.onlineNames?.[i];name.hidden=!s.online||!p||p.x<0||p.x>1||p.y<0||p.y>1;if(!name.hidden){name.textContent=p.name;name.classList.toggle('self',p.self);name.style.left=(p.x*100)+'%';name.style.top=(p.y*100)+'%';}});if(s.online&&room&&status==='loading'){send({type:'match.ready',matchId:room.matchId});setStatus('countdown','상대의 준비를 기다리고 있어요.');}if(s.online){$('mode-badge').textContent='ONLINE 1V1';$('pause-button').disabled=true;if(result){$('result-title').textContent=t(result.reason==='aborted'?'경기 무효':result.winner===null?'무승부':result.winner===room.slot?'승리':'패배');$('result-detail').textContent=window.CourtOnlineRanking?.describe(result,room.slot)||t('전적과 랭킹 반영을 확인하고 있습니다.');}}else $('pause-button').disabled=false;});
+ window.addEventListener('court-state',e=>{const s=e.detail;panel.dataset.prediction=s.onlinePrediction?'local':'server';names.forEach((name,i)=>{const p=s.onlineNames?.[i];name.hidden=!s.online||!p||p.x<0||p.x>1||p.y<0||p.y>1;if(!name.hidden){name.textContent=p.name;name.classList.toggle('self',p.self);name.style.left=(p.x*100)+'%';name.style.top=(p.y*100)+'%';}});if(s.online&&room&&status==='loading'){send({type:'match.ready',matchId:room.matchId});setStatus('countdown','상대의 준비를 기다리고 있어요.');}if(s.online){$('mode-badge').textContent='ONLINE 1V1';$('pause-button').disabled=true;if(result){$('result-title').textContent=t(result.reason==='aborted'?'경기 무효':result.winner===null?'무승부':result.winner===room.slot?'승리':'패배');$('result-detail').textContent=window.CourtOnlineRanking?.describe(result,room.slot)||t('전적과 랭킹 반영을 확인하고 있습니다.');}}else $('pause-button').disabled=false;});
  setInterval(()=>{if(socket?.readyState===WebSocket.OPEN)send({type:'ping',sent:Date.now()});},10000);setInterval(()=>sendInput(),33);
  window.CourtOnline={action:begin,roomStatus:setStatus,inputChanged:()=>sendInput(true),resetForLocal(){if(status==='ended'){close();room=null;lastState=null;setStatus('idle');}},get active(){return active();},get status(){return status;}};setStatus('idle');
 })();

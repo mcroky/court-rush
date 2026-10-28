@@ -772,7 +772,7 @@ func gate_resumed_input(input: Dictionary) -> void:
 func _physics_process(delta: float) -> void:
 	var input = read_controls()
 	if online_view!=null:
-		online_view.tick(delta)
+		online_view.tick(delta,input)
 		ui_time+=delta
 		if ui_time>=.1: ui_time=0; send_state()
 		return

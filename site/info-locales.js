@@ -215,6 +215,9 @@
  news["en"][2].unshift("Reduced recurring engine work on the Online 1v1 server while keeping 60Hz authoritative decisions and 20Hz state delivery. Contact poses, appearance, trained attributes and record/Elo settlement are unchanged. Packet arrival intervals and round-trip delay are measured to check online stutter.",news["en"][1]);news["en"][0]="Less overhead on the online court.";news["en"][1]="v0.10.3 · Online server processing";
  news["ja"][2].unshift("オンライン1対1サーバーの反復処理を削減。60Hz判定と20Hz状態配信、手とボールの接触・モーション・外見・育成能力・戦績/Eloを維持します。状態の到着間隔と往復遅延を測定して途切れを確認しています。",news["ja"][1]);news["ja"][0]="オンラインコートの処理負担を軽く。";news["ja"][1]="v0.10.3・オンラインサーバー処理";
  news["zh-CN"][2].unshift("减少在线1对1服务器的重复引擎处理，保持60Hz判定与20Hz状态传输。手与球接触、动作、外观、成长属性及战绩/Elo结算保持不变。测量状态到达间隔与往返延迟，检查在线卡顿。",news["zh-CN"][1]);news["zh-CN"][0]="减轻在线球场的处理负担。";news["zh-CN"][1]="v0.10.3 · 在线服务器处理";
+ news.en[2].unshift("Your movement, dribbling, shot preparation and defensive actions now start on your device without waiting for a server reply. Server confirmations smoothly correct your position. Ball possession, contacts, scores and Elo still follow the server. Long connection gaps can still interrupt play.",news.en[1]);news.en[0]="Your move starts here.";news.en[1]="v0.10.4 · Responsive online controls";
+ news.ja[2].unshift("移動・ドリブル・シュート準備・守備動作をサーバー応答を待たず端末で開始し、確認結果へ位置を滑らかに補正します。ボール所有・接触・得点・Eloはサーバー判定。長い通信断では途切れが残ります。",news.ja[1]);news.ja[0]="入力した瞬間から動く。";news.ja[1]="v0.10.4・オンライン操作の反応改善";
+ news["zh-CN"][2].unshift("移动、运球、投篮准备和防守动作在本机立即开始，不再等待服务器回复，并平滑校正位置。球权、接触、得分和Elo仍由服务器判定。较长的网络中断仍可能影响比赛。",news["zh-CN"][1]);news["zh-CN"][0]="输入后立即行动。";news["zh-CN"][1]="v0.10.4 · 在线操作响应改善";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;
