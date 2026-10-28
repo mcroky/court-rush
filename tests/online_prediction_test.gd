@@ -47,6 +47,12 @@ func run() -> void:
 	prediction.receive(initial)
 	prediction.tick(1.0/60,controls,9,false)
 	check(not prediction.active,"background and dialog input gates disable speculation")
+	var flight=initial.duplicate(true);flight.owner=-1;flight.phase="flight";flight.shooter=1
+	flight.possessionRevision+=2;flight.players[0].defense="rebound"
+	prediction.receive(flight)
+	var rebound=Authority.ControlSlot.neutral();rebound.shoot=true;rebound.shoot_pressed=true
+	prediction.tick(1.0/60,rebound,10,true)
+	check(prediction.active and actor.action=="rebound" and prediction.simulation.ball_owner==-1,"airborne-ball rebound input starts immediately without predicting a catch or ownership")
 	# Reproduce a 100ms input/100ms snapshot delay with irregular deliveries.
 	# All actors use the same canonical growth, so drift is not hidden by a speed mismatch.
 	for i in 2: authority.players[i].apply_athlete({"role":"forward","height":190})
@@ -75,3 +81,4 @@ func run() -> void:
 	check(max_step<.15 and stopped==0,"100ms delayed jittering snapshots produce continuous 60Hz own movement without packet-sized jumps")
 	prediction.stop();host.queue_free();authority.queue_free();await process_frame
 	quit(1 if failures else 0)
+

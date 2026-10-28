@@ -75,7 +75,7 @@ func tick(delta: float, input: Dictionary, next_seq: int, enabled: bool) -> void
 	age+=delta
 	if not enabled or age>.30 or state.phase in ["check","dead","ended"]: active=false
 	var server: Dictionary=state.players[slot]
-	if not active and enabled and age<=.30 and state.phase=="live" and str(server.action)=="idle" and float(server.jump)<.001:
+	if not active and enabled and age<=.30 and state.phase in ["live","takeoff","flight","loose"] and str(server.action)=="idle" and float(server.jump)<.001:
 		seed_from_state()
 	weight=move_toward(weight,1.0 if active else 0.0,delta/0.08)
 	if not active or delta<=0: return
@@ -85,9 +85,14 @@ func tick(delta: float, input: Dictionary, next_seq: int, enabled: bool) -> void
 	other.position=vec(rival.position); other.jump=float(rival.jump)
 	other.motion=Vector2(rival.motion[0],rival.motion[1])
 	other.has_ball=owner==1-slot; other.dribble_ended=bool(rival.held)
+	other.defending=bool(rival.guard);other.boxing_out=bool(rival.boxout)
 	other.action="idle" # No speculative rival actions, steals or ball outcomes.
 	p.has_ball=owner==slot
+	p.boxing_out=bool(server.boxout)
 	simulation.ball_owner=owner; simulation.shooter=int(state.shooter)
+	# Use the server's block/rebound classification; do not guess a flight result.
+	simulation.flight_duration=1.0
+	simulation.flight_t=.5 if str(server.get("defense",""))=="rebound" else 0.0
 	simulation.needs_clear=bool(state.clear)
 	# Keep a locally initiated takeoff until its server confirmation arrives.
 	if not (simulation.phase=="takeoff" and state.phase=="live" and action_age<.30):

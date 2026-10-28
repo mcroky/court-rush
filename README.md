@@ -2,7 +2,7 @@
 
 프리스타일을 좋아했던 기억에서 출발하는, 웹에서 바로 즐기는 3D 스트리트 농구 게임.
 
-현재 상태: **온라인 1대1·육성형 웹 공개 테스트 v0.10.4** (2026-10-28). [웹에서 플레이](https://mcroky.github.io/court-rush/) · [Roky Studio](https://mcroky.github.io/roky-studio/). 자유 연습과 AI 1대1·3대3 육성을 플레이할 수 있다. 한국어·영어·일본어·간체 중국어를 선택할 수 있으며 언어 선택은 기기에 저장한다.
+현재 상태: **온라인 1대1·육성형 웹 공개 테스트 v0.10.5** (2026-10-28). [웹에서 플레이](https://mcroky.github.io/court-rush/) · [Roky Studio](https://mcroky.github.io/roky-studio/). 자유 연습과 AI 1대1·3대3 육성을 플레이할 수 있다. 한국어·영어·일본어·간체 중국어를 선택할 수 있으며 언어 선택은 기기에 저장한다.
 
 - 확정된 사용자 요구: 특유의 작화와 박진감 있는 농구, Roky Studio에서 바로 접속하는 웹 게임.
 - 추천 엔진: **Godot 4.7.2 Standard + GDScript + Compatibility 렌더러**.
