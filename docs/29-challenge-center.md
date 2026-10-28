@@ -45,4 +45,16 @@ Neon을 우선 후보로 검토하되 이번에는 사용자가 확정한 기존
 - 기존 team_match27검사, team_career_gameplay, team_contact(캐치12/스와트12), block_scramble, contact_timing(블록6/캐치6), pause_safety, career_athlete 검사 통과.
 - JS career_rules/team_career_rules, 웹 lifecycle,850개 문구×3번역 검사 통과. 새 도전의 번역·상태 표시는 브라우저에서도 확인한다.
 - 실제 새 QA 프로필 하나로5종 티켓 발급·재시도 동일성·미인증/잠김/위조 결과 거부,5종 첫 보상·재청구 중복 방지·다음 단계 해금·기존1대1 해금 독립을 확인했다. 서버 결과 fixture이며 게임을 실제 이겼다는 증거로 쓰지 않는다. 기존 사용자 기록은 읽거나 변경하지 않았다.
-- 공개 배포·모바일 최종 확인과 QA 자료 정리 결과는 완료 후 기록한다.
+- 공개 배포·모바일 최종 확인과 QA 자료 정리 결과는 아래와 같다.
+
+## 공개 확인·정리 (2026-10-28 KST)
+
+- 소스281257a, Pages31d36fc50c151dc86964529ca491694bea74ccf3. Actions40674340970 build/deploy 성공. https://mcroky.github.io/court-rush/ 고정 주소 유지.
+- Web export46.3MiB/압축17.8MiB. 커밋과 셸27개 일치. 공개 자산17개/PCK 일치, 의상138개·컬렉션12개와 익명profile401 유지. PCK SHA-256 `6ba3c0d2d264efe05e6fd6b27a81aaf2edb42dd24d44d243c9b28535c2df92f1`.
+- 공개 웹에서 QA 로그인, 코트24개/화면상8개,9~16 기본 선택,24코트 잠금,9코트 실제 진입과목표 표시를 확인했다.8클리어는 이 작업에서 만든 QA 선수만 명시적으로 설정한 fixture다. 사용자의 기존 기록은 변경하지 않았다.
+- 종목 카드·목표를한국어/영어/일본어/중국어로 전환하고, 성장 자유투 티켓으로 진입·슛 시도·회차 표시를 확인했다. 브라우저 오류/경고 없음. 공개 브라우저의10구 전체 완주·보상 화면을 검증했다고 주장하지 않으며,10구 완주는 headless 실제 궤적 검사와 서버의 별도 보상 fixture로 나눠 검사했다.
+- 모바일390×844와320×640 화면을 점검했다. 마지막390px 화면에서 document.clientWidth375px(스크롤바 제외), scrollWidth375px, dialog.left14px/right361px로 가로 넘침 없음. 작은 화면은 한 카드 안에서 세로 스크롤한다. 실제 휴대폰 검증은 별도다. 최종 공개 화면 증거 `artifacts/v0107-public-mobile-final.png`;320px/플레이/목표 전환 자료는 `artifacts/v0107-public-*`.
+- 로컬에서1대2 실제3명 이동·슛, 리바운드의림 미스와 상대 공중 캐치를 관찰했다. 기존 캐치·착지 클립을 유지한다. 손·공 접촉을 다룬 이번 변경과 전체 모션의 자연스러움 완성은 구분한다.
+- Roky Studio 최신 피드에 ‘다음 도전은, 내 스타일로 v0.10.7’ 및24코트/5종 도전 상세가 표시됨을 확인했다. 스튜디오 코드는 변경하지 않았다.
+- 보안 advisor의cr_* RLS/no-policy INFO는브라우저 직접 접근을 막고 자체 인증 Edge만 사용하는 기존 구조다. 공유 ttk 함수의[SECURITY DEFINER WARN](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), 공유 Auth의[유출 비밀번호 보호 WARN](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection)도 관찰했으며 이번 변경과 무관한 공유 설정을 임의 수정하지 않았다.
+- QA 계정/선수/경기 영수증과 임시 자격 증명 삭제 후 해당 QA계정 수0 확인. 검증 탭을 닫고 화면 크기를 복구했으며, 이번에 만든8803 서버PID108888만 종료했다. 사용자 메인8791 탭과경기는 새로고침하지 않았다.
