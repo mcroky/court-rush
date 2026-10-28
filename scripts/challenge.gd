@@ -1,5 +1,7 @@
 extends RefCounted
 ## Event-driven drill objectives; uses the ordinary rendered hand/ball contacts.
+const StealControl=preload("res://scripts/online/duel_control.gd")
+const STEAL_ROUTE=[Vector2(1,-.6),Vector2(-.7,-1),Vector2(-.95,.65),Vector2(.75,.9),Vector2(1.15,.1),Vector2(-1,-.25)]
 var game
 var config: Dictionary = {}
 var active = false
@@ -8,6 +10,12 @@ var rounds = 0
 var round_time = 0.0
 var rest = -1.0
 var settled = false
+var steal_control
+var steal_waypoint=0
+var steal_goal=Vector3.ZERO
+var steal_goal_left=0.0
+var steal_skill_left=0.0
+var steal_skill_index=0
 
 func _init(owner_game) -> void:
 	game=owner_game
@@ -48,6 +56,9 @@ func next_round() -> void:
 		game.ball.position=game.flight_start
 		game.ai_freeze=maxf(0,1.25-float(config.tier)*.18)
 	elif config.kind=="steal":
+		steal_control=StealControl.new()
+		steal_waypoint=rounds%STEAL_ROUTE.size()
+		steal_goal_left=0;steal_skill_left=2.7-float(config.tier)*.2;steal_skill_index=rounds
 		game.practice_drill="steal"
 		p.position=Vector3(-.35,0,-2.3)
 		rival.position=Vector3(0,0,-1.15)
@@ -58,6 +69,39 @@ func next_round() -> void:
 		actor.feet_world.clear();actor.animate(.016,game.time)
 	if config.kind in ["free_throw","three"]:game.ball.position=p.ball_anchor(game.time)
 	game.previous_ball_position=game.ball.position
+
+func update_steal_rival(delta: float) -> void:
+	if rest>=0 or game.phase!="live" or game.ball_owner!=1:return
+	var rival=game.players[1]
+	var tier=int(config.tier)
+	steal_goal_left-=delta
+	if steal_goal_left<=0 or rival.position.distance_to(steal_goal)<.25:
+		var point: Vector2=STEAL_ROUTE[steal_waypoint]
+		steal_goal=Vector3(point.x*(1.03+tier*.12),0,-1.15+point.y*(.65+tier*.1))
+		steal_waypoint=(steal_waypoint+1)%STEAL_ROUTE.size()
+		steal_goal_left=2.1-tier*.08
+	var direction=(steal_goal-rival.position).normalized()
+	var speed=minf(1.15+(tier-1)*.23,rival.athletic_profile().speed*.9)
+	var input=StealControl.neutral()
+	input.x=direction.x*speed/rival.athletic_profile().speed
+	input.z=direction.z*speed/rival.athletic_profile().speed
+	# Keep ordinary dribble windows after every skill. Decisions use a schedule,
+	# never the defender's button presses or an automatic possession change.
+	var selected=""
+	if rival.action=="idle":
+		steal_skill_left-=delta
+		if tier>=2 and steal_skill_left<=0 and steal_control.cross_cooldown<=0:
+			var skills=["cross"]
+			if tier>=3:skills.append("behind")
+			if tier>=4:skills.append("hesi")
+			if tier>=5:skills.append("spin")
+			if tier>=6:skills.append("twostep")
+			selected=skills[steal_skill_index%skills.size()]
+			input[selected]=true
+	steal_control.tick(game,1,input,delta)
+	if selected!="" and rival.action==selected:
+		steal_skill_index+=1
+		steal_skill_left=1.6-(tier-1)*.16
 
 func tick(delta: float) -> bool:
 	if not active or game.phase=="ended":return false

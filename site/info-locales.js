@@ -224,6 +224,9 @@
  news["en"][2].unshift("Expanded 1v1 to 24 courts with gradual difficulty. Six tiers each of free throws, rebounds, three-pointers, steals and one vs two grant growth rewards. Mobile shows one event card at a time with existing controls.",news["en"][1]);news["en"][0]="Your next challenge.";news["en"][1]="v0.10.7 · 24 courts and five challenge events";
  news["ja"][2].unshift("1対1を24コートに拡張し、少しずつ難しく。フリースロー・リバウンド・3ポイント・スティール・1対2は各6段階で育成報酬を獲得。モバイルは種目ごとに1枚のカードと既存操作で遊べます。",news["ja"][1]);news["ja"][0]="次の挑戦を、自分らしく。";news["ja"][1]="v0.10.7・24コートと5種目の挑戦";
  news["zh-CN"][2].unshift("1对1扩展至24个球场，难度逐步上升。罚球、篮板、三分、抢断及一对二各有6级并提供成长奖励。手机每次仅显示一个项目卡片，沿用现有操作。",news["zh-CN"][1]);news["zh-CN"][0]="下一场挑战，打出自己的风格。";news["zh-CN"][1]="v0.10.7 · 24个球场与五种挑战";
+ news.en[2].unshift("Steal King opponents now patrol in both directions from the first tier. Tier 2 adds crossovers, tier 3 behind-the-back moves, tier 4 hesitation, tier 5 spins and tier 6 two-step drives. Higher tiers move faster and use skills more often, with ordinary dribble windows between skills. Steals still require actual hand-ball contact.",news.en[1]);news.en[0]="Moving opponents. Better-timed steals.";news.en[1]="v0.10.8 · Steal King opponent behavior";
+ news.ja[2].unshift("スティール王の相手は初級から左右・前後に動いてドリブル。段階2でクロスオーバー、3でビハインド、4でヘジテーション、5でターン、6でツーステップを追加。上位ほど移動と技が速くなりますが、技の合間に通常ドリブルの隙を残します。スティールは実際の手とボールの接触で判定します。",news.ja[1]);news.ja[0]="動く相手の隙を狙おう。";news.ja[1]="v0.10.8・スティール王の相手行動";
+ news["zh-CN"][2].unshift("抢断王对手从初级开始左右及前后移动运球。第2级加入变向，第3级背后运球，第4级迟疑步，第5级转身，第6级双步突破。等级越高移动越快、技巧越频繁，技巧之间仍保留普通运球的抢断机会。抢断仍需真实手与球接触。",news["zh-CN"][1]);news["zh-CN"][0]="盯住移动对手的运球空档。";news["zh-CN"][1]="v0.10.8 · 抢断王对手行为";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;

@@ -1754,11 +1754,7 @@ func resolve_steal() -> void:
 
 func update_ai(delta: float) -> void:
 	if challenge.active and challenge.config.kind=="steal":
-		var rival=players[1]
-		var goal=Vector3(sin(time*(.5+challenge.config.tier*.11))*(.15+challenge.config.tier*.13),0,-1.15)
-		rival.steer_motion(Vector2(goal.x-rival.position.x,goal.z-rival.position.z)*2,12,delta)
-		move_player(1,delta)
-		face_target(1,HOOP)
+		challenge.update_steal_rival(delta)
 		return
 	var ai = players[1]
 	if ai.contesting_boxout:
