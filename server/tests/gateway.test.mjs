@@ -109,6 +109,23 @@ test('private rooms hide codes, fix the pair, require both ready and never enter
  assert.equal(worker.commands.filter(m=>m.type==='create').length,1);
 });
 
+test('bounded headless polling preserves sixty authority ticks and twenty snapshots per second', {skip:!process.env.GODOT_BIN,timeout:15000},async t=>{
+ const worker=new Worker({binary:process.env.GODOT_BIN,root:resolve(import.meta.dirname,'../..'),port:32112});t.after(()=>worker.close());
+ let created=false,last=null,snapshots=0,started=0;let fault=null;
+ worker.on('fault',code=>{fault=code;});
+ worker.on('message',m=>{
+  if(m.type==='ready')worker.send({type:'create',roomId:'clock-check',appearances:[{},{}]});
+  if(m.type==='created'){created=true;started=performance.now();worker.send({type:'start',roomId:'clock-check'});}
+  if(m.type==='snapshot'){last=m.state;snapshots++;}
+ });worker.start();
+ const deadline=Date.now()+10000;while((!last||last.tick<126)&&Date.now()<deadline&&!fault)await new Promise(r=>setTimeout(r,10));
+ assert.equal(fault,null);assert.ok(created&&last,'worker starts and emits snapshots');
+ const seconds=(performance.now()-started)/1000;
+ assert.ok(last.tick/seconds>55&&last.tick/seconds<65,'authority remains 60Hz after changing engine polling');
+ assert.ok(snapshots/seconds>18&&snapshots/seconds<22,'snapshot cadence remains 20Hz');
+ assert.ok(Math.abs(last.time-last.tick/60)<.001,'simulation time still uses exact 1/60 steps');
+});
+
 test('public room list never leaks invitation codes and leaving resets ready state',async t=>{
  const auth=new TestAccounts(),worker=new TestWorker(),g=new Gateway({auth,worker});const port=await g.listen();t.after(()=>g.close());
  const a=await client(port,auth.issue('a')),b=await client(port,auth.issue('b'));

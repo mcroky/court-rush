@@ -16,7 +16,10 @@ var last_health=0
 var tick_times: Array=[]
 
 func _initialize() -> void:
-	Engine.max_fps=60 # Headless polling must not spend the Free CPU quota on an uncapped idle loop.
+	# Run the headless engine loop at 30Hz; the accumulator below still solves
+	# every contact/pose at 60Hz and emits 20 snapshots/s. Avoid spending the
+	# shared Free CPU budget on twice as many engine/scene polling passes.
+	Engine.max_fps=30
 	var port=int(OS.get_environment("CR_WORKER_PORT"))
 	if port<=0: port=32091
 	if listener.listen(port,"127.0.0.1")!=OK:
