@@ -99,7 +99,7 @@ body.touch-layout .possession{top:72px;left:12px;padding:5px 7px;font-size:7px}
 body.touch-layout .feedback{top:92px;bottom:auto;left:22%;right:12px;max-width:none;align-items:flex-end;text-align:right}
 body.touch-layout .feedback strong{font-size:20px;line-height:1.1}body.touch-layout .feedback>span{display:none}
 /* Lift the left thumb rest independently; the right buttons/rail stay aligned. */
-body.touch-layout .joystick{transform:translateY(clamp(-64px,-7svh,-28px))}
+body.touch-layout .joystick{transform:translate(clamp(0px,calc(100vw - 340px),16px),clamp(-64px,-7svh,-28px))}
 .audio-panel{padding:18px 20px;border:1px solid #cbd5c6;border-radius:5px;background:#e5e8dd;min-width:0}
 .audio-panel h2{font-size:18px;margin:12px 0}.audio-panel p{font-size:11px;line-height:1.6;color:#52665f}
 .audio-panel .settings-row button{min-height:44px;flex:1;padding:7px}.audio-track{display:grid;gap:7px;font-size:12px;margin-top:14px}

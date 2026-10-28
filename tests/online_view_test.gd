@@ -47,6 +47,25 @@ func run() -> void:
 	check(palm_error<.003,"moving and shooting display palms agree with authority within 3 mm")
 	var clock=game.clock_left;game._physics_process(1.0/60)
 	check(game.clock_left==clock,"client never advances the server match clock")
+	authority.reset_positions(1)
+	authority.step(1.0/60,[authority.ControlSlot.neutral(),authority.ControlSlot.neutral()])
+	var latest=JSON.parse_string(JSON.stringify(authority.snapshot([-1,-1])))
+	game.web_input={"onlineLocal":JSON.stringify({"enabled":true,"nextSeq":100}),"onlineInputs":"[]","onlineSeq":1,"onlineState":JSON.stringify(latest),"onlineAxes":"[]","compactCamera":false}
+	for frame in 8:view.tick(1.0/60,authority.ControlSlot.neutral())
+	var predicted=view.prediction.simulation.players[1]
+	var exact_error=0.0
+	for bone in skeleton.get_bone_count():
+		var actual_pose=skeleton.get_bone_pose(bone)
+		var expected_pose=predicted.skinned.skeleton.get_bone_pose(bone)
+		exact_error=maxf(exact_error,actual_pose.origin.distance_to(expected_pose.origin))
+		for axis in 3:exact_error=maxf(exact_error,actual_pose.basis[axis].distance_to(expected_pose.basis[axis]))
+	check(view.prediction.weight==1 and exact_error<.000001,"full local prediction preserves all 45 rendered bone transforms without a second pose solve")
+	check(game.players[1].palm_position(0).distance_to(predicted.palm_position(0))<.0001,"direct local rig copy preserves actual palm position within 0.1 mm")
+	game.web_input.onlineLocal=JSON.stringify({"enabled":false,"nextSeq":100})
+	for frame in 6:view.tick(1.0/60,authority.ControlSlot.neutral())
+	view.render_time=float(latest.time);view.tick(0)
+	check(view.prediction.weight==0 and game.players[1].position.distance_to(authority.players[1].position)<.001,"leaving prediction restores server rendering without retaining a speculative root")
+	game.web_input=null
 	game.start_mode("practice")
 	check(game.online_view==null and game.mode=="practice","leaving online releases puppet mode")
 	check(game.players[1].skinned.human_mesh.mesh.get_meta("opponent",false),"leaving restores the AI rival model")

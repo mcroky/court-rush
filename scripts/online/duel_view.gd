@@ -18,6 +18,9 @@ var nicknames: Array=[]
 var event_seen=-1
 var commands: Array=[]
 var original_meshes: Array=[]
+var local_text=""
+var inputs_text=""
+var local_meta: Dictionary={}
 
 func _init(owner) -> void:
 	game=owner
@@ -66,12 +69,17 @@ func push(state: Dictionary) -> void:
 
 func tick(delta: float, local_input: Dictionary={}) -> void:
 	var web=game.web_input
-	var local_meta: Dictionary={}
 	if web!=null:
-		var meta=JSON.parse_string(str(web.get("onlineLocal","{}") if web is Dictionary else web.onlineLocal))
-		if meta is Dictionary: local_meta=meta
-		var recent=JSON.parse_string(str(web.onlineInputs))
-		if recent is Array: commands=recent
+		var next_local=str(web.get("onlineLocal","{}") if web is Dictionary else web.onlineLocal)
+		if next_local!=local_text:
+			local_text=next_local
+			var meta=JSON.parse_string(local_text)
+			if meta is Dictionary: local_meta=meta
+		var next_inputs=str(web.onlineInputs)
+		if next_inputs!=inputs_text:
+			inputs_text=next_inputs
+			var recent=JSON.parse_string(inputs_text)
+			if recent is Array: commands=recent
 		var seq=int(web.onlineSeq)
 		if seq!=sequence:
 			sequence=seq
@@ -88,13 +96,15 @@ func tick(delta: float, local_input: Dictionary={}) -> void:
 		var down=game.camera.global_basis.z*Vector3(1,0,1)
 		var direction=(right.normalized()*float(local.x)+down.normalized()*float(local.z)).limit_length()
 		local.x=direction.x; local.z=direction.z
-		prediction.tick(delta,local,int(local_meta.get("nextSeq",0)),not local_input.is_empty() and bool(local_meta.get("enabled",false)))
+		prediction.tick(delta,local,int(local_meta.get("nextSeq",0)),web!=null and not local_input.is_empty() and bool(local_meta.get("enabled",false)))
 	render_time=minf(render_time+delta,float(current.time))
 	while snapshots.size()>2 and float(snapshots[1].time)<render_time: snapshots.pop_front()
 	var a: Dictionary=snapshots[0]
 	var b: Dictionary=snapshots[1] if snapshots.size()>1 else a
 	var blend=clampf((render_time-float(a.time))/maxf(.0001,float(b.time)-float(a.time)),0,1)
 	for i in 2:
+		# The local sandbox already solved the complete pose at full prediction weight.
+		if i==slot and prediction!=null and prediction.weight>=1.0: continue
 		var first: Dictionary=a.players[i]; var second: Dictionary=b.players[i]
 		var p=game.players[i]
 		p.position=vector(first.position).lerp(vector(second.position),blend)
@@ -116,26 +126,36 @@ func tick(delta: float, local_input: Dictionary={}) -> void:
 		p.skinned.initialized=true
 		labels[i].position=p.position+Vector3.UP*2.35
 	game.ball.position=vector(a.ball).lerp(vector(b.ball),blend) if a.possessionRevision==b.possessionRevision else vector(b.ball)
-	var predicted=Movement.replay(current,slot,commands)
 	if prediction!=null and prediction.weight>0:
 		var p=game.players[slot]; var source=prediction.simulation.players[slot]; var w=prediction.weight
-		p.position=p.position.lerp(source.position,w)
-		p.rotation.y=lerp_angle(p.rotation.y,source.rotation.y,w)
-		p.body.transform=p.body.transform.interpolate_with(source.body.transform,w)
-		p.skinned.transform=p.skinned.transform.interpolate_with(source.skinned.transform,w)
-		p.skinned.model.transform=p.skinned.model.transform.interpolate_with(source.skinned.model.transform,w)
-		for j in p.skinned.skeleton.get_bone_count():
-			var skeleton=p.skinned.skeleton; var other=source.skinned.skeleton
-			skeleton.set_bone_pose_rotation(j,skeleton.get_bone_pose_rotation(j).slerp(other.get_bone_pose_rotation(j),w))
-			skeleton.set_bone_pose_position(j,skeleton.get_bone_pose_position(j).lerp(other.get_bone_pose_position(j),w))
+		if w>=1.0:
+			p.position=source.position; p.rotation.y=source.rotation.y
+			p.body.transform=source.body.transform; p.skinned.transform=source.skinned.transform
+			p.skinned.model.transform=source.skinned.model.transform
+		else:
+			p.position=p.position.lerp(source.position,w)
+			p.rotation.y=lerp_angle(p.rotation.y,source.rotation.y,w)
+			p.body.transform=p.body.transform.interpolate_with(source.body.transform,w)
+			p.skinned.transform=p.skinned.transform.interpolate_with(source.skinned.transform,w)
+			p.skinned.model.transform=p.skinned.model.transform.interpolate_with(source.skinned.model.transform,w)
+		var skeleton=p.skinned.skeleton; var other=source.skinned.skeleton
+		for j in skeleton.get_bone_count():
+			if w>=1.0:
+				skeleton.set_bone_pose(j,other.get_bone_pose(j))
+			else:
+				skeleton.set_bone_pose_rotation(j,skeleton.get_bone_pose_rotation(j).slerp(other.get_bone_pose_rotation(j),w))
+				skeleton.set_bone_pose_position(j,skeleton.get_bone_pose_position(j).lerp(other.get_bone_pose_position(j),w))
 		if prediction.active:
 			p.action=source.action; p.motion=source.motion; p.action_time=source.action_time
 			p.dribble_ended=source.dribble_ended; p.defending=source.defending; p.jump=source.jump
+			p.boxing_out=source.boxing_out
+		p.has_ball=int(b.owner)==slot; p.facing=p.rotation.y; p.skinned.initialized=true
 		for side in 2: p.skinned.palm_world[side]=p.skinned.bone_world(p.skinned.arms[side][2])*p.skinned.palm_offsets[side]
 		labels[slot].position=p.position+Vector3.UP*2.35
 		if prediction.active and int(current.owner)==slot and prediction.simulation.phase in ["live","takeoff"]:
 			game.ball.position=game.ball.position.lerp(prediction.simulation.ball.position,w)
 	elif current.players[slot].get("predictable",false) and current.phase=="live" and a.possessionRevision==b.possessionRevision:
+		var predicted=Movement.replay(current,slot,commands)
 		var offset=(predicted-game.players[slot].position).limit_length(.65)
 		if vector(current.players[slot].position).distance_to(vector(current.players[1-slot].position))>=1.6:
 			game.players[slot].position+=offset

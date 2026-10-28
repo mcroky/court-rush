@@ -218,6 +218,9 @@
  news.en[2].unshift("Your movement, dribbling, shot preparation and defensive actions now start on your device without waiting for a server reply. Server confirmations smoothly correct your position. Ball possession, contacts, scores and Elo still follow the server. Long connection gaps can still interrupt play.",news.en[1]);news.en[0]="Your move starts here.";news.en[1]="v0.10.5 · Responsive online controls";
  news.ja[2].unshift("移動・ドリブル・シュート準備・守備動作をサーバー応答を待たず端末で開始し、確認結果へ位置を滑らかに補正します。ボール所有・接触・得点・Eloはサーバー判定。長い通信断では途切れが残ります。",news.ja[1]);news.ja[0]="入力した瞬間から動く。";news.ja[1]="v0.10.5・オンライン操作の反応改善";
  news["zh-CN"][2].unshift("移动、运球、投篮准备和防守动作在本机立即开始，不再等待服务器回复，并平滑校正位置。球权、接触、得分和Elo仍由服务器判定。较长的网络中断仍可能影响比赛。",news["zh-CN"][1]);news["zh-CN"][0]="输入后立即行动。";news["zh-CN"][1]="v0.10.5 · 在线操作响应改善";
+ news.en[2].unshift("Reduced duplicate local-rig work and repeated input decoding during online prediction while preserving poses and decisions. Moved the mobile joystick 16px to the right, keeping its height and the right action buttons.",news.en[1]);news.en[0]="Less repeated work. More room for your thumb.";news.en[1]="v0.10.6 · Online display and mobile joystick";
+ news.ja[2].unshift("オンライン予測中の自分の重複ボーン処理と入力データ解析を削減。動作と判定を維持し、モバイルのスティックを高さを変えず右へ16px移動しました。右側ボタンは維持します。",news.ja[1]);news.ja[0]="繰り返し処理を軽く、親指に少し余裕を。";news.ja[1]="v0.10.6・オンライン表示とスティック位置";
+ news["zh-CN"][2].unshift("减少在线预测中本机球员的重复骨骼处理与输入解析，保持动作和判定。手机摇杆向右移动16px，高度与右侧按钮保持不变。",news["zh-CN"][1]);news["zh-CN"][0]="减少重复处理，调整拇指位置。";news["zh-CN"][1]="v0.10.6 · 在线显示与手机摇杆";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;
