@@ -81,4 +81,3 @@ func run() -> void:
 	check(max_step<.15 and stopped==0,"100ms delayed jittering snapshots produce continuous 60Hz own movement without packet-sized jumps")
 	prediction.stop();host.queue_free();authority.queue_free();await process_frame
 	quit(1 if failures else 0)
-
