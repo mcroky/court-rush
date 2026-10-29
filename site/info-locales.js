@@ -227,6 +227,9 @@
  news.en[2].unshift("Steal King opponents now patrol in both directions from the first tier. Tier 2 adds crossovers, tier 3 behind-the-back moves, tier 4 hesitation, tier 5 spins and tier 6 two-step drives. Higher tiers move faster and use skills more often, with ordinary dribble windows between skills. Steals still require actual hand-ball contact.",news.en[1]);news.en[0]="Moving opponents. Better-timed steals.";news.en[1]="v0.10.8 · Steal King opponent behavior";
  news.ja[2].unshift("スティール王の相手は初級から左右・前後に動いてドリブル。段階2でクロスオーバー、3でビハインド、4でヘジテーション、5でターン、6でツーステップを追加。上位ほど移動と技が速くなりますが、技の合間に通常ドリブルの隙を残します。スティールは実際の手とボールの接触で判定します。",news.ja[1]);news.ja[0]="動く相手の隙を狙おう。";news.ja[1]="v0.10.8・スティール王の相手行動";
  news["zh-CN"][2].unshift("抢断王对手从初级开始左右及前后移动运球。第2级加入变向，第3级背后运球，第4级迟疑步，第5级转身，第6级双步突破。等级越高移动越快、技巧越频繁，技巧之间仍保留普通运球的抢断机会。抢断仍需真实手与球接触。",news["zh-CN"][1]);news["zh-CN"][0]="盯住移动对手的运球空档。";news["zh-CN"][1]="v0.10.8 · 抢断王对手行为";
+ news.en[2].unshift("New MotionBricks-generated running, stopping and turning poses drive the torso, shoulders and arms. Existing foot contacts and dribble-hand correction stay active. Only baked pose data is loaded during play.",news.en[1]);news.en[0]="Plant, turn and drive.";news.en[1]="v0.10.9 · MotionBricks locomotion";
+ news.ja[2].unshift("MotionBricksで生成した走行・停止・左右ターンを胴体、肩、腕に適用。足の接地とドリブルの手の補正を維持し、プレイ中は焼き込んだ姿勢データだけを読み込みます。",news.ja[1]);news.ja[0]="踏み込み、ターン、再加速。";news.ja[1]="v0.10.9・MotionBricks移動モーション";
+ news["zh-CN"][2].unshift("将MotionBricks生成的跑步、停止和左右转向姿势用于躯干、肩膀和手臂。保留脚部接地和运球手部修正，游戏中只读取烘焙姿势数据。",news["zh-CN"][1]);news["zh-CN"][0]="蹬地、转身、再突破。";news["zh-CN"][1]="v0.10.9 · MotionBricks移动动作";
  i18n.infoHTML=source=>{
   const lang=i18n.locale,isHelp=source.includes('GET INTO YOUR RHYTHM'),isNews=source.includes('COURT NOTES');
   if(lang==='ko'||!isHelp&&!isNews)return source;

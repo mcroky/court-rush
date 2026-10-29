@@ -32,6 +32,8 @@ const HumanRival = preload("res://assets/characters/rush_rival.res")
 const SCALE = 1.08
 var render_scale=SCALE
 const RUN_SPEED = 7.0
+const MotionBricksPose=preload("res://scripts/motionbricks_pose.gd")
+var motionbricks=MotionBricksPose.new()
 var model: Node3D
 var skeleton: Skeleton3D
 var player: AnimationPlayer
@@ -258,6 +260,7 @@ func setup(opponent: bool) -> void:
 	model.scale = Vector3.ONE*render_scale
 	skeleton = model.find_children("*","Skeleton3D")[0]
 	bone_count=skeleton.get_bone_count()
+	motionbricks.setup(skeleton)
 	bone_parents.resize(bone_count)
 	for bone in bone_count:bone_parents[bone]=skeleton.get_bone_parent(bone)
 	head_bone=skeleton.find_bone("head");neck_bone=skeleton.find_bone("neck_01")
@@ -793,7 +796,9 @@ func rebound_pose(actor, index: int, shoulder: Vector3) -> Dictionary:
 	return {"target":target,"frame":frame,"guide":guide}
 
 func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
-	if teleported: reset_contacts()
+	if teleported:
+		reset_contacts()
+		motionbricks.reset()
 	var skeleton_rotation_inverse=skeleton.global_basis.orthonormalized().inverse()
 	var hands_before_turn = last_hand_basis.duplicate()
 	if initialized and actor.ordinary_dribble():
@@ -865,6 +870,7 @@ func update_pose(actor, delta: float, speed: float, teleported: bool) -> void:
 	# rotation and shoulder bob underneath a planted defensive stance.
 	var was_run_clip=clip=="run"
 	sample_base(delta,speed,(action_pose and not actor.moving_gather()) or actor.brake_state in ["load","settle"] or guard_active or actor.held.owns(actor),actor.stride/TAU+.21)
+	motionbricks.apply(skeleton,actor,delta,phase,speed)
 	if clip=="run" and not was_run_clip:run_start_serial=actor.step_serial
 	var first_run_step=clip=="run" and not contact_mode and actor.step_serial==run_start_serial and actor.last_step>=0 and actor.swing_progress[actor.last_step]<.55
 	if previous_contact_mode and not contact_mode and clip=="run":
