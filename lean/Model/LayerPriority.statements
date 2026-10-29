@@ -1,0 +1,938 @@
+{
+  "format": 1,
+  "toolchain": "leanprover/lean4:v4.34.1",
+  "module": "Model.LayerPriority",
+  "declarations": [
+    {
+      "name": "LayerPriority.Clip",
+      "kind": "inductive",
+      "type": "Type",
+      "typeHash": "7051ab654d793c216d744f7920d98d672357a0efa67248ee75d146d668f60997",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.casesOn",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → (t : LayerPriority.Clip) → motive LayerPriority.Clip.run → motive LayerPriority.Clip.stopL → motive LayerPriority.Clip.stopR → motive LayerPriority.Clip.leftL → motive LayerPriority.Clip.leftR → motive LayerPriority.Clip.rightL → motive LayerPriority.Clip.rightR → motive t",
+      "typeHash": "51ec527b0cae625bdf55a802fb738df03c69d7955a5db2392e6bc6f2f5510986",
+      "valueHash": "91def09ca18ce0a35538c1810b1181f8eda327d28a66007eaa81b58e4a65c380"
+    },
+    {
+      "name": "LayerPriority.Clip.ctorElim",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → (ctorIdx : Nat) → (t : LayerPriority.Clip) → ctorIdx = t.ctorIdx → LayerPriority.Clip.ctorElimType ctorIdx → motive t",
+      "typeHash": "12b0d4078255420a8a656d199ed99ed2dfc1094a3060a769c06b5ad124c5962f",
+      "valueHash": "a4008aa5a48628c922b7c083e29c2ef7d0fef31f9dbc55bf8167550a15665699"
+    },
+    {
+      "name": "LayerPriority.Clip.ctorElimType",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → Nat → Sort (max 1 u)",
+      "typeHash": "d53d1238a1975cb5f92b768e99b1238d7a196244a4320b352e7901af928e046d",
+      "valueHash": "c382e5b9a4b254d46a8327c10eb47adfcc2cd0773221ec8dd6e8a776be28fdac"
+    },
+    {
+      "name": "LayerPriority.Clip.ctorIdx",
+      "kind": "definition",
+      "type": "LayerPriority.Clip → Nat",
+      "typeHash": "591eb770702891b89101464b3a997f9c6e50835576a37ced8f9e6f503d82ac9a",
+      "valueHash": "a764aa88f38d8dd84a561ba888a272c5f7bc594046c9b7b922acc10bdf4fc32b"
+    },
+    {
+      "name": "LayerPriority.Clip.leftL",
+      "kind": "constructor",
+      "type": "LayerPriority.Clip",
+      "typeHash": "6c510def6378410271bec0ed4c717669fde4f1f73d49b53891f26645ca9f04a8",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.leftL.elim",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → (t : LayerPriority.Clip) → t.ctorIdx = 3 → motive LayerPriority.Clip.leftL → motive t",
+      "typeHash": "36e3f0c6c7c2de127f62b65ea9f8e94a5df892219f4d01c9171708ec9efee53d",
+      "valueHash": "cf1a26a7f5b185f3fec92abe00321580eb16397025af4011c390beca39318106"
+    },
+    {
+      "name": "LayerPriority.Clip.leftL.sizeOf_spec",
+      "kind": "theorem",
+      "type": "sizeOf LayerPriority.Clip.leftL = 1",
+      "typeHash": "8282fe729c6138fb09eeb154b3a3f3e919e131e5d9fd44a7d2aa79ad931de5d7",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.leftR",
+      "kind": "constructor",
+      "type": "LayerPriority.Clip",
+      "typeHash": "6c510def6378410271bec0ed4c717669fde4f1f73d49b53891f26645ca9f04a8",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.leftR.elim",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → (t : LayerPriority.Clip) → t.ctorIdx = 4 → motive LayerPriority.Clip.leftR → motive t",
+      "typeHash": "06615109fed345d0667bddec1dbb65d34c66def1140fb2dda80994d62325c6b7",
+      "valueHash": "94b88c14c28ef4195caec936cb88e9954f66074336485d30160eeef13c3daaf1"
+    },
+    {
+      "name": "LayerPriority.Clip.leftR.sizeOf_spec",
+      "kind": "theorem",
+      "type": "sizeOf LayerPriority.Clip.leftR = 1",
+      "typeHash": "1f1a384ebf3c96413eaa4de87785db4548a70a21786aab4e8c6741a3b9ece80f",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.noConfusion",
+      "kind": "definition",
+      "type": "{P : Sort v✝} → {x y : LayerPriority.Clip} → x = y → LayerPriority.Clip.noConfusionType P x y",
+      "typeHash": "85c4c0a6fc5458d6d54071fc3d9240514f0221f5676502a540f319f5bc298281",
+      "valueHash": "57b9c30c15457b4337713accb2f5a1df91fc53ac582d5e09d46d30622149fd52"
+    },
+    {
+      "name": "LayerPriority.Clip.noConfusionType",
+      "kind": "definition",
+      "type": "Sort v✝ → LayerPriority.Clip → LayerPriority.Clip → Sort v✝",
+      "typeHash": "ddeca056e26e8ccfcc0b6b631aaa4ec16eff332b35068b305ed4441d02a217d2",
+      "valueHash": "5f9977f45c560245920126980a52c45755c30f3bfdd3e1ea3cda0b49d5c8abd4"
+    },
+    {
+      "name": "LayerPriority.Clip.ofNat",
+      "kind": "definition",
+      "type": "Nat → LayerPriority.Clip",
+      "typeHash": "d19d33814568e6490a37c697e47061bd4a53cb81402df59edaf7335174698ca7",
+      "valueHash": "86f0d0a3c79ada789059bada45359403bc167ee1645b6c9be618020838d2b4eb"
+    },
+    {
+      "name": "LayerPriority.Clip.ofNat_ctorIdx",
+      "kind": "theorem",
+      "type": "∀ (x : LayerPriority.Clip), LayerPriority.Clip.ofNat x.ctorIdx = x",
+      "typeHash": "0461ae4712021fb6488f0454e60c11530965f230251880d96c38deff9af42566",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.rec",
+      "kind": "recursor",
+      "type": "{motive : LayerPriority.Clip → Sort u} → motive LayerPriority.Clip.run → motive LayerPriority.Clip.stopL → motive LayerPriority.Clip.stopR → motive LayerPriority.Clip.leftL → motive LayerPriority.Clip.leftR → motive LayerPriority.Clip.rightL → motive LayerPriority.Clip.rightR → (t : LayerPriority.Clip) → motive t",
+      "typeHash": "a9bd277b6aa7ca54d5bcac9008533b1f1b4634e89a0d8b16140a57ebaead58fb",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.recOn",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → (t : LayerPriority.Clip) → motive LayerPriority.Clip.run → motive LayerPriority.Clip.stopL → motive LayerPriority.Clip.stopR → motive LayerPriority.Clip.leftL → motive LayerPriority.Clip.leftR → motive LayerPriority.Clip.rightL → motive LayerPriority.Clip.rightR → motive t",
+      "typeHash": "51ec527b0cae625bdf55a802fb738df03c69d7955a5db2392e6bc6f2f5510986",
+      "valueHash": "91def09ca18ce0a35538c1810b1181f8eda327d28a66007eaa81b58e4a65c380"
+    },
+    {
+      "name": "LayerPriority.Clip.rightL",
+      "kind": "constructor",
+      "type": "LayerPriority.Clip",
+      "typeHash": "6c510def6378410271bec0ed4c717669fde4f1f73d49b53891f26645ca9f04a8",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.rightL.elim",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → (t : LayerPriority.Clip) → t.ctorIdx = 5 → motive LayerPriority.Clip.rightL → motive t",
+      "typeHash": "72fdb869db38c7f1d386649b1d06e42e7a9714775e08b600d722a3b308a1e504",
+      "valueHash": "2260fdb24d15eac2b091c195a3cd7b744b6acb18999e9ad5bdac234926bc8b26"
+    },
+    {
+      "name": "LayerPriority.Clip.rightL.sizeOf_spec",
+      "kind": "theorem",
+      "type": "sizeOf LayerPriority.Clip.rightL = 1",
+      "typeHash": "2084f13b4b40f2b76b1a90479e12611f453d06bc0173ebd735a73388770f5e05",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.rightR",
+      "kind": "constructor",
+      "type": "LayerPriority.Clip",
+      "typeHash": "6c510def6378410271bec0ed4c717669fde4f1f73d49b53891f26645ca9f04a8",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.rightR.elim",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → (t : LayerPriority.Clip) → t.ctorIdx = 6 → motive LayerPriority.Clip.rightR → motive t",
+      "typeHash": "972bc5717381e5123c2c0dfa48de8d600978ca77b3b78edecefcb2be851b7312",
+      "valueHash": "ee39e4b0ee8247fb9a02a235f399e7226bae8fc3c5e6213ca18412b3cdd77e83"
+    },
+    {
+      "name": "LayerPriority.Clip.rightR.sizeOf_spec",
+      "kind": "theorem",
+      "type": "sizeOf LayerPriority.Clip.rightR = 1",
+      "typeHash": "f65241dc1257f1e3b1cce7a90ed012138188e74f0a87e7c8b53d948440bf7380",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.run",
+      "kind": "constructor",
+      "type": "LayerPriority.Clip",
+      "typeHash": "6c510def6378410271bec0ed4c717669fde4f1f73d49b53891f26645ca9f04a8",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.run.elim",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → (t : LayerPriority.Clip) → t.ctorIdx = 0 → motive LayerPriority.Clip.run → motive t",
+      "typeHash": "3ff011aef6118a5caa8cbcbb21adf106abefb6a8dc6e2fab35356c435e37d76c",
+      "valueHash": "671fbb83c3bcf5e429365555c740e89f917c0b38ca51777cd0d9afcfcb3c3ca6"
+    },
+    {
+      "name": "LayerPriority.Clip.run.sizeOf_spec",
+      "kind": "theorem",
+      "type": "sizeOf LayerPriority.Clip.run = 1",
+      "typeHash": "69d2988089d5726c7d4ec0d6d9add99d73fec86b16d37d65e571d3949efc3e01",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.stopL",
+      "kind": "constructor",
+      "type": "LayerPriority.Clip",
+      "typeHash": "6c510def6378410271bec0ed4c717669fde4f1f73d49b53891f26645ca9f04a8",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.stopL.elim",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → (t : LayerPriority.Clip) → t.ctorIdx = 1 → motive LayerPriority.Clip.stopL → motive t",
+      "typeHash": "1a1026ab593d3a040d956749fac27128112af7ca761cc846cbdc2bc3a2496864",
+      "valueHash": "8147a4325e836b094b98e6ee3ee09448ba3a494d78accb5332b9ac7b49fa9b28"
+    },
+    {
+      "name": "LayerPriority.Clip.stopL.sizeOf_spec",
+      "kind": "theorem",
+      "type": "sizeOf LayerPriority.Clip.stopL = 1",
+      "typeHash": "0658c0ba7efbe0f1a85c9e354f2ca759727858174d8fbe6b2ea20654fca063e7",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.stopR",
+      "kind": "constructor",
+      "type": "LayerPriority.Clip",
+      "typeHash": "6c510def6378410271bec0ed4c717669fde4f1f73d49b53891f26645ca9f04a8",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Clip.stopR.elim",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Clip → Sort u} → (t : LayerPriority.Clip) → t.ctorIdx = 2 → motive LayerPriority.Clip.stopR → motive t",
+      "typeHash": "508b1c947b15f88c85c6d1af53add55aab3ee4a3923b7473efa9d3f3ecf0d06b",
+      "valueHash": "5164a8f3e51e4ba226ea0b3c75f98a1ce501cd1256443fbe32677e5591ee5058"
+    },
+    {
+      "name": "LayerPriority.Clip.stopR.sizeOf_spec",
+      "kind": "theorem",
+      "type": "sizeOf LayerPriority.Clip.stopR = 1",
+      "typeHash": "8c8c3c594c8e37cc9bd36aa33f2080976f5b28ab7d8570500577fadc798fcf4d",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.EligibleProperty",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Prop",
+      "typeHash": "58a0c259293027258bdc46e6c50373c95d2cda067e199d15133512940330e502",
+      "valueHash": "ab757856a41ca831b5273fbe857d18562b99e60c59a69e28fdba1aef524b480a"
+    },
+    {
+      "name": "LayerPriority.ExpectedSelection",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → LayerPriority.Clip → Prop",
+      "typeHash": "0ee2bc93176a96ec114af6230fdcd4f5e0031a3c1231ba27170af4e4cbc7c031",
+      "valueHash": "e7b9270a04477bdb1a51218aa2598fb9f98c4e0e470c5338b8d25d905916d2b5"
+    },
+    {
+      "name": "LayerPriority.ExpectedSelection.match_1",
+      "kind": "definition",
+      "type": "(motive : Bool → Bool → Sort u_1) → (x x_1 : Bool) → (Unit → motive true true) → (Unit → motive true false) → (Unit → motive false true) → (Unit → motive false false) → motive x x_1",
+      "typeHash": "9aad781b53055bb1b5ad7b1df4215b805980b36790762b863e4dd911d732c545",
+      "valueHash": "36fcda0e17e62ded0864f6c1f04b8fb3060cd0fe1bad6b26419450ed23695b44"
+    },
+    {
+      "name": "LayerPriority.Flags",
+      "kind": "inductive",
+      "type": "Type",
+      "typeHash": "7051ab654d793c216d744f7920d98d672357a0efa67248ee75d146d668f60997",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Flags.boxoutLow",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Bool",
+      "typeHash": "245d4b190450002880e644fa26ee1f206c0e94f06d519eddcf88b37c94745807",
+      "valueHash": "968daad7ababb71e66d6c4c9f69262f0bdde7c5e8c70eb63e637b2f3099308a6"
+    },
+    {
+      "name": "LayerPriority.Flags.casesOn",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Flags → Sort u} → (t : LayerPriority.Flags) → ((idle grounded defenseLow boxoutLow dribbleOpen noChase noShotRecovery : Bool) → motive { idle := idle, grounded := grounded, defenseLow := defenseLow, boxoutLow := boxoutLow, dribbleOpen := dribbleOpen, noChase := noChase, noShotRecovery := noShotRecovery }) → motive t",
+      "typeHash": "a2d13edbb45e6117e5805fa26f6c316d8a0b2516187c12230e3984d8841a33dd",
+      "valueHash": "343b8aad49d13caea15d1721d1dd9cc8363052540cc59f831602da9197dd6f68"
+    },
+    {
+      "name": "LayerPriority.Flags.ctorIdx",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Nat",
+      "typeHash": "e700b398634b3f4b400111322e23e5d2949c5aae372c7f1a7fc3d3ea96860ba6",
+      "valueHash": "d8e27b7a0c5b5903c5c0c3041b81b6fbc3ca42267b4a65132eecf5e0455b831a"
+    },
+    {
+      "name": "LayerPriority.Flags.defenseLow",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Bool",
+      "typeHash": "245d4b190450002880e644fa26ee1f206c0e94f06d519eddcf88b37c94745807",
+      "valueHash": "3da063eabb5dd6973f4327428d87969d750aa3135b960d85c77c67746f385a35"
+    },
+    {
+      "name": "LayerPriority.Flags.dribbleOpen",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Bool",
+      "typeHash": "245d4b190450002880e644fa26ee1f206c0e94f06d519eddcf88b37c94745807",
+      "valueHash": "880acf0fddd373083980cfdf087574a8d75b1fe1d2e83b885c057300c020b5c0"
+    },
+    {
+      "name": "LayerPriority.Flags.grounded",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Bool",
+      "typeHash": "245d4b190450002880e644fa26ee1f206c0e94f06d519eddcf88b37c94745807",
+      "valueHash": "8659d9d9569d46f0731843f9df4c3bb5e8a0468e23d9c789717145ac747edbfd"
+    },
+    {
+      "name": "LayerPriority.Flags.idle",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Bool",
+      "typeHash": "245d4b190450002880e644fa26ee1f206c0e94f06d519eddcf88b37c94745807",
+      "valueHash": "8ae718bc7a525597b7a07502f4958e1f18b5a23cef2483523456e7a994288a37"
+    },
+    {
+      "name": "LayerPriority.Flags.mk",
+      "kind": "constructor",
+      "type": "Bool → Bool → Bool → Bool → Bool → Bool → Bool → LayerPriority.Flags",
+      "typeHash": "4db5cfa19ac1da7889942b00640aeec1aafe287f61c16d4075e6d5e5e016f91d",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Flags.mk.inj",
+      "kind": "theorem",
+      "type": "∀ {idle grounded defenseLow boxoutLow dribbleOpen noChase noShotRecovery idle_1 grounded_1 defenseLow_1 boxoutLow_1 dribbleOpen_1 noChase_1 noShotRecovery_1 : Bool}, { idle := idle, grounded := grounded, defenseLow := defenseLow, boxoutLow := boxoutLow, dribbleOpen := dribbleOpen, noChase := noChase, noShotRecovery := noShotRecovery } = { idle := idle_1, grounded := grounded_1, defenseLow := defenseLow_1, boxoutLow := boxoutLow_1, dribbleOpen := dribbleOpen_1, noChase := noChase_1, noShotRecovery := noShotRecovery_1 } → idle = idle_1 ∧ grounded = grounded_1 ∧ defenseLow = defenseLow_1 ∧ boxoutLow = boxoutLow_1 ∧ dribbleOpen = dribbleOpen_1 ∧ noChase = noChase_1 ∧ noShotRecovery = noShotRecovery_1",
+      "typeHash": "4fc439a712348a0daf0d56c23987184424dc220ed623544f333e3b797889205f",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Flags.mk.injEq",
+      "kind": "theorem",
+      "type": "∀ (idle grounded defenseLow boxoutLow dribbleOpen noChase noShotRecovery idle_1 grounded_1 defenseLow_1 boxoutLow_1 dribbleOpen_1 noChase_1 noShotRecovery_1 : Bool), ({ idle := idle, grounded := grounded, defenseLow := defenseLow, boxoutLow := boxoutLow, dribbleOpen := dribbleOpen, noChase := noChase, noShotRecovery := noShotRecovery } = { idle := idle_1, grounded := grounded_1, defenseLow := defenseLow_1, boxoutLow := boxoutLow_1, dribbleOpen := dribbleOpen_1, noChase := noChase_1, noShotRecovery := noShotRecovery_1 }) = (idle = idle_1 ∧ grounded = grounded_1 ∧ defenseLow = defenseLow_1 ∧ boxoutLow = boxoutLow_1 ∧ dribbleOpen = dribbleOpen_1 ∧ noChase = noChase_1 ∧ noShotRecovery = noShotRecovery_1)",
+      "typeHash": "bdf6a8fca33ca816e0a641264a9db8c91b571b88ae5541cfc411b98f486b4cb2",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Flags.mk.noConfusion",
+      "kind": "definition",
+      "type": "{P : Sort u} → {idle grounded defenseLow boxoutLow dribbleOpen noChase noShotRecovery idle' grounded' defenseLow' boxoutLow' dribbleOpen' noChase' noShotRecovery' : Bool} → { idle := idle, grounded := grounded, defenseLow := defenseLow, boxoutLow := boxoutLow, dribbleOpen := dribbleOpen, noChase := noChase, noShotRecovery := noShotRecovery } = { idle := idle', grounded := grounded', defenseLow := defenseLow', boxoutLow := boxoutLow', dribbleOpen := dribbleOpen', noChase := noChase', noShotRecovery := noShotRecovery' } → (idle = idle' → grounded = grounded' → defenseLow = defenseLow' → boxoutLow = boxoutLow' → dribbleOpen = dribbleOpen' → noChase = noChase' → noShotRecovery = noShotRecovery' → P) → P",
+      "typeHash": "1798aa4f17e22b3c0c889fd5f8bac462f1b14526b3caf54001cb5ab971fe57c0",
+      "valueHash": "35d2db0c1241352816048bdfd0a1c139191eddfc8555e874df3eb05f70276442"
+    },
+    {
+      "name": "LayerPriority.Flags.mk.sizeOf_spec",
+      "kind": "theorem",
+      "type": "∀ (idle grounded defenseLow boxoutLow dribbleOpen noChase noShotRecovery : Bool), sizeOf { idle := idle, grounded := grounded, defenseLow := defenseLow, boxoutLow := boxoutLow, dribbleOpen := dribbleOpen, noChase := noChase, noShotRecovery := noShotRecovery } = 1 + sizeOf idle + sizeOf grounded + sizeOf defenseLow + sizeOf boxoutLow + sizeOf dribbleOpen + sizeOf noChase + sizeOf noShotRecovery",
+      "typeHash": "a3291c043d699d300bbe63e119580ee8a1f3df860a7b27d041da56f893855759",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Flags.noChase",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Bool",
+      "typeHash": "245d4b190450002880e644fa26ee1f206c0e94f06d519eddcf88b37c94745807",
+      "valueHash": "0378fc1911315d930b71c424795cae0bf67b1b35dc3840191d369b269a98e5df"
+    },
+    {
+      "name": "LayerPriority.Flags.noConfusion",
+      "kind": "definition",
+      "type": "{P : Sort u} → {t t' : LayerPriority.Flags} → t = t' → LayerPriority.Flags.noConfusionType P t t'",
+      "typeHash": "faca0617ccf94ae414ff45c412f6e59fc35775851ac3ee60d0905dce202ee906",
+      "valueHash": "2aefff23c66415a74e5d8c55ef7fdde50b0c4394dac64e699e2f1393d7425a49"
+    },
+    {
+      "name": "LayerPriority.Flags.noConfusionType",
+      "kind": "definition",
+      "type": "Sort u → LayerPriority.Flags → LayerPriority.Flags → Sort u",
+      "typeHash": "2d4e34823196c6f3a1dd072b65f4bc0befd9c6dabbf299317d2aecfab4cc33fe",
+      "valueHash": "b71bec66ac38d285be5ef368d972af86fda2e772d8d7dc29aa630446528bf686"
+    },
+    {
+      "name": "LayerPriority.Flags.noShotRecovery",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Bool",
+      "typeHash": "245d4b190450002880e644fa26ee1f206c0e94f06d519eddcf88b37c94745807",
+      "valueHash": "50adf82ddf0d178d1ab13573678bc1f5f969169e9ac7595a98e86f5be70d3428"
+    },
+    {
+      "name": "LayerPriority.Flags.rec",
+      "kind": "recursor",
+      "type": "{motive : LayerPriority.Flags → Sort u} → ((idle grounded defenseLow boxoutLow dribbleOpen noChase noShotRecovery : Bool) → motive { idle := idle, grounded := grounded, defenseLow := defenseLow, boxoutLow := boxoutLow, dribbleOpen := dribbleOpen, noChase := noChase, noShotRecovery := noShotRecovery }) → (t : LayerPriority.Flags) → motive t",
+      "typeHash": "983a4a5033be148215b908e020055de441e62556a23b5a81c55ea7ef4fdb6fb8",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Flags.recOn",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Flags → Sort u} → (t : LayerPriority.Flags) → ((idle grounded defenseLow boxoutLow dribbleOpen noChase noShotRecovery : Bool) → motive { idle := idle, grounded := grounded, defenseLow := defenseLow, boxoutLow := boxoutLow, dribbleOpen := dribbleOpen, noChase := noChase, noShotRecovery := noShotRecovery }) → motive t",
+      "typeHash": "a2d13edbb45e6117e5805fa26f6c316d8a0b2516187c12230e3984d8841a33dd",
+      "valueHash": "31e972d2f2a43e2f3ef67787e42c1c367e876e17189aeda5d864c56a0e8f5ed4"
+    },
+    {
+      "name": "LayerPriority.Selection",
+      "kind": "inductive",
+      "type": "Type",
+      "typeHash": "7051ab654d793c216d744f7920d98d672357a0efa67248ee75d146d668f60997",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Selection.braking",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → Bool",
+      "typeHash": "b8d3664021ffd109529461547b4e74819a2b62ce86802bd294723f50f5eb78ef",
+      "valueHash": "64c83b9e795013d3334ce102dfa1472f105b45d2269336a4aaf5064a8012e8f0"
+    },
+    {
+      "name": "LayerPriority.Selection.casesOn",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Selection → Sort u} → (t : LayerPriority.Selection) → ((enabled eligible cut braking previousBraking left supportR expired : Bool) → (old : LayerPriority.Clip) → motive { enabled := enabled, eligible := eligible, cut := cut, braking := braking, previousBraking := previousBraking, left := left, supportR := supportR, expired := expired, old := old }) → motive t",
+      "typeHash": "2e10d9f94dc9c7c3b00a6a5b14d2e3567fe4b46c384e28d8613f6111ef5a6850",
+      "valueHash": "90632bd64685ced1e314cd61eb511134c6543180a070600a661da25a92f3a78a"
+    },
+    {
+      "name": "LayerPriority.Selection.ctorIdx",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → Nat",
+      "typeHash": "31a26ad91fa5bf1837912d7dd783ea51464d33f27f5a4cc7a2960c254dd8722c",
+      "valueHash": "1003a466bed9531d2e9af9bc66836b0731bb0a6e16fe190894abd02dc688a81d"
+    },
+    {
+      "name": "LayerPriority.Selection.cut",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → Bool",
+      "typeHash": "b8d3664021ffd109529461547b4e74819a2b62ce86802bd294723f50f5eb78ef",
+      "valueHash": "86379e617ed37db3bc4e439f1757400c846b276387fc007283827ed7d8107166"
+    },
+    {
+      "name": "LayerPriority.Selection.eligible",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → Bool",
+      "typeHash": "b8d3664021ffd109529461547b4e74819a2b62ce86802bd294723f50f5eb78ef",
+      "valueHash": "0ece327d2bdc6308c9b7d0b6c00fa63babcd028e159114bef76cbee0a2182581"
+    },
+    {
+      "name": "LayerPriority.Selection.enabled",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → Bool",
+      "typeHash": "b8d3664021ffd109529461547b4e74819a2b62ce86802bd294723f50f5eb78ef",
+      "valueHash": "291c7b0d2d18e9fb1ed9e744e0b9401b51f780beeb73597e63a3d11e8f5c65b9"
+    },
+    {
+      "name": "LayerPriority.Selection.expired",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → Bool",
+      "typeHash": "b8d3664021ffd109529461547b4e74819a2b62ce86802bd294723f50f5eb78ef",
+      "valueHash": "0a1c9622c3c28bf15816e3883171838796f5cdf4067d5e2cb1da9d812ccadcd1"
+    },
+    {
+      "name": "LayerPriority.Selection.left",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → Bool",
+      "typeHash": "b8d3664021ffd109529461547b4e74819a2b62ce86802bd294723f50f5eb78ef",
+      "valueHash": "fd41d61196146fa4be828cb2941dd6d39aadf15d420580f9ab8f8287735bc33f"
+    },
+    {
+      "name": "LayerPriority.Selection.mk",
+      "kind": "constructor",
+      "type": "Bool → Bool → Bool → Bool → Bool → Bool → Bool → Bool → LayerPriority.Clip → LayerPriority.Selection",
+      "typeHash": "eb5442c8ee407e5e7efc08b605a2c6c059678630708265427cb08b33709883db",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Selection.mk.inj",
+      "kind": "theorem",
+      "type": "∀ {enabled eligible cut braking previousBraking left supportR expired : Bool} {old : LayerPriority.Clip} {enabled_1 eligible_1 cut_1 braking_1 previousBraking_1 left_1 supportR_1 expired_1 : Bool} {old_1 : LayerPriority.Clip}, { enabled := enabled, eligible := eligible, cut := cut, braking := braking, previousBraking := previousBraking, left := left, supportR := supportR, expired := expired, old := old } = { enabled := enabled_1, eligible := eligible_1, cut := cut_1, braking := braking_1, previousBraking := previousBraking_1, left := left_1, supportR := supportR_1, expired := expired_1, old := old_1 } → enabled = enabled_1 ∧ eligible = eligible_1 ∧ cut = cut_1 ∧ braking = braking_1 ∧ previousBraking = previousBraking_1 ∧ left = left_1 ∧ supportR = supportR_1 ∧ expired = expired_1 ∧ old = old_1",
+      "typeHash": "17da880e8a3d300dc3e61bb8e857e2515662875bcc730183944605e7dd89c8e9",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Selection.mk.injEq",
+      "kind": "theorem",
+      "type": "∀ (enabled eligible cut braking previousBraking left supportR expired : Bool) (old : LayerPriority.Clip) (enabled_1 eligible_1 cut_1 braking_1 previousBraking_1 left_1 supportR_1 expired_1 : Bool) (old_1 : LayerPriority.Clip), ({ enabled := enabled, eligible := eligible, cut := cut, braking := braking, previousBraking := previousBraking, left := left, supportR := supportR, expired := expired, old := old } = { enabled := enabled_1, eligible := eligible_1, cut := cut_1, braking := braking_1, previousBraking := previousBraking_1, left := left_1, supportR := supportR_1, expired := expired_1, old := old_1 }) = (enabled = enabled_1 ∧ eligible = eligible_1 ∧ cut = cut_1 ∧ braking = braking_1 ∧ previousBraking = previousBraking_1 ∧ left = left_1 ∧ supportR = supportR_1 ∧ expired = expired_1 ∧ old = old_1)",
+      "typeHash": "8d98b5735ecd13b8d5725b5e9901b7583231cfe3bb8d22e82247bccc15427ec7",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Selection.mk.noConfusion",
+      "kind": "definition",
+      "type": "{P : Sort u} → {enabled eligible cut braking previousBraking left supportR expired : Bool} → {old : LayerPriority.Clip} → {enabled' eligible' cut' braking' previousBraking' left' supportR' expired' : Bool} → {old' : LayerPriority.Clip} → { enabled := enabled, eligible := eligible, cut := cut, braking := braking, previousBraking := previousBraking, left := left, supportR := supportR, expired := expired, old := old } = { enabled := enabled', eligible := eligible', cut := cut', braking := braking', previousBraking := previousBraking', left := left', supportR := supportR', expired := expired', old := old' } → (enabled = enabled' → eligible = eligible' → cut = cut' → braking = braking' → previousBraking = previousBraking' → left = left' → supportR = supportR' → expired = expired' → old = old' → P) → P",
+      "typeHash": "a67f9830b64e489676fa59ac2f2dcf96cde348c4c0b5fa21d13cfbcaee4c946d",
+      "valueHash": "8857d68866b1787504b7492d2fd6ab783e6c86232a1eb446457bd13d9c5587a7"
+    },
+    {
+      "name": "LayerPriority.Selection.mk.sizeOf_spec",
+      "kind": "theorem",
+      "type": "∀ (enabled eligible cut braking previousBraking left supportR expired : Bool) (old : LayerPriority.Clip), sizeOf { enabled := enabled, eligible := eligible, cut := cut, braking := braking, previousBraking := previousBraking, left := left, supportR := supportR, expired := expired, old := old } = 1 + sizeOf enabled + sizeOf eligible + sizeOf cut + sizeOf braking + sizeOf previousBraking + sizeOf left + sizeOf supportR + sizeOf expired + sizeOf old",
+      "typeHash": "16e540eb8bb722f0f1f968018b8dc385c6000111f2f8054a67d06c7ddb4fa521",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Selection.noConfusion",
+      "kind": "definition",
+      "type": "{P : Sort u} → {t t' : LayerPriority.Selection} → t = t' → LayerPriority.Selection.noConfusionType P t t'",
+      "typeHash": "3ff41b322e1ada985430422d8f24cf5a84263a77e712292ed528dfd2b98254da",
+      "valueHash": "521729ce2d79a078b99663d92b048df8c648b0cc04afef1a12d9c24417fb9e5c"
+    },
+    {
+      "name": "LayerPriority.Selection.noConfusionType",
+      "kind": "definition",
+      "type": "Sort u → LayerPriority.Selection → LayerPriority.Selection → Sort u",
+      "typeHash": "fbe054ab985beb338fe2a8f49ae94a42be8078252acb8d1c474bdddcb9ff5729",
+      "valueHash": "b87abfc938c8b818ce330621923fc85c5a41c102b364b96dc0deae44fe03dad0"
+    },
+    {
+      "name": "LayerPriority.Selection.old",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → LayerPriority.Clip",
+      "typeHash": "77a5a9dcd9503ce5d495807e391a6a7e5f98dbed0b16c22496fa260823a2d5d6",
+      "valueHash": "ba1407bd5cb577b14ba6498c6bf4df7b33a76b378828488e3690c7353f34b116"
+    },
+    {
+      "name": "LayerPriority.Selection.previousBraking",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → Bool",
+      "typeHash": "b8d3664021ffd109529461547b4e74819a2b62ce86802bd294723f50f5eb78ef",
+      "valueHash": "58f486d962347559e4ed638eabf3be46f1563563192e4f96f6287198b6688a19"
+    },
+    {
+      "name": "LayerPriority.Selection.rec",
+      "kind": "recursor",
+      "type": "{motive : LayerPriority.Selection → Sort u} → ((enabled eligible cut braking previousBraking left supportR expired : Bool) → (old : LayerPriority.Clip) → motive { enabled := enabled, eligible := eligible, cut := cut, braking := braking, previousBraking := previousBraking, left := left, supportR := supportR, expired := expired, old := old }) → (t : LayerPriority.Selection) → motive t",
+      "typeHash": "dfd28c1115283b8218b6584c9e92892274a065529d7338c8d70b1d4abf987bab",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.Selection.recOn",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.Selection → Sort u} → (t : LayerPriority.Selection) → ((enabled eligible cut braking previousBraking left supportR expired : Bool) → (old : LayerPriority.Clip) → motive { enabled := enabled, eligible := eligible, cut := cut, braking := braking, previousBraking := previousBraking, left := left, supportR := supportR, expired := expired, old := old }) → motive t",
+      "typeHash": "2e10d9f94dc9c7c3b00a6a5b14d2e3567fe4b46c384e28d8613f6111ef5a6850",
+      "valueHash": "e2c35aa563770c19b8cd8ab7ec480af2c3576e037651f768d840319dacb2b892"
+    },
+    {
+      "name": "LayerPriority.Selection.supportR",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → Bool",
+      "typeHash": "b8d3664021ffd109529461547b4e74819a2b62ce86802bd294723f50f5eb78ef",
+      "valueHash": "1979f6df5c3c88053db32b752251c9d68ba744d98dec81f42699cb4feaa7abe7"
+    },
+    {
+      "name": "LayerPriority.State",
+      "kind": "inductive",
+      "type": "Type",
+      "typeHash": "7051ab654d793c216d744f7920d98d672357a0efa67248ee75d146d668f60997",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.State.active",
+      "kind": "definition",
+      "type": "LayerPriority.State → LayerPriority.Clip",
+      "typeHash": "c254bf7f1f868979a8430156c18e427d21ad85e0d11d729e43ae20a74e406d35",
+      "valueHash": "fe18477e2e772827938635118d88e9c1ccb2f48ab11e2f02ccdc194ca8cd4db5"
+    },
+    {
+      "name": "LayerPriority.State.casesOn",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.State → Sort u} → (t : LayerPriority.State) → ((active : LayerPriority.Clip) → (weightNonzero : Bool) → (clock : Nat) → (previousRedirectNonzero previousBraking offsetsClear : Bool) → motive { active := active, weightNonzero := weightNonzero, clock := clock, previousRedirectNonzero := previousRedirectNonzero, previousBraking := previousBraking, offsetsClear := offsetsClear }) → motive t",
+      "typeHash": "72c705fc111defc560f54d77cbc85b3f6ea172587f7ea78a51e85c2a572dc740",
+      "valueHash": "25688aa90174d4463280b4d7c181b5b44d095215aa4d92e5dd3288c2e4bc1e90"
+    },
+    {
+      "name": "LayerPriority.State.clock",
+      "kind": "definition",
+      "type": "LayerPriority.State → Nat",
+      "typeHash": "6a883fcd406a42fddaf1a5cc8790d0aa2a6b7ad11ebc4ec6d1c2e03cf9cde4f2",
+      "valueHash": "57963a8f5d2a0a7cc6f95b906ef0d570db1b92c7e08e7ccb97379593a2e42ff3"
+    },
+    {
+      "name": "LayerPriority.State.ctorIdx",
+      "kind": "definition",
+      "type": "LayerPriority.State → Nat",
+      "typeHash": "7f17636b9894f0b171aed5c9c3891cb4b7e8c4b2234ab8b7c4897c88732c7eb9",
+      "valueHash": "6281409ed39ffebce621c334e59ff14f785e41b0507925557fd40169cdd3e99f"
+    },
+    {
+      "name": "LayerPriority.State.mk",
+      "kind": "constructor",
+      "type": "LayerPriority.Clip → Bool → Nat → Bool → Bool → Bool → LayerPriority.State",
+      "typeHash": "416129d0989b2cee13ce774eaec715111f8a0c799dc763f6f19c00f4ef03ae18",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.State.mk.inj",
+      "kind": "theorem",
+      "type": "∀ {active : LayerPriority.Clip} {weightNonzero : Bool} {clock : Nat} {previousRedirectNonzero previousBraking offsetsClear : Bool} {active_1 : LayerPriority.Clip} {weightNonzero_1 : Bool} {clock_1 : Nat} {previousRedirectNonzero_1 previousBraking_1 offsetsClear_1 : Bool}, { active := active, weightNonzero := weightNonzero, clock := clock, previousRedirectNonzero := previousRedirectNonzero, previousBraking := previousBraking, offsetsClear := offsetsClear } = { active := active_1, weightNonzero := weightNonzero_1, clock := clock_1, previousRedirectNonzero := previousRedirectNonzero_1, previousBraking := previousBraking_1, offsetsClear := offsetsClear_1 } → active = active_1 ∧ weightNonzero = weightNonzero_1 ∧ clock = clock_1 ∧ previousRedirectNonzero = previousRedirectNonzero_1 ∧ previousBraking = previousBraking_1 ∧ offsetsClear = offsetsClear_1",
+      "typeHash": "66ab3a0efaa5f8f2b7435995673a6ef42f2fee016a1816d4b737502e6b57c151",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.State.mk.injEq",
+      "kind": "theorem",
+      "type": "∀ (active : LayerPriority.Clip) (weightNonzero : Bool) (clock : Nat) (previousRedirectNonzero previousBraking offsetsClear : Bool) (active_1 : LayerPriority.Clip) (weightNonzero_1 : Bool) (clock_1 : Nat) (previousRedirectNonzero_1 previousBraking_1 offsetsClear_1 : Bool), ({ active := active, weightNonzero := weightNonzero, clock := clock, previousRedirectNonzero := previousRedirectNonzero, previousBraking := previousBraking, offsetsClear := offsetsClear } = { active := active_1, weightNonzero := weightNonzero_1, clock := clock_1, previousRedirectNonzero := previousRedirectNonzero_1, previousBraking := previousBraking_1, offsetsClear := offsetsClear_1 }) = (active = active_1 ∧ weightNonzero = weightNonzero_1 ∧ clock = clock_1 ∧ previousRedirectNonzero = previousRedirectNonzero_1 ∧ previousBraking = previousBraking_1 ∧ offsetsClear = offsetsClear_1)",
+      "typeHash": "c40583ff9af3253180f4c3d3148187bf2cb83e27a83d1199b32a88d69f13c451",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.State.mk.noConfusion",
+      "kind": "definition",
+      "type": "{P : Sort u} → {active : LayerPriority.Clip} → {weightNonzero : Bool} → {clock : Nat} → {previousRedirectNonzero previousBraking offsetsClear : Bool} → {active' : LayerPriority.Clip} → {weightNonzero' : Bool} → {clock' : Nat} → {previousRedirectNonzero' previousBraking' offsetsClear' : Bool} → { active := active, weightNonzero := weightNonzero, clock := clock, previousRedirectNonzero := previousRedirectNonzero, previousBraking := previousBraking, offsetsClear := offsetsClear } = { active := active', weightNonzero := weightNonzero', clock := clock', previousRedirectNonzero := previousRedirectNonzero', previousBraking := previousBraking', offsetsClear := offsetsClear' } → (active = active' → weightNonzero = weightNonzero' → clock = clock' → previousRedirectNonzero = previousRedirectNonzero' → previousBraking = previousBraking' → offsetsClear = offsetsClear' → P) → P",
+      "typeHash": "a48fcd8b0ef43872e8a490dc7eb910152fb18ba2322c412681ec4f00848a2046",
+      "valueHash": "7bd6a4a95511e1ed3f731802ad12a9126b247f612ee529a0bc3dd8e74e6ac00f"
+    },
+    {
+      "name": "LayerPriority.State.mk.sizeOf_spec",
+      "kind": "theorem",
+      "type": "∀ (active : LayerPriority.Clip) (weightNonzero : Bool) (clock : Nat) (previousRedirectNonzero previousBraking offsetsClear : Bool), sizeOf { active := active, weightNonzero := weightNonzero, clock := clock, previousRedirectNonzero := previousRedirectNonzero, previousBraking := previousBraking, offsetsClear := offsetsClear } = 1 + sizeOf active + sizeOf weightNonzero + sizeOf clock + sizeOf previousRedirectNonzero + sizeOf previousBraking + sizeOf offsetsClear",
+      "typeHash": "23d58f81dd374bfcba5b429dd0a62e4eff00f3b767fcd6c120d1ac96bc04a110",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.State.noConfusion",
+      "kind": "definition",
+      "type": "{P : Sort u} → {t t' : LayerPriority.State} → t = t' → LayerPriority.State.noConfusionType P t t'",
+      "typeHash": "7e920a8634227eb8311f0198ee1603fc6ea9509dc79cb2d203129f8f24949d23",
+      "valueHash": "15739db330f759b336117519dff948a96f9ff0ded4cca8aba87e6a2beeae9a3a"
+    },
+    {
+      "name": "LayerPriority.State.noConfusionType",
+      "kind": "definition",
+      "type": "Sort u → LayerPriority.State → LayerPriority.State → Sort u",
+      "typeHash": "c39b65297dafc012d7eb83a6fbee208774631563bb6d35c9e86db47c8b8cc86d",
+      "valueHash": "5f6d1013147da5b9bcfc321d3a0a0eb51f14daf4085ee435c6c3b4b4bf2cd184"
+    },
+    {
+      "name": "LayerPriority.State.offsetsClear",
+      "kind": "definition",
+      "type": "LayerPriority.State → Bool",
+      "typeHash": "02764a4d6702cd733ce2aed560f607894df227ff67cf4701f2f000d1376aac35",
+      "valueHash": "c03705a81364ae7d2e6edc850a72eb5114a0a1dcdc46983bbd67884c81d36cb8"
+    },
+    {
+      "name": "LayerPriority.State.previousBraking",
+      "kind": "definition",
+      "type": "LayerPriority.State → Bool",
+      "typeHash": "02764a4d6702cd733ce2aed560f607894df227ff67cf4701f2f000d1376aac35",
+      "valueHash": "fdc80768bda1ba250195b139f7852e350ba4e68dc65d0868e2f4d991e8c7d9d9"
+    },
+    {
+      "name": "LayerPriority.State.previousRedirectNonzero",
+      "kind": "definition",
+      "type": "LayerPriority.State → Bool",
+      "typeHash": "02764a4d6702cd733ce2aed560f607894df227ff67cf4701f2f000d1376aac35",
+      "valueHash": "6de5d68e07caa79b17adcdb880b675909ba2b9aa01e85d9165dac575c49d12d5"
+    },
+    {
+      "name": "LayerPriority.State.rec",
+      "kind": "recursor",
+      "type": "{motive : LayerPriority.State → Sort u} → ((active : LayerPriority.Clip) → (weightNonzero : Bool) → (clock : Nat) → (previousRedirectNonzero previousBraking offsetsClear : Bool) → motive { active := active, weightNonzero := weightNonzero, clock := clock, previousRedirectNonzero := previousRedirectNonzero, previousBraking := previousBraking, offsetsClear := offsetsClear }) → (t : LayerPriority.State) → motive t",
+      "typeHash": "37b637f34159a92b4466696e5eb9c4b004892027fe1cfd23f286ca6b6dc45cd6",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.State.recOn",
+      "kind": "definition",
+      "type": "{motive : LayerPriority.State → Sort u} → (t : LayerPriority.State) → ((active : LayerPriority.Clip) → (weightNonzero : Bool) → (clock : Nat) → (previousRedirectNonzero previousBraking offsetsClear : Bool) → motive { active := active, weightNonzero := weightNonzero, clock := clock, previousRedirectNonzero := previousRedirectNonzero, previousBraking := previousBraking, offsetsClear := offsetsClear }) → motive t",
+      "typeHash": "72c705fc111defc560f54d77cbc85b3f6ea172587f7ea78a51e85c2a572dc740",
+      "valueHash": "da4c5c458403a213b0ba70089ede67e15fef50cf416a2d7d27d4756a2c1b12a4"
+    },
+    {
+      "name": "LayerPriority.State.weightNonzero",
+      "kind": "definition",
+      "type": "LayerPriority.State → Bool",
+      "typeHash": "02764a4d6702cd733ce2aed560f607894df227ff67cf4701f2f000d1376aac35",
+      "valueHash": "b8be4101ec67775dfa547bd96fb6848e9183a43c63c31fb57577fefecf46cd95"
+    },
+    {
+      "name": "LayerPriority.applies",
+      "kind": "definition",
+      "type": "Bool → LayerPriority.Flags → Bool → Bool",
+      "typeHash": "6bbc7d49f5214c78979c9da99ea4fa5ba74c5cf56eae60a65ab6f6e1da6237f1",
+      "valueHash": "3b22eee260ed5049cc0f7e907c9d8fee141dd7141293aca4eb96444076eea716"
+    },
+    {
+      "name": "LayerPriority.applies_iff",
+      "kind": "theorem",
+      "type": "∀ (enabled positiveWeight : Bool) (f : LayerPriority.Flags), LayerPriority.applies enabled f positiveWeight = true ↔ enabled = true ∧ LayerPriority.EligibleProperty f ∧ positiveWeight = true",
+      "typeHash": "fddb15d249dcf501445c7734569e0ed451308acab9e1c6781a02f9d9ef2e95a7",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.badGuards",
+      "kind": "definition",
+      "type": "List Nat",
+      "typeHash": "80b301ef6c9d59c7d03cad6e3c50ce9efd0b17f8713597f3eed7c178ee58ff1a",
+      "valueHash": "614d00fc5bf1e40f547b2c64b19cbe518268c29372ce1f183de2abc2b5e81376"
+    },
+    {
+      "name": "LayerPriority.badSelections",
+      "kind": "definition",
+      "type": "List LayerPriority.Selection",
+      "typeHash": "940c83972e7bc58a44c6575bce250dad3e6e1357fb10033cbbd4e7a77846307d",
+      "valueHash": "4a68552c6f4c735c1c21fcd9988c045aa360255e2d87bf16a46c4005b2ea96ae"
+    },
+    {
+      "name": "LayerPriority.bit",
+      "kind": "definition",
+      "type": "Nat → Nat → Bool",
+      "typeHash": "f74269dfb292c0a72d76fb324ff899aa3d9b286887daa2b7b0cf23a8a06ab017",
+      "valueHash": "6a0bc918fc0e63c9db8c20019257b8fc2e5315e4b2d74218e126d06e95d955ae"
+    },
+    {
+      "name": "LayerPriority.brakeClip",
+      "kind": "definition",
+      "type": "Bool → LayerPriority.Clip",
+      "typeHash": "808deb5de160302de0fada2735b3469de361fe2690b241f182e1cfd4737519af",
+      "valueHash": "6c11e9b51943df8fd2bf1d2436528d2009ebec858a3620deb734c2afa2747eed"
+    },
+    {
+      "name": "LayerPriority.clips",
+      "kind": "definition",
+      "type": "List LayerPriority.Clip",
+      "typeHash": "eaefabd32fbc846b69fe3419af0a1341a5d5fa1fe9224bc18727b4b6be9dfd9c",
+      "valueHash": "7892e0756353d27d401e348693de34f114ac96eecf4c55ffb51c7d3ae4a98cbb"
+    },
+    {
+      "name": "LayerPriority.cutClip",
+      "kind": "definition",
+      "type": "Bool → Bool → LayerPriority.Clip",
+      "typeHash": "79745a6d7583ce53b55730400605c412197fe5f828d22ce1d65813af41136451",
+      "valueHash": "3da1a3ae1f65399d59b821f8434a4916ada25f88e220bc3bd9e813b78914437b"
+    },
+    {
+      "name": "LayerPriority.eligible",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Bool",
+      "typeHash": "63f3884ad8677c609fa513adb72c854369c62f1bf881c316212aa169154a944a",
+      "valueHash": "19f86c9807963c9677125c8094552798c50fecdf2326cc213ac5abc8e29a16bc"
+    },
+    {
+      "name": "LayerPriority.excluded_never_applies",
+      "kind": "theorem",
+      "type": "∀ (enabled positiveWeight : Bool) (f : LayerPriority.Flags), ¬LayerPriority.EligibleProperty f → LayerPriority.applies enabled f positiveWeight = false",
+      "typeHash": "42274ed94fcbbfdf19001048a72331f2cfa8e681b3da0766c87a9c8945a4ed3d",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.flags",
+      "kind": "definition",
+      "type": "Nat → LayerPriority.Flags",
+      "typeHash": "852e2d5950b3dd5666a95f32559d132b4ef23a76a19880626ada6f33f3bd4939",
+      "valueHash": "3c175dac7fc78250f12c30b7aa0f38903c3fa67809e993722cf3cc500a6fd55b"
+    },
+    {
+      "name": "LayerPriority.guardResults",
+      "kind": "definition",
+      "type": "List Bool",
+      "typeHash": "42f0537e0978a7f01e5b11d68589707594dd57acf16301381fd6228a3e28c115",
+      "valueHash": "28c49a506fcad6d940dcdd7c3d024a410f948de9ca00b183e7565a0bdbddb851"
+    },
+    {
+      "name": "LayerPriority.instBEqClip",
+      "kind": "definition",
+      "type": "BEq LayerPriority.Clip",
+      "typeHash": "87ecb67e3fefbcf8fb8b3d408540ed9c957d04c12e9fe2f702061a876bbba86d",
+      "valueHash": "151b4e99d7289a69e485276214d4ea97bc86beadc6a453a14020e31151179d0b"
+    },
+    {
+      "name": "LayerPriority.instBEqClip.beq",
+      "kind": "definition",
+      "type": "LayerPriority.Clip → LayerPriority.Clip → Bool",
+      "typeHash": "73cdd959f116112c358985a56cb12b05ca52f6a1bdebe17349f87bc8268313bf",
+      "valueHash": "5720daec37dcb059b90addfa786c1fa85ff67bbc7d5320b5ae28a0601e24223c"
+    },
+    {
+      "name": "LayerPriority.instDecidableEligibleProperty",
+      "kind": "definition",
+      "type": "(f : LayerPriority.Flags) → Decidable (LayerPriority.EligibleProperty f)",
+      "typeHash": "4445e77f6633486b4e241838f2e7449e65266e00fcab0d6bc698ea8f68e5a9df",
+      "valueHash": "35fc785b767b840614e4ed9761e6e88a7f8e28d088753d6ae4d7378e7ba5a455"
+    },
+    {
+      "name": "LayerPriority.instDecidableEqClip",
+      "kind": "definition",
+      "type": "DecidableEq LayerPriority.Clip",
+      "typeHash": "c3ca677f77492523285b94366479e5008fa9c1bb85beee54c22907c836064fe5",
+      "valueHash": "7c890cd8c5a4c84182fa798bead9361979b9b25fbfd17535a87063aa6b4a6350"
+    },
+    {
+      "name": "LayerPriority.instDecidableEqFlags",
+      "kind": "definition",
+      "type": "DecidableEq LayerPriority.Flags",
+      "typeHash": "479a2e2b6f6ac60ba8c9ce6e85040eb6e91c2b8dbb879e94e29740122306abd1",
+      "valueHash": "6b96476da25160f5213c4b5741276dae93db581e2a361685c3c7d6d705af9617"
+    },
+    {
+      "name": "LayerPriority.instDecidableEqFlags.decEq",
+      "kind": "definition",
+      "type": "(x x_1 : LayerPriority.Flags) → Decidable (x = x_1)",
+      "typeHash": "03cb9b08455ee569129aa0592bd951c0c56df57b9187298cbdd3a688195ad719",
+      "valueHash": "ac835d006458495afef4deb17afff361197dfc97888faa63a494edbe8e6eba92"
+    },
+    {
+      "name": "LayerPriority.instDecidableEqFlags.decEq.match_1",
+      "kind": "definition",
+      "type": "(motive : LayerPriority.Flags → LayerPriority.Flags → Sort u_1) → (x x_1 : LayerPriority.Flags) → ((a a_1 a_2 a_3 a_4 a_5 a_6 b b_1 b_2 b_3 b_4 b_5 b_6 : Bool) → motive { idle := a, grounded := a_1, defenseLow := a_2, boxoutLow := a_3, dribbleOpen := a_4, noChase := a_5, noShotRecovery := a_6 } { idle := b, grounded := b_1, defenseLow := b_2, boxoutLow := b_3, dribbleOpen := b_4, noChase := b_5, noShotRecovery := b_6 }) → motive x x_1",
+      "typeHash": "37a46fc4ee6e40b7d99b9d494e67f0e8d86bde28e050439fae4e09756c4f42e0",
+      "valueHash": "763af9c9bad27094c84df2c7fbeb469c8b9e1c376cee238be1db4952125d4035"
+    },
+    {
+      "name": "LayerPriority.instDecidableEqSelection",
+      "kind": "definition",
+      "type": "DecidableEq LayerPriority.Selection",
+      "typeHash": "b3da60951d15a5343f3a5de091769d6e5bd018fc30afc0b0ec3aa46d3c9aca6d",
+      "valueHash": "b2c14ba599eee00b0df74d8ece87b1e6d26379fc550e32d0deeb41ba1a4a6473"
+    },
+    {
+      "name": "LayerPriority.instDecidableEqSelection.decEq",
+      "kind": "definition",
+      "type": "(x x_1 : LayerPriority.Selection) → Decidable (x = x_1)",
+      "typeHash": "5aa8b0e5536e4ad2f657575a5d034e848ef3e68b9b9880ff80cbbced94961cfa",
+      "valueHash": "d22f44118fa4cabddce553e8e9c7f50eb0c69094299bd17ab955af25340ce958"
+    },
+    {
+      "name": "LayerPriority.instDecidableEqSelection.decEq.match_1",
+      "kind": "definition",
+      "type": "(motive : LayerPriority.Selection → LayerPriority.Selection → Sort u_1) → (x x_1 : LayerPriority.Selection) → ((a a_1 a_2 a_3 a_4 a_5 a_6 a_7 : Bool) → (a_8 : LayerPriority.Clip) → (b b_1 b_2 b_3 b_4 b_5 b_6 b_7 : Bool) → (b_8 : LayerPriority.Clip) → motive { enabled := a, eligible := a_1, cut := a_2, braking := a_3, previousBraking := a_4, left := a_5, supportR := a_6, expired := a_7, old := a_8 } { enabled := b, eligible := b_1, cut := b_2, braking := b_3, previousBraking := b_4, left := b_5, supportR := b_6, expired := b_7, old := b_8 }) → motive x x_1",
+      "typeHash": "87691e3cd77f57d2033f63556643840b31c72d806981ba4e186f25e6097921b9",
+      "valueHash": "0fb6797cd336ac8d199f62cb810cdb29251c51c552f71ab2b754d77643d1d13c"
+    },
+    {
+      "name": "LayerPriority.instDecidableEqState",
+      "kind": "definition",
+      "type": "DecidableEq LayerPriority.State",
+      "typeHash": "3a0082f1961fb2eb21d5926aba0787dacfc671eca83c75f47e102abca4fb30df",
+      "valueHash": "18ed905b5082ee4637de00975acad18cbf93bfbca3959e41faa9d1cd3e7030e3"
+    },
+    {
+      "name": "LayerPriority.instDecidableEqState.decEq",
+      "kind": "definition",
+      "type": "(x x_1 : LayerPriority.State) → Decidable (x = x_1)",
+      "typeHash": "4aa91fafa88eb00fe7a6d6c6f1e708294862dfe3679612a4fd32f2b61f177fb1",
+      "valueHash": "b863083f92f244b3490aa38ece4c75b1e2e341fd4bad2912444e5439ad418a4d"
+    },
+    {
+      "name": "LayerPriority.instDecidableEqState.decEq.match_1",
+      "kind": "definition",
+      "type": "(motive : LayerPriority.State → LayerPriority.State → Sort u_1) → (x x_1 : LayerPriority.State) → ((a : LayerPriority.Clip) → (a_1 : Bool) → (a_2 : Nat) → (a_3 a_4 a_5 : Bool) → (b : LayerPriority.Clip) → (b_1 : Bool) → (b_2 : Nat) → (b_3 b_4 b_5 : Bool) → motive { active := a, weightNonzero := a_1, clock := a_2, previousRedirectNonzero := a_3, previousBraking := a_4, offsetsClear := a_5 } { active := b, weightNonzero := b_1, clock := b_2, previousRedirectNonzero := b_3, previousBraking := b_4, offsetsClear := b_5 }) → motive x x_1",
+      "typeHash": "e2dd9f772775e272a09b48e7c957e7cf2b0556784b66bbe95b0a6f9de0083e14",
+      "valueHash": "0ddc98008c0fcb0acf26793dc5b8c36c8e8df13571e62b46174081b618f0dc37"
+    },
+    {
+      "name": "LayerPriority.instDecidableExpectedSelection",
+      "kind": "definition",
+      "type": "(s : LayerPriority.Selection) → (c : LayerPriority.Clip) → Decidable (LayerPriority.ExpectedSelection s c)",
+      "typeHash": "b2513e264f03583f2e4ee2482a8bd2c4afc47cbf563b11eeaa9ef85dc03aa66a",
+      "valueHash": "a078a4fc0a9576617952837e52f4da75603b80c6aa13ac83eec87a700bd5a3b1"
+    },
+    {
+      "name": "LayerPriority.instReprClip",
+      "kind": "definition",
+      "type": "Repr LayerPriority.Clip",
+      "typeHash": "b90fdca8a231a4b30f8c068f362b63fc15859f43db5f5714b274b45f4a70d9b6",
+      "valueHash": "12c852653024a50e04ec61bd65caa8162a934179e7157b9d6ada04c61c6043e4"
+    },
+    {
+      "name": "LayerPriority.instReprClip.repr",
+      "kind": "definition",
+      "type": "LayerPriority.Clip → Nat → Format",
+      "typeHash": "bb46361f6afcf5171fa50984d38cbc7a1b8452db26974ef185c054e793ae5131",
+      "valueHash": "36d4c50bc4e5d6d7394aa496c5b4d4b15343888cefb857e4f10fff643fd196f1"
+    },
+    {
+      "name": "LayerPriority.instReprClip.repr.match_1",
+      "kind": "definition",
+      "type": "(motive : LayerPriority.Clip → Sort u_1) → (x : LayerPriority.Clip) → (Unit → motive LayerPriority.Clip.run) → (Unit → motive LayerPriority.Clip.stopL) → (Unit → motive LayerPriority.Clip.stopR) → (Unit → motive LayerPriority.Clip.leftL) → (Unit → motive LayerPriority.Clip.leftR) → (Unit → motive LayerPriority.Clip.rightL) → (Unit → motive LayerPriority.Clip.rightR) → motive x",
+      "typeHash": "029707ecd779406ff67f73852d38f3fc1bf4e87360d103f5aba997ca60e3f064",
+      "valueHash": "7807499279e74f40ca2ca1624aaf488f5afb70ec9e4f80a54d414456962d10d2"
+    },
+    {
+      "name": "LayerPriority.instReprFlags",
+      "kind": "definition",
+      "type": "Repr LayerPriority.Flags",
+      "typeHash": "794e33f76f50488645d9e4d44bd3e6abb0c3200949730862911782e35445ac82",
+      "valueHash": "0636fbc44972f9a32bf2d29f7e31926ae5acdf160620be4a3175876436706446"
+    },
+    {
+      "name": "LayerPriority.instReprFlags.repr",
+      "kind": "definition",
+      "type": "LayerPriority.Flags → Nat → Format",
+      "typeHash": "c3336da084301288762780bbbe245919f671b84cd76b3eaead0588d72832f7a3",
+      "valueHash": "eb199b537b4ba0a8eb0ba09fcad3dafc51c39c31935f37a0e9eb5f43fbc37d0a"
+    },
+    {
+      "name": "LayerPriority.instReprSelection",
+      "kind": "definition",
+      "type": "Repr LayerPriority.Selection",
+      "typeHash": "0e339d91a93de1c31b6fb12ca8bdc1d6ffd8a69cf1cdcb94da2d37dbcda884b6",
+      "valueHash": "b40ba00e5c7939fee8fc1401bb742a1031506727d3e62d850fbcc55415165ec1"
+    },
+    {
+      "name": "LayerPriority.instReprSelection.repr",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → Nat → Format",
+      "typeHash": "1a11bc5814f412e8e4ba0572b938783d2b254379575e70696bfcb08d951d4d47",
+      "valueHash": "634713c6e9edd478fc2d076d90ee1d5e8fbf3f42bead50e0a677a0fd11e3600d"
+    },
+    {
+      "name": "LayerPriority.instReprState",
+      "kind": "definition",
+      "type": "Repr LayerPriority.State",
+      "typeHash": "dd4a3c0316d7e42215f8ece224f6e70daac36f9875c5e2caf27bbf7c25c10871",
+      "valueHash": "85dc41c96a86da40d6ea85a5df121f60f371a123ade44183a5fcf71ad47bedb8"
+    },
+    {
+      "name": "LayerPriority.instReprState.repr",
+      "kind": "definition",
+      "type": "LayerPriority.State → Nat → Format",
+      "typeHash": "4c86cebd92486c505c8d6c240e8c80b59b581df238a4d4bbcefa474e4687497d",
+      "valueHash": "9aa460a29699557d4249c1e2ada77108bd7ebfed7e3486c6ca3086d5528f702c"
+    },
+    {
+      "name": "LayerPriority.reset",
+      "kind": "definition",
+      "type": "LayerPriority.State → LayerPriority.State",
+      "typeHash": "2ec655def02222f08f37eb2fbf32ebb9a4b1c7000629769477bffdf286a1d999",
+      "valueHash": "9adb85f6522868d3f2f878bcb1e5ae224b32e9aed3b1bf277f2d88e15c37f398"
+    },
+    {
+      "name": "LayerPriority.reset_clears",
+      "kind": "theorem",
+      "type": "∀ (s : LayerPriority.State), LayerPriority.reset s = { active := LayerPriority.Clip.run, weightNonzero := false, clock := 0, previousRedirectNonzero := false, previousBraking := false, offsetsClear := true }",
+      "typeHash": "5964988c94505f253deed0823520596032dcaf1aaf675e7e5e5aecf3777cf105",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.selectClip",
+      "kind": "definition",
+      "type": "LayerPriority.Selection → LayerPriority.Clip",
+      "typeHash": "6f244cb2c578269074e2b5866439a99bab0876e466e10a72617e1b96075c7bb2",
+      "valueHash": "bcd1c70134210059b14d7ffd8c8685a9bd7bdffbb3e80a11012d1743402516eb"
+    },
+    {
+      "name": "LayerPriority.selection_matches",
+      "kind": "theorem",
+      "type": "∀ (s : LayerPriority.Selection), LayerPriority.ExpectedSelection s (LayerPriority.selectClip s)",
+      "typeHash": "e419cec607f9e665615889e4a963b0d7f87b322d39b6c2b71ef0a2bc3e280356",
+      "valueHash": null
+    },
+    {
+      "name": "LayerPriority.selections",
+      "kind": "definition",
+      "type": "List LayerPriority.Selection",
+      "typeHash": "940c83972e7bc58a44c6575bce250dad3e6e1357fb10033cbbd4e7a77846307d",
+      "valueHash": "f741d2aeab7876a1114f3905b217ae27b87e8c746198f24096aea58d6f37cb33"
+    }
+  ]
+}

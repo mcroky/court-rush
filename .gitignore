@@ -6,6 +6,7 @@ screenshots/
 release/
 .env
 node_modules/
+lean/.lake/
 .pnpm-store/
 .env.*
 !.env.example

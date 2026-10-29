@@ -1,0 +1,21 @@
+# Compiling mistakes in copies of the actual sequential branch transcription.
+
+mutation allow the running layer during non-idle actions
+-   f.idle && f.grounded && f.defenseLow && f.boxoutLow &&
++   true && f.grounded && f.defenseLow && f.boxoutLow &&
+
+mutation swap the left turn support-foot variant
+-   if left then (if supportR then .leftR else .leftL)
++   if left then (if supportR then .leftL else .leftR)
+
+mutation allow a new brake to override a simultaneous cut
+-     if s.eligible && s.cut then cutClip s.left s.supportR
++     if s.eligible && s.cut && !s.braking then cutClip s.left s.supportR
+
+mutation keep an expired transition clip active
+-   if chosen != .run && s.expired then .run else chosen
++   if false && s.expired then .run else chosen
+
+mutation retain the previous clock across a teleport reset
+- def reset (_ : State) : State := ⟨.run,false,0,false,false,true⟩
++ def reset (s : State) : State := ⟨.run,false,s.clock,false,false,true⟩

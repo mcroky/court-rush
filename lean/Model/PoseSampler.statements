@@ -1,0 +1,84 @@
+{
+  "format": 1,
+  "toolchain": "leanprover/lean4:v4.34.1",
+  "module": "Model.PoseSampler",
+  "declarations": [
+    {
+      "name": "PoseSampler.SampleSafe",
+      "kind": "definition",
+      "type": "Nat → Nat → Nat → Nat → Prop",
+      "typeHash": "eed0919fcd59b907c87b69b889d8146ba81b02904097f75d21d4a704441cfb31",
+      "valueHash": "e9a3dbdf1d3bc6b288fa7d0c55129d5d920548e74ff2f39093d060175e9a4421"
+    },
+    {
+      "name": "PoseSampler.badInputs",
+      "kind": "definition",
+      "type": "Nat → Nat → List (Nat × Nat × Nat × Nat)",
+      "typeHash": "72d062ff1f1f05b6a1f1c9bfb409783cb51ce60fc277cadb67eb1e3e6b3f4a59",
+      "valueHash": "343eb818934317fca61e9744238eb88b2adbfdf2abebcf2bc2609b5e21b86a36"
+    },
+    {
+      "name": "PoseSampler.badInputs.match_1",
+      "kind": "definition",
+      "type": "(motive : Nat × Nat × Nat × Nat → Sort u_1) → (x : Nat × Nat × Nat × Nat) → ((f j a c : Nat) → motive (f, j, a, c)) → motive x",
+      "typeHash": "378c71991b9294a5f10d184c1ec49bf83a8d73ecec395494949b30c6240b94ec",
+      "valueHash": "fc09f0af5fc3f7252c17b436e2bee522361e7f5bdd8288c344009cbf5032afa4"
+    },
+    {
+      "name": "PoseSampler.inputs",
+      "kind": "definition",
+      "type": "Nat → Nat → List (Nat × Nat × Nat × Nat)",
+      "typeHash": "72d062ff1f1f05b6a1f1c9bfb409783cb51ce60fc277cadb67eb1e3e6b3f4a59",
+      "valueHash": "1d427cab1ea344154fb5b707b70a1c48fbaa3339bd202b62da7ab1f263a273b2"
+    },
+    {
+      "name": "PoseSampler.instDecidableSampleSafe",
+      "kind": "definition",
+      "type": "(frames joints first channel : Nat) → Decidable (PoseSampler.SampleSafe frames joints first channel)",
+      "typeHash": "8ba906da0b231465e545dcdc7797bbcee07cb24b915f6ff3689cf60e041f3cca",
+      "valueHash": "d59f313d907d8f74432a9f2090ac71c1f9fda803688ed69d6785241494d73eae"
+    },
+    {
+      "name": "PoseSampler.nextFrame",
+      "kind": "definition",
+      "type": "Nat → Nat → Nat",
+      "typeHash": "e488b87afd7814025b707f8f7b970474b5882295306e6f27e9f3a56f5b93af94",
+      "valueHash": "c79194c2930eeea2cc84da144ea4641387c743b48b724564e98ca832aca029ff"
+    },
+    {
+      "name": "PoseSampler.nextFrame_lt",
+      "kind": "theorem",
+      "type": "∀ (frames first : Nat), 0 < frames → PoseSampler.nextFrame frames first < frames",
+      "typeHash": "aceb8777dd157873169bbe11d2c0d4481a911f671c1efe2014e07e398bdfb235",
+      "valueHash": null
+    },
+    {
+      "name": "PoseSampler.quaternionIndex",
+      "kind": "definition",
+      "type": "Nat → Nat → Nat → Nat",
+      "typeHash": "3c0a68863a5889013b65fff25958bad371caa75334fdbe9cbc9eef77de29864d",
+      "valueHash": "e0a6de1779aa014cd595cf43b3b0c967f445fa6d3292abd7fd715faf5d391cc1"
+    },
+    {
+      "name": "PoseSampler.quaternionIndex_bound",
+      "kind": "theorem",
+      "type": "∀ (frames joints frame channel : Nat), frame < frames → channel < joints → PoseSampler.quaternionIndex joints frame channel + 3 < frames * (joints * 4)",
+      "typeHash": "8ec50fb03c2347621d392e25caddd86a73c81160e7ef5e657517e162ed33bf21",
+      "valueHash": null
+    },
+    {
+      "name": "PoseSampler.sampleSafe",
+      "kind": "theorem",
+      "type": "∀ (frames joints first channel : Nat), 0 < frames → first < frames → channel < joints → PoseSampler.SampleSafe frames joints first channel",
+      "typeHash": "2bfb71871fd00f5b2ce7b592fb5009b24dedb2fd44815c2b66a8c1130c9f691a",
+      "valueHash": null
+    },
+    {
+      "name": "PoseSampler.vectors",
+      "kind": "definition",
+      "type": "List (Nat × Nat × Nat × Nat)",
+      "typeHash": "dea970fb88683597e39fea8306b3dd26334806c3a576c395b54345b23b985011",
+      "valueHash": "c4470d1fc8d8ad758405a18599c2d9d53a3d300175bf94e6418283dcd39a8e91"
+    }
+  ]
+}

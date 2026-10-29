@@ -1,0 +1,8 @@
+# Each bug compiles and changes a relevant production indexing rule.
+mutation next-frame access escapes the final frame
+- def nextFrame (frames first : Nat) : Nat := min (first + 1) (frames - 1)
++ def nextFrame (frames first : Nat) : Nat := first + 1
+
+mutation quaternion channel stride is five instead of four
+-   frame * (joints * 4) + channel * 4
++   frame * (joints * 4) + channel * 5

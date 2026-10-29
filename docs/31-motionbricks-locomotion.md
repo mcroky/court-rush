@@ -50,3 +50,31 @@ Godot 4.7.2 Standard / GDScript / Compatibility와 현재 45관절 인간형 리
 사용자의 8791 경기 탭을 재시작하지 않고 별도 8804 미리보기에서 실제 캐릭터 스튜디오의 측면 달리기와 컷·급정지를 확인했다. 무릎·발의 교대, 어깨와 몸통 회전, 공과 손의 연결을 여러 시점에서 관찰했다. 자유 연습에서 방향키 이동→90도 전환→입력 해제 정지를 확인했고, 보상 없는 AI3대3에서 여섯 선수의 이동을 확인했다. 브라우저 오류 로그 0. 390×844 모바일 뷰포트에서는 실제 문서 폭/스크롤 폭이 모두375px로 가로 넘침이 없었고 터치 컨트롤을 유지했다. 실기기 성능 측정으로 해석하지 않는다.
 
 증거: `artifacts/mb-running-side.png`, `mb-cut-front.png`, `mb-mobile-v0109.png`. 웹 내보내기와 셸 생성, JS/Python 구문·웹 lifecycle 검사 통과. 최종 공개 확인은 아래에 기록한다.
+
+원본 코드 `6fe88bb`, Pages `5f19ed8`, GitHub Actions `40803075457` 성공. 첫 Pages push의 일시적인 연결 실패 후 같은 커밋 재시도로 완료했다. 고정 주소 https://mcroky.github.io/court-rush/ 의 표시 버전·업데이트 내역·17개 자산·게임 PCK를 검증했다. PCK SHA256 `06df74bc48821e0f18147f0198bc5bbbfe1394552bb666e8202d623f7a856f77`. 익명 profile 요청은401로 유지된다. 공개 브라우저에서 자유 연습 진입·방향키 이동·전환·입력 해제 정지와 v0.10.9 업데이트 설명, 오류 로그0을 확인했다. `artifacts/mb-public-v0109.png`, `mb-public-notes-v0109.png`. Supabase·Render·인증 설정은 배포하지 않았다.
+
+## 형식 검증 대상
+
+작업 중 갱신된 자동 검증 지침에 따라 공유 리그 변경의 두 경계를 Lean으로 추가 검사한다. 아래 표는 모델 작성 전에 정한 범위다. 단일 스레드 순차 계산이며 자원 소유권·대기/깨움은 추가하지 않는다.
+
+|대상|실제 코드와 유지 조건|가정·제외 범위|결과|
+|---|---|---|---|
+|PoseSampler|`motionbricks_pose.gd:sample`의 첫/다음 프레임과 quaternion 4요소 인덱스가 회전 배열 범위 안에 있음|프레임 수 양수, clamp 후 첫 인덱스가 0..frames-1, 유효 관절 채널, GDScript int64 오버플로가 없는 작은 자산. 부동소수점 clamp 자체·그림의 자연스러움 제외|Lean PASS. 모든 크기의 비음수 인덱스에 대해 가정하에 증명. frames1..27/joints1..46, 408,618개 유효 조합의 경계 탐색도 통과. 마지막 프레임 상한 제거·채널 간격 오류 2/2 감지|
+|LayerPriority|`motionbricks_pose.gd:apply/reset`의 전용 액션·공중·수비·회복 제외 조건, 지지 발별 클립 선택과 만료·초기화|실제 호출 순서를 옮긴 순차 모델. 입력 Boolean은 임계값 비교 결과. 물리/손 IK와 quaternion 연산 제외|Lean PASS. 256 guard·1,792 clip 조합과 일반 명제 증명. 액션 제외 제거·지지 발 교환·브레이크 우선·만료 무시·초기화 clock 잔류 오류 5/5 감지|
+
+`lean/Model/`의 각 `.lean`은 실제 코드 위치와 가정, `.mutations`는 넣은 오류, `.statements`는 증명 전에 동결한 명세와 함수 본문을 기록한다. 두 모델 전체 검사에서148개 선언의 증명·공리 검사를 통과했다. 미완성 증명(sorry)과 추가 공리는 없다. 변이 검사는 모델 복사본에 실제 잘못된 조건을 넣고 검사가 실패하는지 확인한 것으로, 게임 전체의 완전성을 뜻하지 않는다.
+
+실제 코드와 수동 모델의 차이도 검사했다. `tests/motionbricks_formal_vectors_test.gd`가 실제 `sample/apply/reset`을 호출하며, `tools/compare_motionbricks_formal_vectors.py`가 Lean 실행 출력과 비교한다. 9개 인덱스 벡터에 대응하는 실제 자산 7클립의 키와 중간 보간84개, guard256개, 동시 컷/브레이크4개·만료4개·정지 지지 발2개·초기화가 일치했다. 이는 GDScript int64의 실제4680요소 배열과 Boolean 분기 비교다. 원본 크기보다 작은 합성 자산과 float 오버플로·모션의 아름다움은 검사하지 않는다. 결과 로그는 `artifacts/mb-formal-project.log`, `mb-formal-native.log`다. 형식 검증 추가로 게임 런타임 코드를 다시 변경하지 않았으므로 공개 PCK는 위 해시를 유지한다.
+
+재검사 명령(`<skill-dir>`는 설치된 formal-verify 0.4.2 스킬, `<project>`는 이 프로젝트의 절대 경로):
+
+```bash
+# Windows에서는 Git Bash와 사용자 지침의 env.sh를 먼저 사용한다.
+bash <skill-dir>/scripts/lean-check.sh <project>/lean > artifacts/mb-formal-project.log
+python3 <skill-dir>/scripts/mutate.py <project>/lean/Model/PoseSampler.mutations
+python3 <skill-dir>/scripts/mutate.py <project>/lean/Model/LayerPriority.mutations
+godot --headless --path . --script tests/motionbricks_formal_vectors_test.gd > artifacts/mb-formal-native.log
+python3 tools/compare_motionbricks_formal_vectors.py
+```
+
+전체 Lean 검사 출력도 `artifacts/mb-formal-project.log`에 저장해 마지막 비교 명령에 전달한다. 이 PC의 Windows 호환 계층에서는 사용자 지침대로 `env.sh`를 읽은 뒤 `$AFV_SKILL_DIR`의 checker와 `$AFV_UPSTREAM_SKILL_DIR`의 mutate 명령을 사용한다. 최초 샌드박스에서는 기존 Lean 경로를 읽지 못했으나 기존 도구 접근 권한으로 재실행해 READY/PASS를 확인했다. Linux/WSL이나 새 도구 체인은 설치하지 않았다.
