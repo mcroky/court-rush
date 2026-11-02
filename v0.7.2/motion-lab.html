@@ -8,7 +8,18 @@ nav.roky-social a.roky-transfer-link,a.roky-transfer-link{display:inline-flex;al
 
 /* Roky Studio ebook destination */
 nav.roky-social a.roky-ebook-link,a.roky-ebook-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;min-height:44px;padding:8px 12px;border:1px solid #849ab8;border-radius:9px;background:#e7efff;color:#17365d;font:600 13px/1.4 system-ui,sans-serif;text-decoration:none;white-space:nowrap}nav.roky-social a.roky-ebook-link:hover,a.roky-ebook-link:hover{background:#cedfff;color:#17365d}nav.roky-social a.roky-ebook-link:focus-visible,a.roky-ebook-link:focus-visible{outline:3px solid #2469bd;outline-offset:3px}
-</style><link rel="stylesheet" href="language.css"></head><body><main>
+</style><link rel="stylesheet" href="language.css">
+<style data-roky-support-hidden>
+/* Support is hidden on games and the Studio homepage (2026-11-02). */
+.roky-support-footer,
+[data-web-only-support],
+.roky-support-dialog,
+#bank-transfer,
+a[href*="buymeacoffee.com/roky.studio"],
+a[href="https://mcroky.github.io/roky-studio/#bank-transfer"],
+a[href="#bank-transfer"] { display: none !important; }
+</style>
+</head><body><main>
 <header><div><small>COURT RUSH / MOTION RESEARCH 01</small><h1>모션을 만드는 방식부터 비교합니다.</h1></div><a href="./" target="_blank" rel="noopener">코트 열기 ↗</a><a class="roky-social-link roky-transfer-link" data-web-only-support href="https://buymeacoffee.com/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="더 좋은 앱을 위한 후원 새 탭에서 열기">더 좋은 앱을 위한 후원 <span aria-hidden="true">↗</span></a><a class="roky-social-link roky-ebook-link" data-web-only-commerce href="https://litt.ly/roky.studio" target="_blank" rel="noopener noreferrer" aria-label="로키스튜디오 전자책 새 탭에서 열기">전자책 <span aria-hidden="true">↗</span></a><label class="language-picker"><span aria-hidden="true">🌐</span><select data-language aria-label="언어" translate="no"></select></label></header>
 <p class="note">왼쪽은 현재 게임 캐릭터, 오른쪽은 스킨 메시와 제작된 전신 애니메이션 클립입니다. 오른쪽 외형은 비교용 마네킹이며 최종 농구 캐릭터가 아닙니다.</p>
 <div class="arena"><canvas id="canvas" aria-label="기존 캐릭터와 리깅 캐릭터의 모션 비교"></canvas><span id="status" role="status">모션 준비 중…</span><div class="captions"><div><strong>현재 · 절차적 관절</strong><span id="left-detail">게임에서 쓰는 달리기</span></div><div><strong>실험 · 전신 애니메이션</strong><span>하나의 스킨 메시 · 원본 키프레임</span></div></div></div>
